@@ -114,6 +114,19 @@ model-traffic-manager/
 - Fast and deterministic unit tests are the default priority.
 - Preferred test doubles: `fake`, then `stub`, then `spy`, then `mock`.
 - Mandatory coverage areas: domain logic, use cases, auth, failure classification, and failover behavior, plus minimal integration checks for adapters and API wiring.
+- The repository uses a permanent layered testing model:
+  - `unit`: pure logic, no Azure, no AKS, no real external services
+  - `integration-local`: FastAPI plus local config and local/in-process repositories or adapters
+  - `integration-azure`: real Azure services, but not deployed on AKS
+  - `e2e-aks`: full deployment validation on AKS
+- Testing levels are cumulative. Adding a higher-level environment never replaces lower-level tests for the same area.
+- Phase mapping:
+  - Phase 0 and Phase 1 require `unit` and `integration-local`
+  - Phase 2 keeps `unit` and `integration-local`; `integration-azure` becomes useful once real outbound provider calls exist
+  - Phase 3 requires `integration-azure` for Managed Identity and Azure-native outbound auth scenarios
+  - Phase 4 keeps all prior levels and may expand `integration-azure` for multi-upstream scenarios
+  - Phase 5 keeps all prior levels and adds broader infra-backed integration coverage such as Redis-backed behavior
+  - `e2e-aks` becomes mandatory once deployment, identity, Helm, and cluster runtime behavior need end-to-end proof
 - The default coverage gate is `85%` for `app`.
 - Expected quality gate once the Python application scaffold exists:
 

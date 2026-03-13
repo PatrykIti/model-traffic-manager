@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 35 work items
+- **Done:** 50 work items
 
 ---
 
@@ -106,3 +106,18 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-005-04 | Documentation, Task Tracking, and Validation Alignment | High | Small | Docs/task/changelog alignment completed |
 | TASK-006 | AKS Configuration Delivery Documentation | High | Small | Official AKS config delivery guidance added |
 | TASK-006-01 | Official AKS Config Delivery Approaches Page | High | Small | Three AKS config delivery approaches documented |
+| TASK-007 | Layered Testing Model and Phase Mapping | High | Small | Permanent testing levels and phase mapping documented |
+| TASK-007-01 | Official and Repository-Level Testing Policy Update | High | Small | Layered testing policy added to AGENTS and official docs |
+| TASK-008 | Cost-Aware Azure Test Infrastructure Orchestration Model | High | Medium | Low-cost temporary Azure test infra strategy defined |
+| TASK-008-01 | Trigger Policy and Cost Guardrails for Temporary Azure Environments | High | Small | Trigger and budget rules for expensive test environments |
+| TASK-008-01-01 | Trigger Matrix and Approval Rules | High | Small | Explicit trigger policy for Azure-backed tests |
+| TASK-008-01-02 | Cost, TTL, Budget, and Cleanup Guardrails | High | Small | TTL tags, janitor, and forced cleanup strategy |
+| TASK-008-02 | Terraform Wrapper Structure and Module Composition Model | High | Small | Repo-local wrapper strategy defined |
+| TASK-008-02-01 | Repo-Local Wrapper Structure and State Boundaries | High | Small | Wrapper and state isolation rules defined |
+| TASK-008-02-02 | Module Mapping for `integration-azure` and `e2e-aks` | High | Small | Reusable module composition per test level defined |
+| TASK-008-03 | GitHub Workflow Orchestration for Apply, Test, and Destroy | High | Small | GitHub-centered orchestration model defined |
+| TASK-008-03-01 | `integration-azure` Workflow Shape | High | Small | Lower-cost Azure workflow shape defined |
+| TASK-008-03-02 | `e2e-aks` Workflow Shape with `always()` Destroy | High | Small | Full ephemeral AKS workflow shape defined |
+| TASK-008-04 | Minimal Azure Resource Sets by Testing Level | High | Small | Azure footprint minimization strategy defined |
+| TASK-008-04-01 | Minimal Resources for `integration-azure` | High | Small | Minimal Azure service set defined |
+| TASK-008-04-02 | Minimal Resources for Fully Ephemeral `e2e-aks` | High | Small | Minimal temporary AKS footprint defined |

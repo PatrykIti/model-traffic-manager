@@ -37,3 +37,5 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 4 | 2026-03-13 | Phase 0 bootstrap implementation and runtime shell | bootstrap |
 | 5 | 2026-03-13 | Phase 1 domain, config validation, and deployment registry bootstrap | feature/bootstrap |
 | 6 | 2026-03-13 | AKS configuration delivery approaches documentation | docs/aks |
+| 7 | 2026-03-13 | Layered testing model and phase mapping | docs/testing |
+| 8 | 2026-03-13 | Cost-aware Azure test infrastructure orchestration model | docs/testing-infra |
