@@ -1,13 +1,13 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_CHANGELOG](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_CHANGELOG](./README.md)
 
-> Przykladowy format wpisu changelogu. Realne wpisy w tym repo musza wymieniac wszystkie zakonczone ID taskow i subtaskow.
+> Example changelog format. Real entries in this repository must list every completed task and subtask ID they cover.
 
 # Filename: 1-2025-11-22-project-init-and-rpc.md
 
 # 1. Project Initialization and Core RPC -> internal changelog title
 
-**Date:** 2025-11-22  
-**Version:** 0.1.0  
+**Date:** 2025-11-22
+**Version:** 0.1.0
 **Tasks:** TASK-001, TASK-002
 
 ## 🚀 Key Changes

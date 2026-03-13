@@ -1,17 +1,28 @@
-[README repo](../README.md) | [AGENTS](../AGENTS.md)
+[Repository README](../README.md) | [Official docs](../docs/README.md) | [AGENTS](../AGENTS.md)
 
-# _docs
+# Internal Documentation
 
-Glowny indeks dokumentacji projektu.
+This directory is the internal delivery space for the repository.
 
-## Sekcje
+## Purpose
 
-- [_MVP/README.md](./_MVP/README.md) - cel produktu, scope MVP, architektura, stack, konfiguracja, routing i testy.
-- [_TASKS/README.md](./_TASKS/README.md) - kanban, naming i workflow taskow, subtaskow i dalszych rozbic.
-- [_CHANGELOG/README.md](./_CHANGELOG/README.md) - indeks changelogow i zasady raportowania wykonanej pracy.
+`_docs/` stores the documentation needed to plan, track, and evolve the repository with AI-assisted workflows:
 
-## Zasady nawigacji
+- MVP planning and implementation guidance
+- task decomposition
+- changelog history
+- internal workflow agreements
 
-- Kazdy katalog dokumentacji musi miec `README.md`.
-- Kazdy plik Markdown musi miec kontrolki do nawigacji do nadrzednego indeksu lub root `README.md`.
-- Przy dodaniu nowego obszaru dokumentacji trzeba zaktualizowac ten indeks oraz README danego katalogu.
+This is intentionally separate from `docs/`, which is reserved for the official application documentation.
+
+## Sections
+
+- [_MVP/README.md](./_MVP/README.md) for product intent, architecture, stack, configuration, routing, and testing guidance
+- [_TASKS/README.md](./_TASKS/README.md) for the task board and task authoring rules
+- [_CHANGELOG/README.md](./_CHANGELOG/README.md) for changelog workflow and entry index
+
+## Navigation rules
+
+- Every documentation directory must have a `README.md`.
+- Every documentation Markdown file should expose navigation controls near the top.
+- When a new documentation area is added, update this index and the `README.md` above it.

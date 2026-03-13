@@ -1,21 +1,21 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
-# Routing i failover
+# Routing and failover
 
-## Cel
+## Goal
 
-Routing ma byc:
+Routing should be:
 
-- prosty do zrozumienia
-- przewidywalny
-- dobrze obserwowalny
-- wystarczajaco mocny operacyjnie
+- easy to understand
+- predictable
+- observable
+- operationally strong enough
 
-Nie budujemy na MVP skomplikowanego policy engine.
+We are not building a complicated policy engine for MVP.
 
-## Model domenowy
+## Domain model
 
-Glowny model:
+Main model:
 
 - `Deployment`
 - `Upstream`
@@ -25,47 +25,47 @@ Glowny model:
 
 ## `tier`
 
-Zostawiamy `tier`, ale nadajemy mu jawne znaczenie.
+We keep `tier`, but give it explicit meaning.
 
 - `tier=0` -> primary
 - `tier=1` -> regional/account failover
 - `tier=2` -> DR / last resort
 
-To nie jest "ukryty priorytet", tylko oficjalna hierarchia fallbacku.
+This is not a hidden priority. It is the official fallback hierarchy.
 
 ## `weight`
 
-`weight` sluzy tylko do rozkladu ruchu w obrebie tego samego tieru.
+`weight` is only used for traffic distribution inside the same tier.
 
-Nie uzywamy go do:
+Do not use it for:
 
-- opisu kosztu
-- opisu zdrowia
-- opisu waznosci biznesowej
+- cost
+- health
+- business priority
 
-## Algorytm wyboru
+## Selection algorithm
 
-Na MVP:
+For MVP:
 
-1. wybierz upstreamy dla deploymentu
-2. odfiltruj `unhealthy`, `cooldown`, `circuit_open`
-3. podziel kandydatow po `tier`
-4. wez najnizszy dostepny tier
-5. w obrebie tieru wybierz przez weighted round robin
+1. select upstreams for the deployment
+2. filter out `unhealthy`, `cooldown`, and `circuit_open`
+3. group candidates by `tier`
+4. choose the lowest available tier
+5. within that tier, use weighted round robin
 
-## Dlaczego nie weighted random
+## Why not weighted random
 
-Weighted round robin jest bardziej przewidywalny operacyjnie niz losowanie.
+Weighted round robin is more predictable operationally than random selection.
 
-Latwiej:
+It is easier to:
 
-- testowac
-- przewidywac rozklad
-- debugowac
+- test
+- predict traffic distribution
+- debug
 
-## Klasy stanów upstreamu
+## Upstream state classes
 
-Upstream moze byc:
+An upstream can be:
 
 - `healthy`
 - `rate_limited`
@@ -74,11 +74,11 @@ Upstream moze byc:
 - `unhealthy`
 - `circuit_open`
 
-To jest lepsze niz wrzucanie wszystkiego do jednego "failed".
+This is better than reducing everything to a single "failed" state.
 
-## Kiedy oznaczamy upstream jako uszkodzony
+## When we mark an upstream as unhealthy
 
-Przy:
+On:
 
 - timeout
 - connection error
@@ -87,54 +87,54 @@ Przy:
 - `503`
 - `504`
 
-## Kiedy oznaczamy upstream jako rate limited
+## When we mark an upstream as rate limited
 
-Przy:
+On:
 
 - `429`
 
-Jesli mamy `Retry-After`, respektujemy go.
+If `Retry-After` is present, we respect it.
 
-## Kiedy oznaczamy upstream jako quota exhausted
+## When we mark an upstream as quota exhausted
 
-Gdy provider lub adapter zwraca sygnal, ze problem nie jest chwilowym rate limit, tylko wyczerpaniem przydzialu.
+When the provider or adapter signals that the problem is not temporary rate limiting but actual quota exhaustion.
 
-Na MVP mozna to ustalic przez:
+For MVP this can be detected through:
 
-- znane statusy lub patterny odpowiedzi
-- adapter-specific mapper
+- known status codes or response patterns
+- adapter-specific mapping
 
 ## Circuit breaker
 
-Potrzebujemy prostego circuit breakera per upstream.
+We need a simple circuit breaker per upstream.
 
-### Reguly
+### Rules
 
-- po `N` kolejnych porazkach otwieramy circuit
-- po czasie `half_open_after` probujemy pojedynczy request testowy
-- sukces zamyka circuit
-- porazka znowu otwiera circuit
+- after `N` consecutive failures, open the circuit
+- after `half_open_after`, allow a single probe request
+- a success closes the circuit
+- a failure opens it again
 
 ## Cooldown
 
-Po `429` albo niektorych bledach nakladamy cooldown.
+After `429` or selected failures, apply cooldown.
 
-To chroni przed:
+This prevents:
 
-- mieleniem requestow na juz zly upstream
-- niepotrzebnym zwiekszaniem presji na provider
+- repeatedly hammering a bad upstream
+- adding unnecessary pressure to the provider
 
 ## Retry policy
 
-Retry jest per request.
+Retry is per request.
 
-Na MVP:
+For MVP:
 
-- maksymalnie kilka prob
-- przejscie na kolejny upstream przy bledzie retriable
-- bez skomplikowanej adaptacji
+- only a small number of attempts
+- move to the next upstream for retriable failures
+- no complex adaptive logic
 
-## Co jest retriable
+## What is retriable
 
 - timeout
 - connection error
@@ -144,20 +144,20 @@ Na MVP:
 - `503`
 - `504`
 
-## Co nie jest retriable
+## What is not retriable
 
 - `400`
 - `401`
 - `403`
 - `404`
-- bledy walidacji payloadu
+- payload validation errors
 
 ## Explainable routing
 
-Kazda decyzja routingu powinna zapisac:
+Every routing decision should record:
 
-- deployment id
-- upstream id
+- deployment ID
+- upstream ID
 - provider
 - account
 - region
@@ -166,40 +166,40 @@ Kazda decyzja routingu powinna zapisac:
 - decision reason
 - failover reason
 
-Przyklad `decision_reason`:
+Example `decision_reason` values:
 
 - `selected_primary_healthy`
 - `selected_secondary_primary_rate_limited`
 - `selected_dr_primary_circuit_open`
 
-## Persistence stanu routingu
+## Routing state persistence
 
-Na MVP:
+For MVP:
 
-- Redis dla shared state pomiedzy instancjami
-- fallback do in-memory przy local dev
+- Redis for shared state across instances
+- in-memory fallback for local development
 
-W Redis trzymamy:
+Store in Redis:
 
-- licznik porazek
+- failure counters
 - circuit state
 - cooldown expiry
 - optional round robin cursor
 
-## Co poprawiamy wzgledem DIAL Core
+## What we improve over DIAL Core
 
-- jawny model `provider/account/region`
+- explicit `provider/account/region` model
 - circuit breaker
 - explainable decision log
-- rozroznienie `rate_limited` vs `quota_exhausted`
-- przewidywalny weighted round robin
+- clear distinction between `rate_limited` and `quota_exhausted`
+- predictable weighted round robin
 
-## Czego nie robimy na MVP
+## What we do not build for MVP
 
-- routing po koszcie
-- routing po latency
-- dynamiczny scoring ML
+- cost-based routing
+- latency-based routing
+- dynamic ML scoring
 - cache-aware prefix routing
 - tenant-aware routing
 
-To wszystko zostaje na pozniej.
+These can come later.

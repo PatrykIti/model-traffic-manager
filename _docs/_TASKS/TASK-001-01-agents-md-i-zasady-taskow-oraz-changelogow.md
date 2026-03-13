@@ -1,6 +1,6 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_TASKS](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_TASKS](./README.md)
 
-# TASK-001-01: AGENTS.md i Zasady Taskow oraz Changelogow
+# TASK-001-01: `AGENTS.md` and Task / Changelog Rules
 # FileName: TASK-001-01-agents-md-i-zasady-taskow-oraz-changelogow.md
 
 **Priority:** High
@@ -13,20 +13,20 @@
 
 ## Overview
 
-Subtask techniczny porzadkujacy zasady pracy agentow i ludzi w repo.
+Technical subtask that established working rules for both humans and agents in the repository.
 
-Zakres:
-- wyciagniecie zasad produktu i implementacji z `_docs/_MVP/`
-- zapisanie ich w `AGENTS.md`
-- ustalenie hierarchii taskow i naming convention
-- dodanie zasad nawigacji po dokumentacji
-- zsynchronizowanie indeksow `_TASKS` i `_CHANGELOG` z nowym workflow
+Scope:
+- extract product and implementation rules from `_docs/_MVP/`
+- store them in `AGENTS.md`
+- define task hierarchy and naming convention
+- define documentation navigation rules
+- align `_TASKS` and `_CHANGELOG` indexes with the workflow
 
 ---
 
 ## Architecture
 
-Docelowy stan po wykonaniu subtaska:
+Target state after completing the subtask:
 
 ```text
 model-traffic-manager/
@@ -53,35 +53,35 @@ model-traffic-manager/
 
 ```text
 on_every_repo_task():
-    create main task file TASK-XXX-slug.md
-    create technical subtask TASK-XXX-01-slug.md
-    if subtask becomes too large:
-        split into TASK-XXX-01-01-slug.md or deeper
+    create main task file TASK-XXX-english-slug.md
+    create technical subtask TASK-XXX-01-english-slug.md
+    if the subtask becomes too large:
+        split into TASK-XXX-01-01-english-slug.md or deeper
     write Documentation Updates Required in every work item
-    execute work
-    create changelog entry with all completed IDs
-    update _docs/_TASKS/README.md board
-    update _docs/_CHANGELOG/README.md index
+    execute the work
+    create a changelog entry with all completed IDs
+    update the _docs/_TASKS/README.md board
+    update the _docs/_CHANGELOG/README.md index
 ```
 
 ---
 
 ## Implementation Order
 
-1. Zidentyfikowac reguly wynikajace z `_docs/_MVP/`.
-2. Zamienic je na instrukcje operacyjne w `AGENTS.md`.
-3. Dolozyc zasady task hierarchy i changelog workflow.
-4. Dodac indeksy i kontrolki nawigacyjne dla dokumentacji.
-5. Zaktualizowac board oraz indeks changelogu.
+1. Identify the rules implied by `_docs/_MVP/`.
+2. Turn them into operational instructions in `AGENTS.md`.
+3. Add task hierarchy and changelog workflow rules.
+4. Add indexes and navigation controls for the documentation.
+5. Update the board and changelog index.
 
 ---
 
 ## Testing Requirements
 
-- sprawdzenie, ze `AGENTS.md` obejmuje zakres produktu, architekture, stack, routing, auth i testy
-- sprawdzenie, ze README taskow opisuje glowny task, subtask i dalsze rozbicia
-- sprawdzenie, ze changelog index zawiera nowy wpis
-- sprawdzenie, ze dokumenty zmienione w tym tasku maja linki nawigacyjne
+- verify that `AGENTS.md` covers product scope, architecture, stack, routing, auth, and tests
+- verify that the task README explains main tasks, subtasks, and deeper breakdown levels
+- verify that the changelog index contains the new entry
+- verify that the Markdown files changed by the task expose navigation links
 
 ---
 

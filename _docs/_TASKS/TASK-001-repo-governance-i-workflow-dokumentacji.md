@@ -1,60 +1,60 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_TASKS](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_TASKS](./README.md)
 
-# TASK-001: Repo Governance i Workflow Dokumentacji
+# TASK-001: Repository Governance and Documentation Workflow
 # FileName: TASK-001-repo-governance-i-workflow-dokumentacji.md
 
 **Priority:** High
 **Category:** Repository Governance
 **Estimated Effort:** Medium
-**Dependencies:** Brak
+**Dependencies:** None
 **Status:** **Done** (2026-03-13)
 
 ---
 
 ## Overview
 
-Zdefiniowanie zasad pracy dla glownego repo, tak aby kazda kolejna implementacja byla prowadzona wedlug jednego, jawnego workflow.
+Define the working rules for the repository so that every future implementation task follows one explicit workflow.
 
-Cel biznesowy:
-- miec jedno zrodlo prawdy dla zasad pracy w repo
-- uporzadkowac workflow taskow, dokumentacji i changelogu
-- zapewnic, ze przyszla implementacja routera bedzie zgodna z zalozeniami `_docs/_MVP/`
+Business goal:
+- establish a single source of truth for repository rules
+- align task, documentation, and changelog workflow
+- ensure future implementation work stays consistent with `_docs/_MVP/`
 
 ---
 
 ## Sub-Tasks
 
-### TASK-001-01: AGENTS.md i zasady taskow/changelogow
+### TASK-001-01: `AGENTS.md` and task/changelog rules
 
 **Status:** Done
 
-Techniczne zlozenie zasad z `_docs/_MVP/`, reguly task hierarchy, README-ow, nawigacji i aktualizacji dokumentacji.
+Translate the MVP guidance into executable repository rules, task hierarchy, documentation navigation rules, and changelog updates.
 
 ---
 
 ## Implementation Order
 
-1. Przeanalizowac cale `_docs/`, w szczegolnosci `_MVP`, `_TASKS` i `_CHANGELOG`.
-2. Zapisac zasady repo i workflow w glownym `AGENTS.md`.
-3. Dodac brakujace indeksy dokumentacji (`README.md` w root i `_docs/`).
-4. Zsynchronizowac README taskow i changelogu z nowym workflow.
-5. Udokumentowac wykonana prace w changelogu i tablicy kanban.
+1. Analyze all of `_docs/`, especially `_MVP`, `_TASKS`, and `_CHANGELOG`.
+2. Record the repository rules and workflow in the main `AGENTS.md`.
+3. Add missing documentation indexes (`README.md` in the root and `_docs/`).
+4. Align the task and changelog README files with the workflow.
+5. Document the completed work in the changelog and board.
 
 ---
 
 ## Testing Requirements
 
-- sprawdzenie spojnosci zasad z dokumentami `_docs/_MVP/`
-- sprawdzenie, ze task board i changelog index odzwierciedlaja wykonana prace
-- sprawdzenie, ze nowe i zmienione pliki Markdown maja kontrolki nawigacyjne
+- verify that the rules are consistent with `_docs/_MVP/`
+- verify that the task board and changelog index reflect the completed work
+- verify that new and updated Markdown files include navigation controls
 
 ---
 
 ## Documentation Updates Required
 
-- utworzenie glownego `AGENTS.md`
-- dodanie root `README.md`
-- dodanie `_docs/README.md`
-- aktualizacja `_docs/_TASKS/README.md`
-- aktualizacja `_docs/_CHANGELOG/README.md`
-- dodanie wpisu do `_docs/_CHANGELOG/`
+- create the main `AGENTS.md`
+- add the root `README.md`
+- add `_docs/README.md`
+- update `_docs/_TASKS/README.md`
+- update `_docs/_CHANGELOG/README.md`
+- add a changelog entry in `_docs/_CHANGELOG/`

@@ -1,34 +1,34 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
 # Architecture
 
-## Architektura logiczna
+## Logical architecture
 
-Przyjmujemy Clean Architecture.
+We are adopting Clean Architecture.
 
-Chcemy rozdzielic:
+We want to separate:
 
-- domene routingu
-- use case'y aplikacyjne
-- adaptery infrastrukturalne
-- framework HTTP
+- routing domain logic
+- application use cases
+- infrastructure adapters
+- HTTP framework concerns
 
-tak, aby routing i auth nie byly zalezne od FastAPI, Redis ani Azure SDK.
+so routing and auth do not depend on FastAPI, Redis, or the Azure SDK.
 
-## Warstwy
+## Layers
 
-## 1. Domain
+### 1. Domain
 
-Najczystsza warstwa.
+The purest layer.
 
-Zawiera:
+It contains:
 
-- encje
+- entities
 - value objects
-- polityki
-- uslugi domenowe
+- policies
+- domain services
 
-Przykladowe typy:
+Example types:
 
 - `Deployment`
 - `Upstream`
@@ -39,25 +39,25 @@ Przykladowe typy:
 - `RouteDecision`
 - `FailureReason`
 
-W tej warstwie nie ma:
+This layer must not contain:
 
 - HTTP
 - Redis
 - Azure SDK
-- YAML parsera
+- YAML parsing
 
-## 2. Application
+### 2. Application
 
-Warstwa use case'ow.
+The use-case layer.
 
-Zawiera:
+It contains:
 
-- orkiestracje requestu
-- wywolywanie polityk domenowych
-- wywolywanie portow
-- translacje DTO wejsciowych/wyjsciowych
+- request orchestration
+- invocation of domain policies
+- calls to ports
+- translation of input/output DTOs
 
-Przykladowe use case'y:
+Example use cases:
 
 - `RouteChatCompletion`
 - `RouteEmbeddings`
@@ -67,11 +67,11 @@ Przykladowe use case'y:
 - `RecordUpstreamFailure`
 - `RecordUpstreamSuccess`
 
-## 3. Ports
+### 3. Ports
 
-Porty to kontrakty do zewnetrznego swiata.
+Ports are contracts to the outside world.
 
-Przykladowe porty:
+Example ports:
 
 - `DeploymentRepository`
 - `HealthRepository`
@@ -82,17 +82,17 @@ Przykladowe porty:
 - `TracerPort`
 - `ClockPort`
 
-Ten model jest tez potrzebny pod testy:
+This model is also necessary for testing:
 
-- use case testujemy na mockowanych portach
-- domene testujemy bez infrastruktury
-- adaptery testujemy osobno kontraktowo
+- use cases are tested with mocked or fake ports
+- domain logic is tested without infrastructure
+- adapters are tested separately with contract-style checks
 
-## 4. Infrastructure / Adapters
+### 4. Infrastructure / Adapters
 
-Implementacje portow.
+Implementations of the ports.
 
-Przyklady:
+Examples:
 
 - YAML config repository
 - Redis health repository
@@ -101,19 +101,19 @@ Przyklady:
 - Prometheus adapter
 - OpenTelemetry adapter
 
-## 5. Entrypoints
+### 5. Entrypoints
 
-Framework i API.
+Framework and API.
 
-Na MVP:
+For MVP:
 
 - FastAPI
-- DTO request/response
-- mapowanie bledow domenowych na HTTP
+- request/response DTO mapping
+- domain-to-HTTP error mapping
 
-## Bounded contexts w MVP
+## Bounded contexts in MVP
 
-Nie robimy wielu mikroserwisow. Robimy jeden serwis, ale logicznie rozdzielamy konteksty:
+We are not building multiple microservices. We are building one service with logical contexts:
 
 - Routing
 - Outbound Auth
@@ -121,23 +121,23 @@ Nie robimy wielu mikroserwisow. Robimy jeden serwis, ale logicznie rozdzielamy k
 - Config Loading
 - Observability
 
-## Glowny flow requestu
+## Main request flow
 
-1. Klient wywoluje deployment.
-2. Entrypoint mapuje request do use case'a.
-3. Use case pobiera definicje deploymentu.
-4. Use case pobiera health state upstreamow.
-5. Domena wybiera najlepszy kandydat.
-6. Application pyta `TokenProvider` o outbound auth.
-7. `OutboundInvoker` wysyla request.
-8. Wynik aktualizuje health state i metrics.
-9. Odpowiedz wraca do klienta.
+1. Client calls a deployment endpoint.
+2. Entrypoint maps the request into a use case.
+3. The use case loads the deployment definition.
+4. The use case loads upstream health state.
+5. Domain logic selects the best candidate.
+6. Application asks `TokenProvider` for outbound auth.
+7. `OutboundInvoker` sends the request.
+8. The result updates health state and metrics.
+9. The response is returned to the client.
 
 ## Error model
 
-Nie chcemy, zeby wszystkie bledy byly "500".
+We do not want every error to become a generic `500`.
 
-Podstawowe klasy bledow:
+Basic error classes:
 
 - `DeploymentNotFound`
 - `NoHealthyUpstream`
@@ -148,9 +148,9 @@ Podstawowe klasy bledow:
 - `OutboundConnectionError`
 - `ConfigValidationError`
 
-## Komponenty runtime
+## Runtime components
 
-Minimalny zestaw komponentow:
+Minimal component set:
 
 - API process
 - config loader
@@ -159,36 +159,36 @@ Minimalny zestaw komponentow:
 - token cache
 - metrics endpoint
 
-## Dane trwale i ulotne
+## Durable vs ephemeral data
 
-### Dane trwale
+### Durable data
 
-Na MVP:
+For MVP:
 
-- konfiguracja w repo i obrazie
-- opcjonalnie mounted config file
+- configuration stored in the repo and image
+- optionally a mounted versioned config file
 
-### Dane ulotne
+### Ephemeral data
 
-W Redis:
+In Redis:
 
 - circuit breaker state
-- cooldowny po bledach
+- cooldown windows after failures
 - rate limit counters
 - optional distributed health state
 
-## Co celowo omijamy
+## What we intentionally avoid
 
-Nie wprowadzamy osobnych warstw typu:
+Do not introduce:
 
 - ORM
-- baza relacyjna
+- relational database
 - event bus
-- kolejki
+- queues
 
-Nie sa potrzebne w MVP routera.
+They are not needed for the MVP router.
 
-## Diagram odpowiedzialnosci
+## Responsibility diagram
 
 ```text
 FastAPI -> Application Use Case -> Domain Policy
@@ -196,12 +196,12 @@ FastAPI -> Application Use Case -> Domain Policy
                               -> Infrastructure Adapters
 ```
 
-## Dodatkowe decyzje architektoniczne
+## Additional architectural decisions
 
 - async first
-- bez ukrywania flow w framework magic
-- domena testowana bez infrastruktury
-- adaptery testowane kontraktowo
-- config walidowany przy starcie
-- brak dynamicznego self-mutation configu w v1
-- kazdy use case musi miec unit testy
+- no hidden flow inside framework magic
+- domain logic tested without infrastructure
+- adapters tested with contract-style checks
+- config validated at startup
+- no dynamic self-mutation of config in v1
+- every use case must have unit tests

@@ -1,34 +1,35 @@
-[README repo](../../README.md) | [_docs](../README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md)
 
 # Changelog
 
-Projektowy changelog wykonanej pracy.
+This directory stores the repository changelog history.
 
-Tabela **Index** ponizej pelni role boardu changelogu i pokazuje, co zostalo zrobione oraz kiedy.
+The **Index** table below acts as the changelog board and shows what was completed and when.
 
 ## Workflow
 
-1. Po zakonczeniu taska lub zestawu taskow z jednej sesji pracy utworz nowy plik w `_docs/_CHANGELOG/`.
-2. Uzyj nazewnictwa z sekcji ponizej i wpisz wszystkie zamkniete ID taskow/subtaskow.
-3. Dodaj wiersz do tabeli **Index** z numerem, data, tytulem i typem zmiany.
-4. Zsynchronizuj ten indeks z boardem w `_docs/_TASKS/README.md`.
+1. After completing a task or a coherent group of tasks, create a new changelog file in `_docs/_CHANGELOG/`.
+2. Use the naming convention below and list every completed task/subtask ID covered by the entry.
+3. Add a row to the **Index** table with the number, date, title, and change type.
+4. Synchronize this index with the task board in `_docs/_TASKS/README.md`.
 
 ## File naming
 
 - Format: `{N}-{YYYY-MM-DD}-short-title.md`
 - Example: `1-2025-11-22-project-init-and-rpc.md`
-- `N` rosnie sekwencyjnie i nigdy nie jest uzywany ponownie.
+- `N` increases sequentially and is never reused
 
-## Entry format (minimum)
+## Entry format
 
-- Title line with No. and short title.
-- `Date`, `Version`, `Tasks`.
-- Sekcje `Key Changes` pogrupowane po obszarach.
-- Wpis ma byc zwiezly, ale ma jasno tlumaczyc co zostalo zrobione.
-- Wzor: [EXAMPLE_CHANGELOG.md](./EXAMPLE_CHANGELOG.md).
+- Title line with the changelog number and short title
+- `Date`, `Version`, and `Tasks`
+- `Key Changes` grouped by area
+- Concise but explicit explanation of what changed
+- Reference template: [EXAMPLE_CHANGELOG.md](./EXAMPLE_CHANGELOG.md)
 
 ## Index
 
 | No. | Date | Title | Type |
 |-----|------|-------|------|
 | 1 | 2026-03-13 | Repo governance, task workflow and AGENTS rules | docs/process |
+| 2 | 2026-03-13 | Repository foundation, public docs structure, and English markdown standard | docs/process |

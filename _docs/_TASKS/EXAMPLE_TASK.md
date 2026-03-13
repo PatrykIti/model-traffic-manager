@@ -1,6 +1,6 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_TASKS](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_TASKS](./README.md)
 
-> Przykladowy format tresci. W tym repo realne pliki taskow nazywamy hierarchicznie, np. `TASK-001-slug.md`, `TASK-001-01-slug.md`, `TASK-001-01-01-slug.md`.
+> Example content format. In this repository real task files use hierarchical English slugs such as `TASK-001-slug.md`, `TASK-001-01-slug.md`, and `TASK-001-01-01-slug.md`.
 
 # TASK-045: Object Inspection Tools
 # FileName: TASK-045_Object_Inspection_Tools.md

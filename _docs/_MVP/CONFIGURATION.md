@@ -1,37 +1,37 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
 # Configuration model
 
-## Cel
+## Goal
 
-Konfiguracja ma byc prostsza semantycznie niz w DIAL Core.
+Configuration should be semantically simpler than in DIAL Core.
 
-Operator ma czytac:
+Operators should be able to read:
 
-- co to za deployment
-- ktory upstream jest primary
-- ktory jest secondary
-- jakim auth to idzie
-- jaki scope dostaje token
+- what deployment this is
+- which upstream is primary
+- which upstream is secondary
+- what auth mode it uses
+- what token scope it receives
 
-zamiast rozszyfrowywac znaczenie surowych endpointow.
+instead of decoding the meaning of raw endpoints.
 
 ## Format
 
-Na MVP:
+For MVP:
 
 - YAML
-- walidowany przy starcie przez Pydantic
+- validated at startup with Pydantic
 
-Nie robimy dynamicznego edytora configu ani API do zmian configu w v1.
+We are not building a dynamic config editor or a config mutation API in v1.
 
-## Glowne sekcje
+## Main sections
 
 - `router`
 - `deployments`
 - `shared_services`
 
-## Przyklad
+## Example
 
 ```yaml
 router:
@@ -83,22 +83,22 @@ shared_services:
       scope: https://storage.azure.com/.default
 ```
 
-## Znaczenie sekcji
+## Section meaning
 
-## `router`
+### `router`
 
-Ustawienia instancji:
+Instance-level settings:
 
-- timeouty
-- retry
+- timeouts
+- retry policy
 - health policy
-- metadane instancji
+- instance metadata
 
-## `deployments`
+### `deployments`
 
-To logiczne uslugi wystawiane klientom.
+Logical services exposed to clients.
 
-Kazdy deployment ma:
+Every deployment has:
 
 - `id`
 - `kind`
@@ -107,17 +107,17 @@ Kazdy deployment ma:
 - `limits`
 - `upstreams`
 
-## `shared_services`
+### `shared_services`
 
-To zasoby wspolne, z ktorych router sam korzysta:
+Shared resources used by the router itself:
 
-- blob
+- blob storage
 - key vault
-- inne wewnetrzne API
+- other internal services
 
-## Model upstreamu
+## Upstream model
 
-Kazdy upstream ma:
+Every upstream has:
 
 - `id`
 - `provider`
@@ -128,11 +128,11 @@ Kazdy upstream ma:
 - `endpoint`
 - `auth`
 
-To sa jawne byty domenowe, nie tylko pola techniczne.
+These are explicit domain concepts, not just technical fields.
 
-## Model auth
+## Auth model
 
-Na MVP tylko:
+For MVP only:
 
 - `managed_identity`
 - `api_key`
@@ -140,46 +140,46 @@ Na MVP tylko:
 
 ### `managed_identity`
 
-Pola:
+Fields:
 
 - `mode`
 - `scope`
-- opcjonalnie `client_id`
+- optional `client_id`
 
 ### `api_key`
 
-Pola:
+Fields:
 
 - `mode`
 - `header_name`
 - `secret_ref`
 
-`secret_ref` ma wskazywac na sekret dostarczony przez platforme deploymentowa, nie na plain text w configu.
+`secret_ref` must point to a secret supplied by the deployment platform, not plain text embedded in config.
 
-## Zasady walidacji
+## Validation rules
 
-- `deployment.id` unikalne
-- `upstream.id` unikalne w deployment
+- unique `deployment.id`
+- unique `upstream.id` within a deployment
 - `tier >= 0`
 - `weight > 0`
-- `endpoint` musi byc poprawnym URL
-- `scope` wymagany dla `managed_identity`
-- `header_name` i `secret_ref` wymagane dla `api_key`
+- `endpoint` must be a valid URL
+- `scope` is required for `managed_identity`
+- `header_name` and `secret_ref` are required for `api_key`
 
-## Czego unikamy
+## What to avoid
 
-Nie chcemy configu, ktory:
+We do not want config that:
 
-- miesza modele, role, share, pliki i runtime w jednym miejscu
-- wymaga wielu specjalnych przypadkow
-- ukrywa znaczenie domenowe
+- mixes models, roles, shares, files, and runtime concerns in one place
+- requires too many special cases
+- hides domain meaning
 
-## Strategia zmian configu
+## Config change strategy
 
-Na MVP:
+For MVP:
 
-- config jest wersjonowany z kodem
-- rollout configu idzie przez release obrazu lub mounted versioned file
-- brak live editing przez API
+- config is versioned with code
+- config rollout happens through an image release or mounted versioned file
+- no live editing through API
 
-To jest bardziej przewidywalne i prostsze operacyjnie.
+This is more predictable and operationally simpler.

@@ -1,70 +1,70 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
-# Stack i polityka wersji
+# Stack and version policy
 
-## Decyzja glowna
+## Primary decision
 
-Uzywamy:
+We use:
 
 - Python `3.12`
-- `uv` do zarzadzania projektem, lockiem i srodowiskiem
+- `uv` for project management, lock handling, and environments
 
-Nie wybieramy Poetry na start.
+We are not choosing Poetry as the starting point.
 
-## Dlaczego `uv`
+## Why `uv`
 
-Powody:
+Reasons:
 
-- szybki resolver i sync
-- prosty model oparty o `pyproject.toml`
-- `uv.lock` daje reprodukowalnosc
-- dobrze nadaje sie do CI i Docker buildow
-- mniej dodatkowej abstrakcji niz Poetry
+- fast resolver and sync
+- simple `pyproject.toml`-based model
+- `uv.lock` provides reproducibility
+- strong fit for CI and Docker builds
+- less extra abstraction than Poetry
 
-## Dlaczego nie Poetry
+## Why not Poetry
 
-Poetry jest sensowne, ale na MVP routera nie daje nam przewagi, a dodaje kolejna warstwe zachowan i komend.
+Poetry is reasonable, but for the MVP router it does not give us enough upside to justify the added behavior and command surface.
 
-Potrzebujemy:
+We need:
 
-- prostego locka
-- prostego sync
-- prostego builda
+- a simple lock file
+- simple environment sync
+- a simple build path
 
-`uv` wystarcza.
+`uv` is enough.
 
-## Wersja Pythona
+## Python version
 
-Na start celujemy w:
+We target:
 
 - `Python 3.12.x`
 
-Powod:
+Why:
 
-- bardzo dobra kompatybilnosc z nowoczesnym ekosystemem AI/web
-- mniej ryzyka niz agresywne wejscie w najnowsza wersje bez walidacji wszystkich bibliotek
+- strong compatibility with the modern AI/web ecosystem
+- less risk than aggressively jumping to the newest Python without validating all dependencies
 
-Nie robimy "floating latest Python".
+Do not use "floating latest Python".
 
-## Zasada wersjonowania runtime
+## Runtime versioning rule
 
-- `3.12.x` jest pinowane w:
+- `3.12.x` is pinned in:
   - `pyproject.toml`
-  - obrazie Docker
+  - Docker image
   - CI
-- zmiana na `3.13` albo wyzej wymaga osobnej walidacji i osobnego release planu
+- moving to `3.13` or later requires a dedicated validation and release task
 
-## Biblioteki runtime
+## Runtime libraries
 
-Na MVP chcemy minimalny zestaw.
+We want a minimal set for MVP.
 
-### API i DTO
+### API and DTOs
 
 - `fastapi`
 - `pydantic`
 - `pydantic-settings`
 
-### HTTP i async runtime
+### HTTP and async runtime
 
 - `httpx`
 - `uvicorn`
@@ -92,7 +92,7 @@ Na MVP chcemy minimalny zestaw.
 
 - `pyyaml`
 
-## Biblioteki dev/test
+## Dev/test libraries
 
 - `pytest`
 - `pytest-asyncio`
@@ -101,96 +101,94 @@ Na MVP chcemy minimalny zestaw.
 - `ruff`
 - `mypy`
 
-## Czego nie bierzemy na MVP
+## What we do not add for MVP
 
 - ORM
 - SQLAlchemy
 - Celery
 - Kafka client
-- generic retry framework typu `tenacity`
-- zewnetrzna biblioteka circuit breaker, jesli mozemy miec mala wlasna implementacje
+- generic retry frameworks such as `tenacity`
+- external circuit-breaker library if a small internal implementation is enough
 
-Zasada:
+Rule:
 
-jesli logika jest mala i domenowa, wolimy ja napisac sami zamiast sciagac ciezka zaleznosc.
+If the logic is small and domain-specific, prefer implementing it ourselves instead of pulling a heavy dependency.
 
-## Polityka pinowania wersji
+## Dependency pinning policy
 
-To jest krytyczne.
+This is critical.
 
 ### Runtime dependencies
 
-Kazda bezposrednia zaleznosc ma byc przypieta exact:
+Every direct dependency must be pinned exactly:
 
 - `package == x.y.z`
 
 ### Lock file
 
-Commitujemy:
+Commit:
 
 - `uv.lock`
 
-To jest jedyne zrodlo prawdy dla transitive dependencies.
+This is the single source of truth for transitive dependencies.
 
-### Brak otwartych zakresow
+### No open ranges
 
-Nie dopuszczamy:
+Do not allow:
 
 - `>=`
 - `^`
 - `~`
 - `*`
 
-w runtime dependencies.
+in runtime dependencies.
 
-## Polityka aktualizacji bibliotek
+## Dependency update policy
 
-Biblioteki nie aktualizuja sie "przy okazji".
+Dependencies are not updated "incidentally".
 
-Zmiany robimy tylko:
+Every upgrade requires:
 
-- w osobnym zadaniu
-- z aktualizacja locka
-- z testami regresji
-- z changelogiem
+- a dedicated task
+- updated lock file
+- regression checks
+- changelog entry
 
-Przyklad procesu:
+Example process:
 
 1. branch `deps/1.1.0-refresh`
-2. update wybranych bibliotek
+2. update selected packages
 3. `uv lock`
-4. testy
-5. release np. `1.1.0`
+4. run tests
+5. release, for example `1.1.0`
 
-## SemVer dla routera
+## Router SemVer
 
-- `1.0.0` - pierwsza stabilna wersja
-- `1.0.x` - bugfixy bez zmian kontraktow
-- `1.1.0` - minor z nowa funkcja lub zatwierdzonym bumpem bibliotek
-- `2.0.0` - breaking changes
+- `1.0.0` first stable release
+- `1.0.x` bugfixes without contract changes
+- `1.1.0` new feature or approved dependency bump
+- `2.0.0` breaking changes
 
-## Kontrola wersji kontenera
+## Container version control
 
-Tak samo pinujemy obraz.
+Apply the same pinning rule to the image:
 
-Zasada:
+- pin the base image by digest
+- do not use `python:3.12` without a digest
+- do not use `latest`
 
-- pinujemy obraz bazowy po digescie
-- nie uzywamy "python:3.12" bez digestu
-- nie uzywamy "latest"
+## Repository tools
 
-## Narzedzia repo
+Target tools:
 
-Docelowo:
+- `uv` for env and lock handling
+- `ruff` for linting and formatting
+- `mypy` for static analysis
+- `pytest` for tests
 
-- `uv` do env i locka
-- `ruff` do lint + format
-- `mypy` do statycznej analizy
-- `pytest` do testow
+## `pyproject.toml` skeleton
 
-## Szkic `pyproject.toml`
-
-Punkt startowy powinien wygladac mniej wiecej tak:
+The starting point should look roughly like this:
 
 ```toml
 [project]
@@ -228,21 +226,21 @@ dev = [
 ]
 ```
 
-`X.Y.Z` nie ma byc zakresem. To maja byc konkretne, zatwierdzone wersje wpisane przy bootstrapie repo.
+`X.Y.Z` must not be a range. It must be a concrete, approved version chosen during repository bootstrap.
 
-## Zasada bootstrapu zaleznosci
+## Dependency bootstrap rule
 
-Na etapie utworzenia repo robimy jednorazowo:
+When the repository is first created:
 
-1. wybieramy zestaw bibliotek
-2. sprawdzamy kompatybilnosc z Python `3.12`
-3. wpisujemy exact pins do `pyproject.toml`
-4. generujemy `uv.lock`
-5. commitujemy oba pliki razem
+1. select the dependency set
+2. validate compatibility with Python `3.12`
+3. write exact pins into `pyproject.toml`
+4. generate `uv.lock`
+5. commit both files together
 
-Od tego momentu nie ma "samoczynnych aktualizacji".
+After that there are no spontaneous updates.
 
-## Przykadowy workflow narzedziowy
+## Example tool workflow
 
 ```text
 uv sync --frozen
@@ -252,33 +250,11 @@ uv run mypy app
 uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=85
 ```
 
-## Zasada dla klastra
+## Cluster rule
 
-Klaster nie moze "sam" zaktualizowac zaleznosci.
+The cluster must not update dependencies on its own.
 
-To oznacza:
+That means:
 
-- wszystkie zaleznosci sa w obrazie
-- obraz jest immutable
-- rollout zawsze jest powiazany z konkretna wersja aplikacji
-
-Wniosek:
-
-nie aktualizujemy bibliotek przez restart poda, tylko przez release nowego obrazu.
-
-## Polityka testow
-
-Kazda zmiana ma byc weryfikowana testami.
-
-Minimalny zestaw na MVP:
-
-- unit testy dla domeny
-- unit testy dla use case'ow
-- testy adapterow z mockowaniem zaleznosci zewnetrznych
-- coverage sprawdzany w CI przez `pytest-cov`
-
-Docelowy prog startowy:
-
-- `--cov-fail-under=85`
-
-Potem mozemy go podniesc, ale nie schodzimy ponizej tego bez swiadomej decyzji.
+- every dependency is part of the image
+- the image is immutable

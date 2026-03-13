@@ -1,41 +1,41 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
 # Business MVP
 
-## Co budujemy
+## What we are building
 
-Budujemy router AI dla AKS i Azure, ktory:
+We are building an AI router for AKS and Azure that:
 
-- wystawia jeden stabilny endpoint do deploymentow AI
-- routuje ruch miedzy wieloma kontami i regionami
-- sam autoryzuje sie do uslug downstream przez Managed Identity
-- daje operatorowi prostszy model konfiguracji niz DIAL Core
+- exposes one stable endpoint for AI deployments
+- routes traffic across multiple accounts and regions
+- authenticates to downstream services through Managed Identity
+- gives operators a simpler configuration model than DIAL Core
 
-## Dla kogo
+## Who it is for
 
-Produkt jest dla zespolow platformowych i AI platform teams, ktore:
+The product is for platform teams and AI platform teams that:
 
-- maja kilka kont Azure OpenAI / AI Foundry
-- maja wiele regionow
-- chca failover miedzy kontami i regionami
-- nie chca trzymac sekretow w konfiguracji
-- chca miec jawna decyzje routingu i observability
+- operate several Azure OpenAI / Azure AI accounts
+- work across multiple regions
+- need failover across accounts and regions
+- do not want to manage secrets in configuration
+- need explicit routing decisions and observability
 
-## Problem biznesowy
+## Business problem
 
-Dzisiejszy stan zwykle wyglada tak:
+The current situation usually looks like this:
 
-- wiele endpointow AI
-- reczne API keys
-- slaba widocznosc, dlaczego request trafil tam, gdzie trafil
-- trudny failover po `429` albo awarii regionu
-- konfiguracja, ktora opisuje endpointy, ale nie opisuje semantyki biznesowej
+- many AI endpoints
+- manual API keys
+- poor visibility into why a request went to a given target
+- difficult failover after `429` or a regional outage
+- configuration that describes endpoints but not business meaning
 
-## Nasza odpowiedz
+## Our answer
 
-Router ma byc prosty, ale semantyczny.
+The router should be simple but semantic.
 
-Operator ma widziec:
+Operators should see:
 
 - provider
 - account
@@ -44,64 +44,64 @@ Operator ma widziec:
 - auth mode
 - health state
 
-a nie tylko surowe URL-e i parametry pomocnicze.
+instead of raw URLs and opaque helper parameters.
 
-## Najwazniejsza przewaga produktu
+## Main product advantage
 
 ### Secretless by default
 
-Jesli downstream wspiera Entra ID, operator nie daje sekretu.
+If a downstream supports Entra ID, the operator should not provide a secret.
 
-Zamiast tego:
+Instead, the operator:
 
-- przypina tozsamosc do routera
-- nadaje RBAC
-- ustawia `scope`
+- assigns an identity to the router
+- grants RBAC to that identity
+- sets the `scope`
 
-Router sam robi reszte.
+The router does the rest.
 
-### Regional and account failover as first-class capability
+### Regional and account failover as a first-class capability
 
-Failover miedzy:
+Failover across:
 
-- regionami
-- kontami AI
-- wariantami upstreamow
+- regions
+- AI accounts
+- upstream variants
 
-nie jest sztuczka konfiguracyjna, tylko jawna funkcja produktu.
+is a product feature, not a configuration trick.
 
 ### Explainable routing
 
-Kazda decyzja routingu ma byc mozliwa do wyjasnienia:
+Every routing decision must be explainable:
 
-- dlaczego upstream A odpadl
-- dlaczego wybrano upstream B
-- czy powod byl health, quota, `429`, timeout czy policy fallback
+- why upstream A was rejected
+- why upstream B was selected
+- whether the reason was health, quota, `429`, timeout, or policy fallback
 
-## Zakres MVP
+## MVP scope
 
-### W scope
+### In scope
 
 - chat/completions
 - embeddings
-- podstawowy deployment registry
-- health i failover
+- basic deployment registry
+- health and failover
 - Managed Identity
 - API key fallback
-- proste rate limiting i concurrency limiting
+- basic rate limiting and concurrency limiting
 
 ### Out of scope
 
-- workspace danych
+- data workspace
 - prompt management
 - publication/share
-- runtime dla custom apps
+- runtime for custom apps
 - generic integration platform
 
-## Jednozdaniowy positioning
+## One-sentence positioning
 
-To nie ma byc "platforma AI do wszystkiego".
+This should not become "an AI platform for everything".
 
-To ma byc:
+It should become:
 
-> bardzo dobry, dobrze obserwowalny AI traffic router dla Azure i AKS.
+> a very good, highly observable AI traffic router for Azure and AKS
