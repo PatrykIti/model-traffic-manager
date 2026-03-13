@@ -39,3 +39,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 6 | 2026-03-13 | AKS configuration delivery approaches documentation | docs/aks |
 | 7 | 2026-03-13 | Layered testing model and phase mapping | docs/testing |
 | 8 | 2026-03-13 | Cost-aware Azure test infrastructure orchestration model | docs/testing-infra |
+| 9 | 2026-03-13 | Phase 2 single-upstream routing and first proxy path | feature/routing |

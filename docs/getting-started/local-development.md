@@ -23,3 +23,6 @@ Useful first endpoints after startup:
 - `GET /health/live`
 - `GET /health/ready`
 - `GET /deployments`
+- `POST /v1/chat/completions/{deployment_id}`
+
+If you test the Phase 2 `api_key` path locally, expose secret material through environment variables referenced by `env://...` secret refs.

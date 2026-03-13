@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 15 work items
+- **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 50 work items
+- **Done:** 65 work items
 
 ---
 
@@ -57,21 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-009 | Phase 2 Single-Upstream Routing and First Proxy Path | High | Large | First real routing path for chat completions |
-| TASK-009-01 | Chat Proxy Contract and Error Model | High | Medium | Request/response and HTTP error behavior |
-| TASK-009-01-01 | Inbound Request and Passthrough Response Contract | High | Small | Raw request and response passthrough decision |
-| TASK-009-01-02 | Error Taxonomy and HTTP Mapping for the First Proxy Path | High | Small | Minimum failure surface and HTTP mapping |
-| TASK-009-02 | Outbound Invocation and Auth Header Preparation | High | Medium | HTTPX, secret provider, and auth headers |
-| TASK-009-02-01 | Outbound Invoker Contract and `httpx` Implementation | High | Medium | Application port and HTTPX adapter |
-| TASK-009-02-02 | Secret Provider Contract and Env-Backed Bootstrap Implementation | High | Medium | `api_key` secret lookup bootstrap path |
-| TASK-009-02-03 | Auth Header Builder for `none` and `api_key` | High | Small | Auth header logic for Phase 2 |
-| TASK-009-03 | Single-Upstream Selection and `RouteChatCompletion` Use Case | High | Medium | Application routing orchestration |
-| TASK-009-03-01 | Single-Upstream Candidate Selection from the Deployment Registry | High | Small | Deterministic single-upstream choice |
-| TASK-009-03-02 | `RouteChatCompletion` Orchestration and Response Handling | High | Medium | Main use case flow |
-| TASK-009-04 | API Route and Local Integration Proof | High | Medium | FastAPI route and full local proof |
-| TASK-009-04-01 | `routes_chat.py` and Application Wiring | High | Small | Route registration and container wiring |
-| TASK-009-04-02 | `integration-local` Coverage with Mocked Upstream Behavior | High | Medium | Respx-backed end-to-end local tests |
-| TASK-009-05 | Documentation, Task Tracking, and Validation Alignment | High | Small | Final docs and tracking updates after implementation |
 
 ---
 
@@ -136,3 +121,18 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-008-04 | Minimal Azure Resource Sets by Testing Level | High | Small | Azure footprint minimization strategy defined |
 | TASK-008-04-01 | Minimal Resources for `integration-azure` | High | Small | Minimal Azure service set defined |
 | TASK-008-04-02 | Minimal Resources for Fully Ephemeral `e2e-aks` | High | Small | Minimal temporary AKS footprint defined |
+| TASK-009 | Phase 2 Single-Upstream Routing and First Proxy Path | High | Large | First real routing path for chat completions implemented |
+| TASK-009-01 | Chat Proxy Contract and Error Model | High | Medium | Request/response and HTTP error behavior implemented |
+| TASK-009-01-01 | Inbound Request and Passthrough Response Contract | High | Small | Raw request and response passthrough implemented |
+| TASK-009-01-02 | Error Taxonomy and HTTP Mapping for the First Proxy Path | High | Small | Minimum failure surface and HTTP mapping implemented |
+| TASK-009-02 | Outbound Invocation and Auth Header Preparation | High | Medium | HTTPX, secret provider, and auth headers implemented |
+| TASK-009-02-01 | Outbound Invoker Contract and `httpx` Implementation | High | Medium | Application port and HTTPX adapter implemented |
+| TASK-009-02-02 | Secret Provider Contract and Env-Backed Bootstrap Implementation | High | Medium | `api_key` secret lookup bootstrap path implemented |
+| TASK-009-02-03 | Auth Header Builder for `none` and `api_key` | High | Small | Auth header logic for Phase 2 implemented |
+| TASK-009-03 | Single-Upstream Selection and `RouteChatCompletion` Use Case | High | Medium | Application routing orchestration implemented |
+| TASK-009-03-01 | Single-Upstream Candidate Selection from the Deployment Registry | High | Small | Deterministic single-upstream choice implemented |
+| TASK-009-03-02 | `RouteChatCompletion` Orchestration and Response Handling | High | Medium | Main use case flow implemented |
+| TASK-009-04 | API Route and Local Integration Proof | High | Medium | FastAPI route and full local proof implemented |
+| TASK-009-04-01 | `routes_chat.py` and Application Wiring | High | Small | Route registration and container wiring implemented |
+| TASK-009-04-02 | `integration-local` Coverage with Mocked Upstream Behavior | High | Medium | Respx-backed end-to-end local tests implemented |
+| TASK-009-05 | Documentation, Task Tracking, and Validation Alignment | High | Small | Final docs and tracking updates completed |

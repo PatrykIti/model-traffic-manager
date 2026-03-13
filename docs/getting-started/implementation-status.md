@@ -8,12 +8,14 @@ Current repository status:
 - dependency lock and quality tools are configured
 - a typed domain and config foundation is implemented
 - startup validates YAML config and builds a deployment repository
-- health endpoints and `GET /deployments` are covered by tests
+- the first proxy path for chat completions is implemented
+- health endpoints, `GET /deployments`, and `POST /v1/chat/completions/{deployment_id}` are covered by tests
 - public documentation and internal delivery documentation are split
 
 Still ahead:
 
 - routing policies
-- outbound invocation
 - health/failover state management
-- chat and embeddings routing use cases
+- `managed_identity`
+- embeddings
+- multi-upstream failover

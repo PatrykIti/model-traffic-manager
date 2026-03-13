@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-009-03
-**Status:** To Do
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -37,13 +37,13 @@ Scope:
 
 ### TASK-009-04-01: `routes_chat.py` and application wiring
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Create the API route and wire the use case into the container/app state.
 
 ### TASK-009-04-02: `integration-local` coverage with mocked upstream behavior
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Prove the full local request path without real Azure.
 

@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-009-01
-**Status:** To Do
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -26,19 +26,19 @@ Scope:
 
 ### TASK-009-02-01: Outbound invoker contract and `httpx` implementation
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Create the outbound call abstraction and the first `httpx`-based implementation.
 
 ### TASK-009-02-02: Secret provider contract and env-backed bootstrap implementation
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Create the minimal secret resolution path for `api_key` auth.
 
 ### TASK-009-02-03: Auth header builder for `none` and `api_key`
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Create the reusable auth-header path used by the route use case.
 

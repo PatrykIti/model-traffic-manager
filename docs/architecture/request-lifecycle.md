@@ -21,3 +21,4 @@ Current implemented path:
 2. validated config is stored in the bootstrap container
 3. the container exposes a config-backed deployment repository
 4. `GET /deployments` returns deployment summaries from that repository
+5. `POST /v1/chat/completions/{deployment_id}` resolves one upstream, builds auth headers, and proxies the request

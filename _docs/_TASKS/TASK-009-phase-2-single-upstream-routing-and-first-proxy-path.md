@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Large
 **Dependencies:** TASK-005
-**Status:** To Do
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -86,25 +86,25 @@ tests/
 
 ### TASK-009-01: Chat proxy contract and error model
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Define the request/response contract and the error behavior of the first proxy path.
 
 ### TASK-009-02: Outbound invocation and auth header preparation
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Implement the reusable outbound and auth plumbing needed by the first proxy path.
 
 ### TASK-009-03: Single-upstream selection and `RouteChatCompletion` use case
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Implement the first routing use case with a single upstream and deployment lookup.
 
 ### TASK-009-04: API route and local integration proof
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Expose the proxy path through FastAPI and prove it through local integration tests.
 

@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-009
-**Status:** To Do
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -38,13 +38,13 @@ Scope:
 
 ### TASK-009-01-01: Inbound request and passthrough response contract
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Define how much of the OpenAI-style payload is accepted raw and how the outbound response is returned.
 
 ### TASK-009-01-02: Error taxonomy and HTTP mapping for the first proxy path
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Define the error surface and how application errors map to HTTP responses.
 

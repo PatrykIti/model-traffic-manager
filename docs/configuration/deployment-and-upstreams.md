@@ -35,3 +35,11 @@ Current validation rules already enforced by the application:
 Current API surface:
 
 - `GET /deployments` returns the validated deployment registry as deployment summaries
+- `POST /v1/chat/completions/{deployment_id}` proxies to the selected upstream for the deployment
+
+Current bootstrap auth support:
+
+- `none`
+- `api_key` with `secret_ref` resolved through `env://ENV_VAR_NAME`
+
+`managed_identity` remains part of the configuration contract, but the actual outbound auth implementation is planned for a later phase.

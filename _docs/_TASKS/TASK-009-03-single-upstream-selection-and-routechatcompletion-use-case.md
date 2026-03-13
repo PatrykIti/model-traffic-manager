@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-009-02
-**Status:** To Do
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -28,13 +28,13 @@ Scope:
 
 ### TASK-009-03-01: Single-upstream candidate selection from the deployment registry
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Define the minimal selection rule before multi-upstream routing exists.
 
 ### TASK-009-03-02: `RouteChatCompletion` orchestration and response handling
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Implement the first routing use case end-to-end in the application layer.
 
