@@ -2,12 +2,9 @@
 
 # Operations
 
-This section will document how to run and observe the router in practice.
+This section explains how the router should be run and observed.
 
-## Planned pages
+## Pages
 
-- deployment model
-- observability and metrics
-- health management
-- troubleshooting
-- incident response notes
+- [deployment-model.md](./deployment-model.md)
+- [observability-and-health.md](./observability-and-health.md)

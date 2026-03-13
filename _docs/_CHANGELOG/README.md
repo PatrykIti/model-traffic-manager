@@ -33,3 +33,5 @@ The **Index** table below acts as the changelog board and shows what was complet
 |-----|------|-------|------|
 | 1 | 2026-03-13 | Repo governance, task workflow and AGENTS rules | docs/process |
 | 2 | 2026-03-13 | Repository foundation, public docs structure, and English markdown standard | docs/process |
+| 3 | 2026-03-13 | Phase 0 bootstrap planning and task decomposition | docs/planning |
+| 4 | 2026-03-13 | Phase 0 bootstrap implementation and runtime shell | bootstrap |

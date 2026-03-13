@@ -2,12 +2,9 @@
 
 # Routing
 
-This section will document how routing decisions are made.
+This section explains how route selection and failover are expected to behave.
 
-## Planned pages
+## Pages
 
-- tiered failover
-- weighted round robin
-- health states
-- retries, cooldown, and circuit breaker behavior
-- explainable routing decisions
+- [routing-strategy.md](./routing-strategy.md)
+- [failover-and-health.md](./failover-and-health.md)

@@ -21,7 +21,15 @@ The repository is being prepared to host a small, observable, explainable servic
 
 ## Current status
 
-The repository is still in the foundation stage. At the moment it contains the target architecture, routing model, and process rules that will guide the first implementation milestones.
+The repository is in Phase 0 bootstrap. It now contains the first runnable project scaffold, the initial FastAPI shell, quality automation, and the official/internal documentation split.
+
+## Local bootstrap
+
+```text
+make bootstrap
+make check
+make run
+```
 
 ## Quick navigation
 

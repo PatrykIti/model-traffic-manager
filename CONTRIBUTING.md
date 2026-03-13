@@ -40,12 +40,21 @@ pre-commit install
 pre-commit run --all-files
 ```
 
+Canonical local commands:
+
+```text
+make bootstrap
+make check
+make run
+```
+
 ## Branching and pull requests
 
 - Use descriptive branches such as `feature/...`, `fix/...`, or `docs/...`.
 - Keep pull requests focused on one coherent task group.
 - Link the relevant task and subtask IDs in the pull request.
 - Use the repository pull request template.
+- Keep local validation and CI aligned by using the same `make` targets.
 
 ## Documentation expectations
 

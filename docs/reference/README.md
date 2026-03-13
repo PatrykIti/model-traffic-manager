@@ -2,12 +2,9 @@
 
 # Reference
 
-This section will hold stable reference material.
+This section stores stable reference material.
 
-## Planned pages
+## Pages
 
-- API reference
-- configuration reference
-- glossary
-- decision reason catalog
-- operational limits and defaults
+- [glossary.md](./glossary.md)
+- [decision-reasons.md](./decision-reasons.md)

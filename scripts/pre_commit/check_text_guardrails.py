@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-
 MERGE_CONFLICT_MARKERS = ("<<<<<<<", "=======", ">>>>>>>")
 TAB_EXTENSIONS = {".md", ".yaml", ".yml"}
 
@@ -29,7 +28,9 @@ def main(argv: list[str]) -> int:
                 failures.append(f"{path}:{index}: trailing whitespace")
 
             if path.suffix in TAB_EXTENSIONS and "\t" in stripped_newline:
-                failures.append(f"{path}:{index}: tab character is not allowed in {path.suffix} files")
+                failures.append(
+                    f"{path}:{index}: tab character is not allowed in {path.suffix} files"
+                )
 
             for marker in MERGE_CONFLICT_MARKERS:
                 if stripped_newline.startswith(marker):

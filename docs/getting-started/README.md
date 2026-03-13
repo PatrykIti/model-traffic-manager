@@ -2,16 +2,10 @@
 
 # Getting Started
 
-This section will explain:
+This section explains the product at a high level and how to approach the repository during the bootstrap phase.
 
-- what the router does
-- who it is for
-- core concepts needed to read the rest of the documentation
-- how to approach local setup and first implementation milestones once the runtime scaffold exists
+## Pages
 
-## Planned pages
-
-- product overview
-- quick start
-- local development path
-- deployment model summary
+- [overview.md](./overview.md)
+- [local-development.md](./local-development.md)
+- [implementation-status.md](./implementation-status.md)

@@ -26,4 +26,4 @@ This is intentionally separate from `_docs/`, which is the internal delivery spa
 
 ## Status
 
-These sections currently establish the documentation structure and intended ownership. The detailed content will be filled in as the implementation progresses.
+The initial official documentation pages now exist. Each section has a first baseline page set that can evolve together with the implementation.

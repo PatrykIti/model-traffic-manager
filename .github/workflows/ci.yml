@@ -1,0 +1,30 @@
+name: quality
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Sync environment
+        run: uv sync --frozen --python "$(cat .python-version)"
+
+      - name: Run pre-commit
+        run: uv run pre-commit run --all-files
+
+      - name: Run aggregate quality gate
+        run: make check

@@ -2,12 +2,9 @@
 
 # Architecture
 
-This section will document the official system architecture.
+This section explains the system shape that the repository is growing into.
 
-## Planned pages
+## Pages
 
-- system overview
-- request lifecycle
-- domain model
-- clean architecture boundaries
-- runtime components
+- [system-overview.md](./system-overview.md)
+- [request-lifecycle.md](./request-lifecycle.md)

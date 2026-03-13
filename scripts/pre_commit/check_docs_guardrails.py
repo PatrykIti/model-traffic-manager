@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import re
-import sys
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC_ROOTS = (ROOT / "docs", ROOT / "_docs")
@@ -84,7 +82,9 @@ def main() -> int:
             continue
 
         if not has_navigation_controls(markdown_file):
-            failures.append(f"{markdown_file.relative_to(ROOT)}: missing navigation controls near the top")
+            failures.append(
+                f"{markdown_file.relative_to(ROOT)}: missing navigation controls near the top"
+            )
 
         failures.extend(validate_markdown_links(markdown_file))
 

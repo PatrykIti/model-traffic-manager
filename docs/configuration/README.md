@@ -2,12 +2,9 @@
 
 # Configuration
 
-This section will document the public configuration model of the router.
+This section explains the runtime configuration contract of the router.
 
-## Planned pages
+## Pages
 
-- configuration file layout
-- deployment and upstream definitions
-- auth modes
-- validation rules
-- worked examples
+- [configuration-model.md](./configuration-model.md)
+- [deployment-and-upstreams.md](./deployment-and-upstreams.md)
