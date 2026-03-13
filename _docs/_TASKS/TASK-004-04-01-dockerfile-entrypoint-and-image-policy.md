@@ -7,7 +7,7 @@
 **Category:** Runtime Bootstrap
 **Estimated Effort:** Medium
 **Dependencies:** TASK-004-04
-**Status:** **In Progress** (2026-03-13)
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -57,9 +57,9 @@ docker_build():
 - container start command matches local run expectations
 - base image selection respects the no-floating-tag policy
 
-Current note:
+Verification note:
 - Dockerfile and entrypoint were implemented and the base image was pinned by digest.
-- Local `make docker-build` could not be fully verified because the Docker daemon is not running on the current machine.
+- `make docker-build` completed successfully on 2026-03-13.
 
 ---
 

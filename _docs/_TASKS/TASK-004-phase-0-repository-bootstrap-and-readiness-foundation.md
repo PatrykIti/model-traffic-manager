@@ -7,7 +7,7 @@
 **Category:** Repository Foundation
 **Estimated Effort:** Large
 **Dependencies:** TASK-003
-**Status:** **In Progress** (2026-03-13)
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -107,7 +107,7 @@ Align local commands, quality gates, and CI with the bootstrap repository struct
 
 ### TASK-004-04: Local runtime bootstrap assets
 
-**Status:** In Progress (2026-03-13)
+**Status:** Done (2026-03-13)
 
 Create the first container/runtime assets and example configuration inputs for local execution.
 

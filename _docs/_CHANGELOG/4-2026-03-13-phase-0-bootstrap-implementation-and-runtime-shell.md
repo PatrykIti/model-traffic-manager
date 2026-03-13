@@ -30,4 +30,4 @@
 ### Runtime assets
 - Added example router config and environment contract files.
 - Added Dockerfile and entrypoint shell.
-- Container build verification is still pending because the local Docker daemon was not running, so TASK-004, TASK-004-04, and TASK-004-04-01 remain in progress.
+- Verified `make docker-build` successfully, closing the remaining runtime asset verification work.

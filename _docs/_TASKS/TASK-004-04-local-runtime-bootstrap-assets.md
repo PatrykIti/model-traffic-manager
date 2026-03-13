@@ -7,7 +7,7 @@
 **Category:** Runtime Bootstrap
 **Estimated Effort:** Medium
 **Dependencies:** TASK-004-02
-**Status:** **In Progress** (2026-03-13)
+**Status:** **Done** (2026-03-13)
 
 ---
 
@@ -27,7 +27,7 @@ Scope:
 
 ### TASK-004-04-01: Dockerfile, entrypoint, and image policy
 
-**Status:** In Progress (2026-03-13)
+**Status:** Done (2026-03-13)
 
 Create the first container runtime contract for the service.
 

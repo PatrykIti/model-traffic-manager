@@ -48,8 +48,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 ## Statistics
 
 - **To Do:** 0 work items
-- **In Progress:** 3 work items
-- **Done:** 21 work items
+- **In Progress:** 0 work items
+- **Done:** 24 work items
 
 ---
 
@@ -64,9 +64,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-004 | Phase 0 Repository Bootstrap and Readiness Foundation | High | Large | Open until container build is verified end-to-end |
-| TASK-004-04 | Local Runtime Bootstrap Assets | High | Medium | Remaining open because Docker build could not be verified |
-| TASK-004-04-01 | Dockerfile, Entrypoint, and Image Policy | High | Medium | Docker daemon unavailable during final verification |
 
 ---
 
@@ -90,6 +87,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-004-03 | Developer Workflow and Quality Automation | High | Medium | Local commands, CI, and parity completed |
 | TASK-004-03-01 | Canonical Local Commands and Task Runner | High | Medium | `Makefile` and standard command set implemented |
 | TASK-004-03-02 | CI Workflow and Pre-Commit Parity | High | Medium | PR workflow and quality alignment implemented |
+| TASK-004 | Phase 0 Repository Bootstrap and Readiness Foundation | High | Large | Full bootstrap implemented and validated |
+| TASK-004-04 | Local Runtime Bootstrap Assets | High | Medium | Docker and runtime input assets implemented and verified |
+| TASK-004-04-01 | Dockerfile, Entrypoint, and Image Policy | High | Medium | Docker build verified successfully |
 | TASK-004-04-02 | Example Router YAML and Environment Contract | High | Medium | Bootstrap runtime inputs implemented |
 | TASK-004-05 | Official Documentation Foundation in `docs/` | High | Medium | First real official docs content created |
 | TASK-004-05-01 | Getting Started, System Overview, and Implementation Status | High | Medium | Product-facing entry docs implemented |
