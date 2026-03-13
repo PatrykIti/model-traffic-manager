@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 24 work items
+- **Done:** 35 work items
 
 ---
 
@@ -95,3 +95,14 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-004-05-01 | Getting Started, System Overview, and Implementation Status | High | Medium | Product-facing entry docs implemented |
 | TASK-004-05-02 | Architecture, Configuration, Routing, Operations, and Reference Pages | High | Medium | Public technical docs baseline implemented |
 | TASK-004-06 | Smoke Tests and Definition-of-Done Activation | High | Medium | Bootstrap validation and quality gate active |
+| TASK-005 | Phase 1 Domain, Config, and Deployment Registry Bootstrap | High | Large | Domain/config foundation and deployment registry implemented |
+| TASK-005-01 | Domain and Configuration Model Foundation | High | Medium | Typed domain objects and config contract implemented |
+| TASK-005-01-01 | Domain Entities, Value Objects, and Error Contract | High | Medium | Pure domain model and invariants implemented |
+| TASK-005-01-02 | Pydantic Config Models and Semantic Validation Rules | High | Medium | Typed YAML contract and semantic validation implemented |
+| TASK-005-02 | YAML Loader and Config-Backed Deployment Repository | High | Medium | Startup loading and repository wiring implemented |
+| TASK-005-03 | Deployment Listing Use Case and API Surface | High | Medium | First real use case and HTTP surface implemented |
+| TASK-005-03-01 | Application Port, DTO, and Use Case | High | Medium | Listing contract in application layer implemented |
+| TASK-005-03-02 | Deployment Route and Integration Coverage | High | Medium | `/deployments` route and integration proof implemented |
+| TASK-005-04 | Documentation, Task Tracking, and Validation Alignment | High | Small | Docs/task/changelog alignment completed |
+| TASK-006 | AKS Configuration Delivery Documentation | High | Small | Official AKS config delivery guidance added |
+| TASK-006-01 | Official AKS Config Delivery Approaches Page | High | Small | Three AKS config delivery approaches documented |

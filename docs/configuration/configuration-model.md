@@ -11,3 +11,12 @@ The main sections are:
 - `shared_services`
 
 The example bootstrap file is [`configs/example.router.yaml`](../../configs/example.router.yaml). It is intentionally small, but it already follows the semantic configuration model described in `_docs/_MVP/`.
+
+Current runtime behavior:
+
+- the config file is read during startup
+- YAML is parsed and validated into typed Pydantic models
+- invalid config stops application startup
+- validated deployments are mapped into domain entities and exposed through the deployment repository
+
+For AKS deployment patterns and the trade-offs between Secret-, env-, and ConfigMap-based delivery, see [../operations/aks-configuration-delivery.md](../operations/aks-configuration-delivery.md).

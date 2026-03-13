@@ -7,4 +7,5 @@ This section explains how the router should be run and observed.
 ## Pages
 
 - [deployment-model.md](./deployment-model.md)
+- [aks-configuration-delivery.md](./aks-configuration-delivery.md)
 - [observability-and-health.md](./observability-and-health.md)

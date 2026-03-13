@@ -16,3 +16,5 @@ def test_startup_initializes_container() -> None:
     assert response.status_code == 200
     assert container.settings.app_name == "model-traffic-manager"
     assert container.settings.environment == "local"
+    assert container.router_config.router.instance_name == "model-traffic-manager-local"
+    assert container.deployment_repository.get_deployment("local-health-check") is not None

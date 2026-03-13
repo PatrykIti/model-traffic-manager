@@ -11,4 +11,10 @@ High-level shape:
 - `app/infrastructure` for adapters such as config, auth, HTTP, and observability
 - `app/entrypoints` for the FastAPI HTTP surface
 
-The current bootstrap implements only the minimum HTTP shell and runtime wiring needed before feature logic is added.
+What is already implemented:
+
+- startup-time YAML loading and validation
+- typed deployment/upstream/auth configuration models
+- config-backed deployment repository
+- `ListDeployments` as the first application use case
+- `/deployments` and health endpoints as the first HTTP surfaces

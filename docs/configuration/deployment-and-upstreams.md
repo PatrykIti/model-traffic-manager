@@ -22,3 +22,16 @@ Each upstream should expose:
 - `weight`
 - `endpoint`
 - `auth`
+
+Current validation rules already enforced by the application:
+
+- deployment IDs must be unique
+- upstream IDs must be unique inside a deployment
+- `managed_identity` requires `scope`
+- `api_key` requires `header_name` and `secret_ref`
+- `tier` must be greater than or equal to zero
+- `weight` must be greater than zero
+
+Current API surface:
+
+- `GET /deployments` returns the validated deployment registry as deployment summaries

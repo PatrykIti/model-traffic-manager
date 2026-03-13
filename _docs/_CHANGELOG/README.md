@@ -35,3 +35,5 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 2 | 2026-03-13 | Repository foundation, public docs structure, and English markdown standard | docs/process |
 | 3 | 2026-03-13 | Phase 0 bootstrap planning and task decomposition | docs/planning |
 | 4 | 2026-03-13 | Phase 0 bootstrap implementation and runtime shell | bootstrap |
+| 5 | 2026-03-13 | Phase 1 domain, config validation, and deployment registry bootstrap | feature/bootstrap |
+| 6 | 2026-03-13 | AKS configuration delivery approaches documentation | docs/aks |

@@ -9,3 +9,5 @@ The bootstrap repository supports:
 - container build through `make docker-build`
 
 As implementation grows, this section should expand into deployment guidance for AKS and production runtime expectations.
+
+For AKS-specific configuration delivery options, see [aks-configuration-delivery.md](./aks-configuration-delivery.md).
