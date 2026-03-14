@@ -19,6 +19,7 @@ module "aks_cluster" {
   name                = local.aks_name
   resource_group_name = azurerm_resource_group.test.name
   location            = azurerm_resource_group.test.location
+  node_resource_group = local.node_resource_group_name
 
   dns_config = {
     dns_prefix = local.dns_prefix
