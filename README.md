@@ -4,6 +4,8 @@
 
 The repository is being prepared to host a small, observable, explainable service that routes AI traffic across deployments, accounts, and regions without turning into a generic AI platform.
 
+This router is intended to run as an internal LLM traffic manager for the chatbot system backend. It is not the SaaS tenant orchestrator or the tenant control-plane router.
+
 ## What this repository covers
 
 - a single stable endpoint for AI workloads
@@ -17,6 +19,7 @@ The repository is being prepared to host a small, observable, explainable servic
 
 - [docs/README.md](./docs/README.md) contains the official application documentation for operators, contributors, and future users of the router.
 - [_docs/README.md](./_docs/README.md) contains internal planning, task tracking, changelog, and implementation guidance used to evolve the repository with AI-assisted workflows.
+- [_docs/SaaS-Chatbot-System-Orchiestration.md](./_docs/SaaS-Chatbot-System-Orchiestration.md) is an informational internal reference describing the orchestration layer above the chatbot system. It exists to keep the router and future backend work aligned with the expected platform boundary and to remind us that this repository is not the SaaS control-plane router.
 - [AGENTS.md](./AGENTS.md) is the working agreement for repository rules, documentation standards, task workflow, and definition of done.
 
 ## Current status

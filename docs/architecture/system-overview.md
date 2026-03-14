@@ -20,3 +20,8 @@ What is already implemented:
 - `RouteChatCompletion` and `RouteEmbeddings` as the current proxying use cases
 - tiered multi-upstream selection with weighted round robin and request-level failover
 - `/deployments`, `/v1/chat/completions/{deployment_id}`, `/v1/embeddings/{deployment_id}`, and health endpoints as the current HTTP surfaces
+
+Boundary note:
+
+- this router is the internal LLM traffic manager for the chatbot system runtime
+- it is not the SaaS tenant orchestrator, onboarding service, or tenant control-plane router

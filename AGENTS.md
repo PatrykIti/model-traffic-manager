@@ -4,7 +4,7 @@
 
 ## Repository purpose
 
-This repository builds a small, observable AI traffic router for Azure and AKS. It is not a generic AI platform. The MVP focuses on `chat/completions`, `embeddings`, deployment registry, health/failover, Managed Identity, API key fallback, and basic rate/concurrency limiting.
+This repository builds a small, observable AI traffic router for Azure and AKS. It is not a generic AI platform or SaaS control plane. The MVP focuses on `chat/completions`, `embeddings`, deployment registry, health/failover, Managed Identity, API key fallback, and basic rate/concurrency limiting.
 
 ## Language policy
 
@@ -42,6 +42,8 @@ Out of scope for MVP:
 - workspace/prompt management
 - publication/share flows
 - runtime for custom apps
+- tenant onboarding and tenant runtime orchestration
+- customer-tier management and placement logic
 - full MCP platform layer
 - generic OAuth vault
 - cost-based, latency-based, ML-scored, cache-aware, or tenant-aware routing
