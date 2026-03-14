@@ -6,6 +6,7 @@ This directory contains the repository-owned Terraform roots used for higher-lev
 
 Current scope layout:
 
+- `_shared/` for the non-secret environment baseline reused by multiple test scopes
 - `integration-azure/` for lower-cost Azure-backed validation without AKS
 - `e2e-aks/` for fully ephemeral AKS-backed validation
 

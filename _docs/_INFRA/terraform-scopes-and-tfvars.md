@@ -8,6 +8,11 @@ This repository uses a scope-first Terraform layout inspired by `genai-infrastru
 
 We copy the operating model, not the full platform volume.
 
+Module rule:
+
+- prefer existing shared Terraform modules when this repository already has them
+- use raw `resource` blocks only where there is no suitable module yet
+
 ## Core Rule
 
 Each Terraform root should represent one infrastructure concern or validation class.
@@ -40,14 +45,23 @@ Each active scope should expose:
 - `env/`
 - optional scope-local helpers such as `k8s/` or `imports/`
 
+## Module-First Rule
+
+Inside scope roots:
+
+- use your existing Terraform modules for resources such as AKS or user-assigned identities when available
+- keep the scope root thin and orchestration-focused
+- keep raw `resource` blocks only for small glue resources that do not have an existing shared module yet, such as the test resource group
+
 ## Tfvars Contract
 
-`tfvars` are per-scope and per-environment, under `env/`.
+This repository uses one shared non-secret environment baseline plus optional scope-specific overrides.
 
 Current convention:
 
-- `env/dev1.tfvars` for the lower-cost day-to-day validation profile
-- `env/prd1.tfvars` for the stricter or release-oriented profile
+- `infra/_shared/env/dev1.tfvars`
+- `infra/_shared/env/prd1.tfvars`
+- optional scope-local `env/dev1.tfvars` or `env/prd1.tfvars` only when a scope truly needs extra knobs
 
 Sensitive values must not be committed to `tfvars`. Secrets and tenant-specific IDs still come from workflow inputs or GitHub/Azure secret stores.
 
@@ -62,14 +76,25 @@ Keep a slim repeated contract across scopes:
 - `run_id`
 - `tags`
 
-Then keep scope-specific knobs inside that scope only.
+Then keep scope-specific knobs inside that scope only and only when a scope actually needs them.
 
 Examples:
 
-- `infra/integration-azure/env/dev1.tfvars`
+- `infra/_shared/env/dev1.tfvars`
 - `infra/e2e-aks/env/dev1.tfvars`
 
 ## Scope Boundaries in This Repo
+
+### `_shared`
+
+Owns:
+
+- the common non-secret environment baseline reused by multiple validation scopes
+
+Does not own:
+
+- scope-specific AKS or Azure-only settings
+- secrets or run-specific identifiers
 
 ### `integration-azure`
 
@@ -104,12 +129,12 @@ Do not create those scopes before the repository genuinely needs them.
 
 ## Workflow Rule
 
-GitHub workflows should target one scope root at a time and use that scope's `env/*.tfvars`.
+GitHub workflows should target one scope root at a time, always include the shared baseline, and only add scope-local `env/*.tfvars` when that scope has extra settings.
 
 Examples:
 
-- `terraform -chdir=infra/integration-azure ... -var-file=env/dev1.tfvars`
-- `terraform -chdir=infra/e2e-aks ... -var-file=env/dev1.tfvars`
+- `terraform -chdir=infra/integration-azure ... -var-file=../_shared/env/dev1.tfvars`
+- `terraform -chdir=infra/e2e-aks ... -var-file=../_shared/env/dev1.tfvars -var-file=env/dev1.tfvars`
 
 ## Non-Goals
 

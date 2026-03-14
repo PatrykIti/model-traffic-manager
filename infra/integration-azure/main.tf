@@ -4,9 +4,11 @@ resource "azurerm_resource_group" "test" {
   tags     = local.common_tags
 }
 
-resource "azurerm_user_assigned_identity" "router" {
+module "router_identity" {
+  source = "git::https://github.com/PatrykIti/azurerm-terraform-modules//modules/azurerm_user_assigned_identity?ref=UAIv1.0.0"
+
   name                = local.identity_name
-  location            = azurerm_resource_group.test.location
   resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
   tags                = local.common_tags
 }

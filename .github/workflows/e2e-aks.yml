@@ -82,6 +82,7 @@ jobs:
           fi
 
           terraform apply -auto-approve -input=false \
+            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
             -var-file="env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="run_id=${{ github.run_id }}" \
@@ -188,6 +189,7 @@ jobs:
           fi
 
           terraform destroy -auto-approve -input=false \
+            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
             -var-file="env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="run_id=${{ github.run_id }}" \

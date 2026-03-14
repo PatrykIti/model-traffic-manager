@@ -1,6 +1,6 @@
 locals {
   scope_key           = "integration-azure"
-  base_name           = lower(substr("${var.environment}-${var.name_prefix}-${var.run_id}", 0, 42))
+  base_name           = lower(substr("${var.environment}-${local.scope_key}-${var.name_prefix}-${var.run_id}", 0, 42))
   resource_group_name = substr("${local.base_name}-rg", 0, 90)
   identity_name       = substr("${local.base_name}-uai", 0, 64)
   created_on          = timestamp()

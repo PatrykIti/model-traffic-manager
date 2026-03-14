@@ -51,9 +51,9 @@ jobs:
         working-directory: infra/integration-azure
         run: |
           terraform apply -auto-approve -input=false \
-            -var-file="env/${{ inputs.environment }}.tfvars" \
+            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="run_id=${{ github.run_id }}" \
+            -var="run_id=${{ github.run_id }}"
 
       - name: Capture Terraform outputs
         working-directory: infra/integration-azure
@@ -78,6 +78,6 @@ jobs:
         working-directory: infra/integration-azure
         run: |
           terraform destroy -auto-approve -input=false \
-            -var-file="env/${{ inputs.environment }}.tfvars" \
+            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="run_id=${{ github.run_id }}"
