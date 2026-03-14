@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from app.entrypoints.api.error_handlers import register_error_handlers
 from app.entrypoints.api.routes_chat import router as chat_router
 from app.entrypoints.api.routes_deployments import router as deployments_router
+from app.entrypoints.api.routes_embeddings import router as embeddings_router
 from app.entrypoints.api.routes_health import router as health_router
 from app.infrastructure.bootstrap.container import build_container
 from app.infrastructure.config.settings import AppSettings, load_settings
@@ -40,6 +41,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.include_router(chat_router)
+    app.include_router(embeddings_router)
     app.include_router(health_router)
     app.include_router(deployments_router)
     register_error_handlers(app)

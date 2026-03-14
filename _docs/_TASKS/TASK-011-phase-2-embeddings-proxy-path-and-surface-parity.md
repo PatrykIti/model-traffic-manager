@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-009, TASK-010
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -48,19 +48,19 @@ Out of scope:
 
 ### TASK-011-01: Embeddings request/response contract and API surface
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define the embeddings route contract and its parity with the existing chat proxy surface.
 
 ### TASK-011-02: `RouteEmbeddings` use case and outbound reuse
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Implement the embeddings use case by reusing the existing outbound and auth plumbing.
 
 ### TASK-011-03: `integration-local` coverage, docs, and example config alignment
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Prove the new path locally and update the relevant docs and examples.
 
@@ -87,8 +87,12 @@ Prove the new path locally and update the relevant docs and examples.
 ## Documentation Updates Required
 
 - `docs/getting-started/implementation-status.md`
+- `docs/getting-started/overview.md`
+- `docs/getting-started/local-development.md`
+- `docs/architecture/system-overview.md`
 - `docs/architecture/request-lifecycle.md`
 - `docs/configuration/deployment-and-upstreams.md`
+- `README.md`
 - `_docs/_TASKS/TASK-011-phase-2-embeddings-proxy-path-and-surface-parity.md`
 - `_docs/_TASKS/TASK-011-01-embeddings-request-response-contract-and-api-surface.md`
 - `_docs/_TASKS/TASK-011-02-routeembeddings-use-case-and-outbound-reuse.md`

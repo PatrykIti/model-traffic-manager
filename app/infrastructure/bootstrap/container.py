@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from app.application.use_cases.list_deployments import ListDeployments
 from app.application.use_cases.route_chat_completion import RouteChatCompletion
+from app.application.use_cases.route_embeddings import RouteEmbeddings
 from app.infrastructure.auth.auth_header_builder import AuthHeaderBuilder
 from app.infrastructure.auth.env_secret_provider import EnvSecretProvider
 from app.infrastructure.config.deployment_repository import ConfigDeploymentRepository
@@ -23,6 +24,7 @@ class BootstrapContainer:
     auth_header_builder: AuthHeaderBuilder
     outbound_invoker: HttpxOutboundInvoker
     route_chat_completion_use_case: RouteChatCompletion
+    route_embeddings_use_case: RouteEmbeddings
 
 
 def build_container(settings: AppSettings) -> BootstrapContainer:
@@ -38,6 +40,12 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         outbound_invoker=outbound_invoker,
         timeout_ms=router_config.router.timeout_ms,
     )
+    route_embeddings_use_case = RouteEmbeddings(
+        deployment_repository=deployment_repository,
+        auth_header_builder=auth_header_builder,
+        outbound_invoker=outbound_invoker,
+        timeout_ms=router_config.router.timeout_ms,
+    )
     return BootstrapContainer(
         settings=settings,
         router_config=router_config,
@@ -47,4 +55,5 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         auth_header_builder=auth_header_builder,
         outbound_invoker=outbound_invoker,
         route_chat_completion_use_case=route_chat_completion_use_case,
+        route_embeddings_use_case=route_embeddings_use_case,
     )

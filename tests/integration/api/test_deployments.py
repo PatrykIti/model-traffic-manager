@@ -19,5 +19,14 @@ def test_deployments_endpoint_returns_registry_from_config() -> None:
             "upstream_count": 1,
             "providers": ["internal_mock"],
             "regions": ["local"],
-        }
+        },
+        {
+            "id": "local-embeddings-check",
+            "kind": "embeddings",
+            "protocol": "openai_embeddings",
+            "routing_strategy": "tiered_failover",
+            "upstream_count": 1,
+            "providers": ["internal_mock"],
+            "regions": ["local"],
+        },
     ]

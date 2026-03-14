@@ -11,4 +11,4 @@ It is designed to:
 - authenticate outbound calls through Managed Identity whenever possible
 - keep routing decisions observable and explainable
 
-The repository is intentionally being built in stages. The current implementation already covers the runnable shell, deployment registry, and the first real chat completions proxy path, while the next stages add embeddings, Managed Identity, failover, health state, and observability.
+The repository is intentionally being built in stages. The current implementation already covers the runnable shell, deployment registry, and the first real chat completions and embeddings proxy paths, while the next stages add Managed Identity, failover, health state, and observability.

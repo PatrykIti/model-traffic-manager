@@ -16,7 +16,7 @@ Target request flow:
 Current status:
 
 - `GET /deployments` is implemented through the config-backed deployment repository
-- `POST /v1/chat/completions/{deployment_id}` is implemented for deterministic single-upstream routing
+- `POST /v1/chat/completions/{deployment_id}` and `POST /v1/embeddings/{deployment_id}` are implemented for deterministic single-upstream routing
 - health-state loading, failover, retry attempts, metrics, and decision logging are still ahead
 
 Current implemented path:
@@ -26,3 +26,4 @@ Current implemented path:
 3. the container exposes a config-backed deployment repository
 4. `GET /deployments` returns deployment summaries from that repository
 5. `POST /v1/chat/completions/{deployment_id}` resolves one upstream, builds auth headers, and proxies the request
+6. `POST /v1/embeddings/{deployment_id}` follows the same single-upstream bootstrap flow

@@ -18,4 +18,6 @@ def test_startup_initializes_container() -> None:
     assert container.settings.environment == "local"
     assert container.router_config.router.instance_name == "model-traffic-manager-local"
     assert container.deployment_repository.get_deployment("local-health-check") is not None
+    assert container.deployment_repository.get_deployment("local-embeddings-check") is not None
     assert container.route_chat_completion_use_case is not None
+    assert container.route_embeddings_use_case is not None

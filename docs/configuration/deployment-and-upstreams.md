@@ -36,6 +36,7 @@ Current API surface:
 
 - `GET /deployments` returns the validated deployment registry as deployment summaries
 - `POST /v1/chat/completions/{deployment_id}` proxies to the selected upstream for the deployment
+- `POST /v1/embeddings/{deployment_id}` proxies to the selected upstream for the deployment
 
 Current bootstrap auth support:
 

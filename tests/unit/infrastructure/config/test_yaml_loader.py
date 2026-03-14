@@ -13,10 +13,11 @@ def test_yaml_loader_reads_example_config() -> None:
     config = load_router_config(Path("configs/example.router.yaml"))
 
     assert config.router.instance_name == "model-traffic-manager-local"
-    assert len(config.deployments) == 1
+    assert len(config.deployments) == 2
 
     repository = ConfigDeploymentRepository.from_router_config(config)
     assert repository.get_deployment("local-health-check") is not None
+    assert repository.get_deployment("local-embeddings-check") is not None
 
 
 def test_yaml_loader_rejects_invalid_yaml(tmp_path: Path) -> None:

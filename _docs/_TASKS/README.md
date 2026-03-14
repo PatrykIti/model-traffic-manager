@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 40 work items
+- **To Do:** 36 work items
 - **In Progress:** 0 work items
-- **Done:** 68 work items
+- **Done:** 72 work items
 
 ---
 
@@ -57,10 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-011 | Phase 2 Embeddings Proxy Path and Surface Parity | High | Medium | Complete the remaining single-upstream endpoint surface |
-| TASK-011-01 | Embeddings Request/Response Contract and API Surface | High | Small | Add the embeddings route contract and baseline HTTP surface |
-| TASK-011-02 | `RouteEmbeddings` Use Case and Outbound Reuse | High | Medium | Reuse the current outbound and auth plumbing for embeddings |
-| TASK-011-03 | `integration-local` Coverage, Docs, and Example Config Alignment | High | Medium | Local proof and public-doc parity for embeddings |
 | TASK-012 | Phase 3 Managed Identity Outbound Auth and Token Cache | High | Large | Make `managed_identity` a real outbound auth path |
 | TASK-012-01 | Azure Token Provider Contract and In-Memory Cache | High | Medium | Token acquisition and in-process reuse rules |
 | TASK-012-01-01 | Credential Selection and Token Acquisition Semantics | High | Small | Azure credential selection and error translation rules |
@@ -179,3 +175,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-010 | Phase 2 Status Reconciliation and Forward Backlog Expansion | High | Small | Post-Phase-2 cleanup and forward planning completed |
 | TASK-010-01 | Official Documentation and Repository Metadata Reconciliation | High | Small | Stale status wording and tracking mismatch corrected |
 | TASK-010-02 | Forward Task Tree Expansion for the Remaining MVP | High | Small | Task tree extended through the remaining MVP work |
+| TASK-011 | Phase 2 Embeddings Proxy Path and Surface Parity | High | Medium | Second single-upstream proxy path implemented |
+| TASK-011-01 | Embeddings Request/Response Contract and API Surface | High | Small | Embeddings route contract and HTTP surface implemented |
+| TASK-011-02 | `RouteEmbeddings` Use Case and Outbound Reuse | High | Medium | Embeddings use case added on existing outbound/auth plumbing |
+| TASK-011-03 | `integration-local` Coverage, Docs, and Example Config Alignment | High | Medium | Local proof, example config, and docs updated for embeddings |

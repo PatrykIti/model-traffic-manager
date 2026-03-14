@@ -27,5 +27,23 @@ deployments:
         endpoint: https://example.invalid/openai/deployments/local-health-check/chat/completions
         auth:
           mode: none
+  - id: local-embeddings-check
+    kind: embeddings
+    protocol: openai_embeddings
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: local-embeddings-upstream
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/openai/deployments/local-embeddings-check/embeddings
+        auth:
+          mode: none
 
 shared_services: {}

@@ -17,5 +17,5 @@ What is already implemented:
 - typed deployment/upstream/auth configuration models
 - config-backed deployment repository
 - `ListDeployments` as the first application use case
-- `RouteChatCompletion` as the first proxying use case
-- `/deployments`, `/v1/chat/completions/{deployment_id}`, and health endpoints as the current HTTP surfaces
+- `RouteChatCompletion` and `RouteEmbeddings` as the current proxying use cases
+- `/deployments`, `/v1/chat/completions/{deployment_id}`, `/v1/embeddings/{deployment_id}`, and health endpoints as the current HTTP surfaces
