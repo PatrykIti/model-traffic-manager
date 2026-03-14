@@ -1,0 +1,97 @@
+name: integration-azure
+
+on:
+  workflow_dispatch:
+    inputs:
+      location:
+        description: Azure region for the temporary test environment
+        required: true
+        default: westeurope
+      name_prefix:
+        description: Prefix used for temporary Azure resources
+        required: true
+        default: mtm
+      ttl_hours:
+        description: Lifetime tag for the temporary environment
+        required: true
+        default: "6"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  integration-azure:
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Sync environment
+        run: uv sync --frozen --python "$(cat .python-version)"
+
+      - name: Terraform init
+        working-directory: infra/e2e/terraform
+        run: terraform init -input=false
+
+      - name: Terraform apply
+        working-directory: infra/e2e/terraform
+        run: |
+          terraform apply -auto-approve -input=false \
+            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="location=${{ inputs.location }}" \
+            -var="name_prefix=${{ inputs.name_prefix }}" \
+            -var="run_id=${{ github.run_id }}" \
+            -var="test_level=integration-azure" \
+            -var="ttl_hours=${{ inputs.ttl_hours }}"
+
+      - name: Capture Terraform outputs
+        working-directory: infra/e2e/terraform
+        run: terraform output -json > "$RUNNER_TEMP/integration-azure-outputs.json"
+
+      - name: Run Azure-backed integration tests
+        env:
+          RUN_INTEGRATION_AZURE: "1"
+          INTEGRATION_AZURE_SCOPE: https://management.azure.com/.default
+        run: uv run pytest tests/integration_azure -ra
+
+      - name: Upload integration-azure artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-azure-artifacts-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/integration-azure-outputs.json
+
+      - name: Terraform destroy
+        if: always()
+        working-directory: infra/e2e/terraform
+        run: |
+          terraform destroy -auto-approve -input=false \
+            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="location=${{ inputs.location }}" \
+            -var="name_prefix=${{ inputs.name_prefix }}" \
+            -var="run_id=${{ github.run_id }}" \
+            -var="test_level=integration-azure" \
+            -var="ttl_hours=${{ inputs.ttl_hours }}"

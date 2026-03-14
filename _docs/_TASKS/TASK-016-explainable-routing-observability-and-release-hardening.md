@@ -48,7 +48,7 @@ Expose the runtime signals needed for monitoring and troubleshooting.
 
 ### TASK-016-03: `integration-azure` and `e2e-aks` activation
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Turn the previously planned higher-level validation model into real executable coverage.
 

@@ -1,0 +1,37 @@
+name: e2e-azure-janitor
+
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  janitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Authenticate to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Delete expired temporary resource groups
+        shell: bash
+        run: |
+          NOW_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          az group list \
+            --tag codex-repo=model-traffic-manager \
+            --query "[].{name:name, expires_on:tags.expires_on}" \
+            --output tsv |
+          while IFS=$'\t' read -r RESOURCE_GROUP EXPIRES_ON; do
+            if [ -n "$RESOURCE_GROUP" ] && [ -n "$EXPIRES_ON" ] && [[ "$EXPIRES_ON" < "$NOW_UTC" ]]; then
+              az group delete --name "$RESOURCE_GROUP" --yes --no-wait
+            fi
+          done

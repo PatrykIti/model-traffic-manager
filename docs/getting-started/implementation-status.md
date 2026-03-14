@@ -16,10 +16,10 @@ Current repository status:
 - deployment-level request-rate limiting and concurrency limiting are implemented
 - Redis-backed limiter adapters exist behind application ports
 - request correlation, structured runtime events, `/metrics`, and trace foundations are implemented
+- opt-in `integration-azure` and `e2e-aks` workflows plus repo-local higher-level test artifacts are implemented
 - health endpoints, `GET /deployments`, `POST /v1/chat/completions/{deployment_id}`, and `POST /v1/embeddings/{deployment_id}` are covered by tests
 - public documentation and internal delivery documentation are split
 
 Still ahead:
 
-- `integration-azure` and `e2e-aks` activation
 - timeout, pooling, and broader hardening

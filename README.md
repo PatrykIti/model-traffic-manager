@@ -42,10 +42,10 @@ What is already implemented:
 - request correlation with `x-request-id`
 - structured runtime decision events and a Prometheus `/metrics` endpoint
 - trace foundation for inbound requests and outbound model attempts
+- opt-in `integration-azure` and `e2e-aks` workflows plus a repo-local Terraform wrapper for higher-level validation
 
 Still ahead:
 
-- `integration-azure` and `e2e-aks` activation
 - timeout/pool tuning and broader hardening
 
 ## Local bootstrap

@@ -67,6 +67,16 @@ Typical scope:
 - Key Vault integration
 - later, other Azure-native dependencies that the app talks to directly
 
+Current repository activation:
+
+- workflow: `.github/workflows/integration-azure.yml`
+- test suite: `tests/integration_azure/`
+- infra wrapper: `infra/e2e/terraform/` with `test_level=integration-azure`
+
+Default rule:
+
+- this level remains opt-in and is not part of the default PR quality workflow
+
 Minimal Azure footprint should stay intentionally small and feature-driven.
 
 ### 4. `e2e-aks`
@@ -89,6 +99,18 @@ Typical scope:
 - namespace-scoped config delivery
 - pod identity behavior
 - in-cluster startup and health behavior
+
+Current repository activation:
+
+- workflow: `.github/workflows/e2e-aks.yml`
+- janitor workflow: `.github/workflows/e2e-azure-janitor.yml`
+- test suite: `tests/e2e_aks/`
+- Kubernetes runtime assets: `infra/e2e/k8s/`
+- infra wrapper: `infra/e2e/terraform/` with `test_level=e2e-aks`
+
+Default rule:
+
+- this level remains opt-in and is not part of the default PR quality workflow
 
 ## Phase mapping
 
