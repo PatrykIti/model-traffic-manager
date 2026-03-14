@@ -63,22 +63,37 @@ Planned structure for future implementation:
 
 ```text
 infra/
-`-- e2e/
-    `-- terraform/
-        |-- providers.tf
-        |-- versions.tf
-        |-- variables.tf
-        |-- locals.tf
-        |-- main.tf
-        |-- outputs.tf
-        |-- integration-azure.tfvars.example
-        `-- e2e-aks.tfvars.example
+|-- integration-azure/
+|   |-- providers.tf
+|   |-- versions.tf
+|   |-- variables.tf
+|   |-- locals.tf
+|   |-- main.tf
+|   |-- outputs.tf
+|   `-- env/
+|       |-- dev1.tfvars
+|       `-- prd1.tfvars
+`-- e2e-aks/
+    |-- providers.tf
+    |-- versions.tf
+    |-- variables.tf
+    |-- locals.tf
+    |-- main.tf
+    |-- outputs.tf
+    |-- env/
+    |   |-- dev1.tfvars
+    |   `-- prd1.tfvars
+    `-- k8s/
 
 .github/workflows/
 |-- integration-azure.yml
 |-- e2e-aks.yml
 `-- e2e-azure-janitor.yml
 ```
+
+Current note:
+
+- the repository later adopted the scope-first split above under `TASK-017`, replacing the earlier combined wrapper
 
 ---
 

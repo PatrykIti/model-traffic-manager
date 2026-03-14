@@ -1,3 +1,7 @@
+variable "environment" {
+  type = string
+}
+
 variable "subscription_id" {
   type = string
 }
@@ -12,15 +16,6 @@ variable "name_prefix" {
 
 variable "run_id" {
   type = string
-}
-
-variable "test_level" {
-  type = string
-
-  validation {
-    condition     = contains(["integration-azure", "e2e-aks"], var.test_level)
-    error_message = "test_level must be either integration-azure or e2e-aks."
-  }
 }
 
 variable "ttl_hours" {

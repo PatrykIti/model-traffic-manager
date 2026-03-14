@@ -3,22 +3,10 @@ name: e2e-aks
 on:
   workflow_dispatch:
     inputs:
-      location:
-        description: Azure region for the temporary AKS environment
+      environment:
+        description: Scope tfvars profile to use
         required: true
-        default: westeurope
-      name_prefix:
-        description: Prefix used for temporary Azure resources
-        required: true
-        default: mtm
-      ttl_hours:
-        description: Lifetime tag for the temporary environment
-        required: true
-        default: "6"
-      aks_node_vm_size:
-        description: VM size for the AKS system node pool
-        required: true
-        default: Standard_B2s
+        default: dev1
       kubernetes_version:
         description: Optional Kubernetes version override
         required: false
@@ -81,11 +69,11 @@ jobs:
           tags: ${{ env.E2E_IMAGE }}
 
       - name: Terraform init
-        working-directory: infra/e2e/terraform
+        working-directory: infra/e2e-aks
         run: terraform init -input=false
 
       - name: Terraform apply
-        working-directory: infra/e2e/terraform
+        working-directory: infra/e2e-aks
         shell: bash
         run: |
           KUBERNETES_VERSION_ARG=()
@@ -94,17 +82,13 @@ jobs:
           fi
 
           terraform apply -auto-approve -input=false \
+            -var-file="env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="location=${{ inputs.location }}" \
-            -var="name_prefix=${{ inputs.name_prefix }}" \
             -var="run_id=${{ github.run_id }}" \
-            -var="test_level=e2e-aks" \
-            -var="ttl_hours=${{ inputs.ttl_hours }}" \
-            -var="aks_node_vm_size=${{ inputs.aks_node_vm_size }}" \
             "${KUBERNETES_VERSION_ARG[@]}"
 
       - name: Capture Terraform outputs
-        working-directory: infra/e2e/terraform
+        working-directory: infra/e2e-aks
         run: |
           terraform output -json > "$RUNNER_TEMP/e2e-aks-outputs.json"
           echo "RESOURCE_GROUP=$(terraform output -raw resource_group_name)" >> "$GITHUB_ENV"
@@ -138,9 +122,9 @@ jobs:
         run: |
           export E2E_NAMESPACE E2E_IMAGE
           export E2E_UAI_CLIENT_ID="$UAI_CLIENT_ID"
-          envsubst < infra/e2e/k8s/router-serviceaccount.yaml.tmpl | kubectl apply -f -
-          envsubst < infra/e2e/k8s/router-deployment.yaml.tmpl | kubectl apply -f -
-          kubectl apply -n "$E2E_NAMESPACE" -f infra/e2e/k8s/router-service.yaml
+          envsubst < infra/e2e-aks/k8s/router-serviceaccount.yaml.tmpl | kubectl apply -f -
+          envsubst < infra/e2e-aks/k8s/router-deployment.yaml.tmpl | kubectl apply -f -
+          kubectl apply -n "$E2E_NAMESPACE" -f infra/e2e-aks/k8s/router-service.yaml
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/router-app -n "$E2E_NAMESPACE" --timeout=5m
@@ -195,7 +179,7 @@ jobs:
 
       - name: Terraform destroy
         if: always()
-        working-directory: infra/e2e/terraform
+        working-directory: infra/e2e-aks
         shell: bash
         run: |
           KUBERNETES_VERSION_ARG=()
@@ -204,11 +188,7 @@ jobs:
           fi
 
           terraform destroy -auto-approve -input=false \
+            -var-file="env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="location=${{ inputs.location }}" \
-            -var="name_prefix=${{ inputs.name_prefix }}" \
             -var="run_id=${{ github.run_id }}" \
-            -var="test_level=e2e-aks" \
-            -var="ttl_hours=${{ inputs.ttl_hours }}" \
-            -var="aks_node_vm_size=${{ inputs.aks_node_vm_size }}" \
             "${KUBERNETES_VERSION_ARG[@]}"

@@ -12,8 +12,6 @@ resource "azurerm_user_assigned_identity" "router" {
 }
 
 resource "azurerm_kubernetes_cluster" "e2e" {
-  count = var.test_level == "e2e-aks" ? 1 : 0
-
   name                = local.aks_name
   location            = azurerm_resource_group.test.location
   resource_group_name = azurerm_resource_group.test.name

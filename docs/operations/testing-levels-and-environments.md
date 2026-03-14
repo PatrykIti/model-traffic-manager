@@ -71,7 +71,8 @@ Current repository activation:
 
 - workflow: `.github/workflows/integration-azure.yml`
 - test suite: `tests/integration_azure/`
-- infra wrapper: `infra/e2e/terraform/` with `test_level=integration-azure`
+- infra scope: `infra/integration-azure/`
+- scope tfvars: `infra/integration-azure/env/dev1.tfvars` and `infra/integration-azure/env/prd1.tfvars`
 
 Default rule:
 
@@ -105,8 +106,9 @@ Current repository activation:
 - workflow: `.github/workflows/e2e-aks.yml`
 - janitor workflow: `.github/workflows/e2e-azure-janitor.yml`
 - test suite: `tests/e2e_aks/`
-- Kubernetes runtime assets: `infra/e2e/k8s/`
-- infra wrapper: `infra/e2e/terraform/` with `test_level=e2e-aks`
+- Kubernetes runtime assets: `infra/e2e-aks/k8s/`
+- infra scope: `infra/e2e-aks/`
+- scope tfvars: `infra/e2e-aks/env/dev1.tfvars` and `infra/e2e-aks/env/prd1.tfvars`
 
 Default rule:
 

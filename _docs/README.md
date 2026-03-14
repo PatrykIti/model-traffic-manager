@@ -18,6 +18,7 @@ This is intentionally separate from `docs/`, which is reserved for the official 
 ## Sections
 
 - [_MVP/README.md](./_MVP/README.md) for product intent, architecture, stack, configuration, routing, and testing guidance
+- [_INFRA/README.md](./_INFRA/README.md) for internal infrastructure scope and Terraform guidance
 - [_TASKS/README.md](./_TASKS/README.md) for the task board and task authoring rules
 - [_CHANGELOG/README.md](./_CHANGELOG/README.md) for changelog workflow and entry index
 

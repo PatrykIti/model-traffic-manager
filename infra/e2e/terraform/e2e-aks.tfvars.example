@@ -1,8 +1,0 @@
-subscription_id    = "00000000-0000-0000-0000-000000000000"
-location           = "westeurope"
-name_prefix        = "mtm"
-run_id             = "manual"
-test_level         = "e2e-aks"
-ttl_hours          = 6
-kubernetes_version = null
-aks_node_vm_size   = "Standard_B2s"

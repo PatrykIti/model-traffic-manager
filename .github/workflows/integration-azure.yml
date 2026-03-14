@@ -3,18 +3,10 @@ name: integration-azure
 on:
   workflow_dispatch:
     inputs:
-      location:
-        description: Azure region for the temporary test environment
+      environment:
+        description: Scope tfvars profile to use
         required: true
-        default: westeurope
-      name_prefix:
-        description: Prefix used for temporary Azure resources
-        required: true
-        default: mtm
-      ttl_hours:
-        description: Lifetime tag for the temporary environment
-        required: true
-        default: "6"
+        default: dev1
 
 permissions:
   id-token: write
@@ -52,22 +44,19 @@ jobs:
         run: uv sync --frozen --python "$(cat .python-version)"
 
       - name: Terraform init
-        working-directory: infra/e2e/terraform
+        working-directory: infra/integration-azure
         run: terraform init -input=false
 
       - name: Terraform apply
-        working-directory: infra/e2e/terraform
+        working-directory: infra/integration-azure
         run: |
           terraform apply -auto-approve -input=false \
+            -var-file="env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="location=${{ inputs.location }}" \
-            -var="name_prefix=${{ inputs.name_prefix }}" \
             -var="run_id=${{ github.run_id }}" \
-            -var="test_level=integration-azure" \
-            -var="ttl_hours=${{ inputs.ttl_hours }}"
 
       - name: Capture Terraform outputs
-        working-directory: infra/e2e/terraform
+        working-directory: infra/integration-azure
         run: terraform output -json > "$RUNNER_TEMP/integration-azure-outputs.json"
 
       - name: Run Azure-backed integration tests
@@ -86,12 +75,9 @@ jobs:
 
       - name: Terraform destroy
         if: always()
-        working-directory: infra/e2e/terraform
+        working-directory: infra/integration-azure
         run: |
           terraform destroy -auto-approve -input=false \
+            -var-file="env/${{ inputs.environment }}.tfvars" \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="location=${{ inputs.location }}" \
-            -var="name_prefix=${{ inputs.name_prefix }}" \
-            -var="run_id=${{ github.run_id }}" \
-            -var="test_level=integration-azure" \
-            -var="ttl_hours=${{ inputs.ttl_hours }}"
+            -var="run_id=${{ github.run_id }}"

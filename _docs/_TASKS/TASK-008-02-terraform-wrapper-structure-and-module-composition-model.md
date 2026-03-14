@@ -45,16 +45,33 @@ Define which reusable modules are invoked for which test level.
 ## Target Structure
 
 ```text
-infra/e2e/terraform/
-|-- versions.tf
-|-- providers.tf
-|-- variables.tf
-|-- locals.tf
-|-- main.tf
-|-- outputs.tf
-|-- integration-azure.tfvars.example
-`-- e2e-aks.tfvars.example
+infra/
+|-- integration-azure/
+|   |-- versions.tf
+|   |-- providers.tf
+|   |-- variables.tf
+|   |-- locals.tf
+|   |-- main.tf
+|   |-- outputs.tf
+|   `-- env/
+|       |-- dev1.tfvars
+|       `-- prd1.tfvars
+`-- e2e-aks/
+    |-- versions.tf
+    |-- providers.tf
+    |-- variables.tf
+    |-- locals.tf
+    |-- main.tf
+    |-- outputs.tf
+    |-- env/
+    |   |-- dev1.tfvars
+    |   `-- prd1.tfvars
+    `-- k8s/
 ```
+
+Current note:
+
+- the repository later implemented this as a scope-first split under `TASK-017`, replacing the original combined wrapper idea
 
 ---
 

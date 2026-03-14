@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 108 work items
+- **Done:** 116 work items
 
 ---
 
@@ -178,3 +178,11 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-016-03 | `integration-azure` and `e2e-aks` Activation | High | Large | Azure-backed workflows, repo-local wrapper, and higher-level test suites activated |
 | TASK-016-04 | Performance, Timeout Policy, Pool Tuning, and Release Checks | High | Medium | Timeout policy, pool tuning, and release gate implemented |
 | TASK-016 | Explainable Routing, Observability, and Release Hardening | High | Large | Observability, validation activation, and hardening completed |
+| TASK-017 | Terraform Scope Model and Tfvars Alignment | High | Medium | Scope-first Terraform layout and tfvars model aligned |
+| TASK-017-01 | Terraform Scope and Tfvars Guidance | High | Small | Internal guidance for scope boundaries and tfvars rules added |
+| TASK-017-01-01 | Scope Boundaries for Validation Infrastructure | High | Small | Active scope boundaries documented |
+| TASK-017-01-02 | Tfvars Environment-Profile Rules | High | Small | Per-scope env tfvars rules documented |
+| TASK-017-02 | Scope Split for `integration-azure` and `e2e-aks` | High | Medium | Combined wrapper replaced with separate scope roots |
+| TASK-017-02-01 | `integration-azure` Scope Root and Env Tfvars | High | Small | Azure-only scope root and env tfvars implemented |
+| TASK-017-02-02 | `e2e-aks` Scope Root, K8s Assets, and Env Tfvars | High | Small | AKS scope root, manifests, and env tfvars implemented |
+| TASK-017-03 | Workflow and Release-Check Alignment | High | Small | Workflow and release-check paths aligned to the new scopes |

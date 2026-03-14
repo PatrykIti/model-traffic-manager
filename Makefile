@@ -29,8 +29,10 @@ validate-workflows:
 	$(UV) run python scripts/release/validate_github_workflows.py
 
 validate-terraform:
-	terraform -chdir=infra/e2e/terraform init -backend=false
-	terraform -chdir=infra/e2e/terraform validate
+	terraform -chdir=infra/integration-azure init -backend=false
+	terraform -chdir=infra/integration-azure validate
+	terraform -chdir=infra/e2e-aks init -backend=false
+	terraform -chdir=infra/e2e-aks validate
 
 release-check: check validate-workflows validate-terraform
 
