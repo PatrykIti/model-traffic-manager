@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 119 work items
+- **Done:** 128 work items
 
 ---
 
@@ -189,3 +189,11 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-018 | Shared Tfvars Baseline and Scope-Aware Naming | High | Small | Shared baseline tfvars and scope-aware naming implemented |
 | TASK-018-01 | Shared Tfvars Baseline for Validation Scopes | High | Small | Shared non-secret env baseline added for all test types |
 | TASK-018-02 | Scope-Aware Naming and Workflow Alignment | High | Small | Scope-aware naming and workflow tfvars wiring aligned |
+| TASK-019 | Local One-Command Azure-Backed Test Runners | High | Medium | Local apply-test-destroy runners implemented for integration-azure and e2e-aks |
+| TASK-019-01 | Local `integration-azure` Runner | High | Small | One-command Azure-backed local runner implemented |
+| TASK-019-01-01 | Azure CLI Context and Shared Tfvars Resolution | High | Small | Azure CLI context and shared tfvars baseline resolved automatically |
+| TASK-019-01-02 | Apply-Test-Destroy Wrapper for `integration-azure` | High | Small | Guaranteed cleanup wrapper implemented for Azure-backed local runs |
+| TASK-019-02 | Local `e2e-aks` Runner with Guaranteed Cleanup | High | Medium | One-command AKS local runner implemented with cleanup traps |
+| TASK-019-02-01 | GHCR Image Build and AKS Deploy Contract | High | Small | Local GHCR build/push and AKS deploy contract implemented |
+| TASK-019-02-02 | Trap-Based Cleanup and Diagnostics Collection | High | Small | Destroy and diagnostics collection implemented under shell traps |
+| TASK-019-03 | Documentation, Makefile, and Operator Contract | High | Small | Stable commands and operator guidance added for local higher-level runs |

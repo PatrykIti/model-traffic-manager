@@ -51,3 +51,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 18 | 2026-03-14 | Release hardening and final TASK-016 completion | hardening/release |
 | 19 | 2026-03-14 | Terraform scope model and tfvars alignment | infra/structure |
 | 20 | 2026-03-14 | Shared tfvars baseline and scope-aware naming | infra/structure |
+| 21 | 2026-03-14 | Local one-command Azure-backed test runners | workflow/testing |

@@ -2,8 +2,9 @@ SHELL := /bin/bash
 PYTHON_VERSION := $(shell cat .python-version)
 UV_CACHE_DIR ?= /tmp/uv-cache
 UV := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
+ENVIRONMENT ?= dev1
 
-.PHONY: bootstrap lock lint format typecheck test check validate-workflows validate-terraform release-check run docker-build smoke clean
+.PHONY: bootstrap lock lint format typecheck test check validate-workflows validate-terraform release-check integration-azure-local e2e-aks-local run docker-build smoke clean
 
 bootstrap:
 	$(UV) sync --frozen --python "$(PYTHON_VERSION)"
@@ -35,6 +36,12 @@ validate-terraform:
 	terraform -chdir=infra/e2e-aks validate
 
 release-check: check validate-workflows validate-terraform
+
+integration-azure-local:
+	bash scripts/release/run_azure_test_suite.sh integration-azure "$(ENVIRONMENT)"
+
+e2e-aks-local:
+	bash scripts/release/run_azure_test_suite.sh e2e-aks "$(ENVIRONMENT)"
 
 run:
 	$(UV) run uvicorn app.entrypoints.api.main:app --host 0.0.0.0 --port 8000
