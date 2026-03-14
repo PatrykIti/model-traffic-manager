@@ -21,7 +21,7 @@ The repository is being prepared to host a small, observable, explainable servic
 
 ## Current status
 
-The repository has completed the bootstrap and configuration foundation phases and now includes both Phase 2 proxy paths.
+The repository has completed the bootstrap and configuration foundation phases, includes both Phase 2 proxy paths, and now supports Phase 3 Managed Identity outbound auth.
 
 What is already implemented:
 
@@ -30,11 +30,10 @@ What is already implemented:
 - health endpoints and `GET /deployments`
 - `POST /v1/chat/completions/{deployment_id}` with single-upstream selection
 - `POST /v1/embeddings/{deployment_id}` with single-upstream selection
-- outbound auth modes `none` and `api_key`
+- outbound auth modes `none`, `api_key`, and `managed_identity`
 
 Still ahead:
 
-- outbound `managed_identity`
 - tiered multi-upstream routing and failover
 - health-state persistence, cooldown, and circuit breaker behavior
 - rate limiting, concurrency limiting, and richer observability

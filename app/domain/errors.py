@@ -25,6 +25,10 @@ class UnsupportedAuthModeError(DomainError):
     """Raised when the current phase does not support an auth mode."""
 
 
+class TokenAcquisitionError(DomainError):
+    """Raised when the router cannot acquire a token for outbound auth."""
+
+
 class OutboundTimeoutError(DomainError):
     """Raised when the upstream call times out."""
 

@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-012
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -21,13 +21,13 @@ Integrate Managed Identity into the existing auth header builder and runtime wir
 
 ### TASK-012-02-01: Container wiring and config/runtime validation alignment
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Make sure the runtime container and config contract line up with the new auth implementation.
 
 ### TASK-012-02-02: Unit and local integration coverage with credential stubs
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Prove the new auth path without requiring live Azure tokens in default test runs.
 

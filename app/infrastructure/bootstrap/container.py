@@ -7,6 +7,7 @@ from app.application.use_cases.route_chat_completion import RouteChatCompletion
 from app.application.use_cases.route_embeddings import RouteEmbeddings
 from app.infrastructure.auth.auth_header_builder import AuthHeaderBuilder
 from app.infrastructure.auth.env_secret_provider import EnvSecretProvider
+from app.infrastructure.auth.managed_identity_token_provider import ManagedIdentityTokenProvider
 from app.infrastructure.config.deployment_repository import ConfigDeploymentRepository
 from app.infrastructure.config.models import RouterConfigModel
 from app.infrastructure.config.settings import AppSettings
@@ -21,6 +22,7 @@ class BootstrapContainer:
     deployment_repository: ConfigDeploymentRepository
     list_deployments_use_case: ListDeployments
     secret_provider: EnvSecretProvider
+    token_provider: ManagedIdentityTokenProvider
     auth_header_builder: AuthHeaderBuilder
     outbound_invoker: HttpxOutboundInvoker
     route_chat_completion_use_case: RouteChatCompletion
@@ -32,7 +34,11 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
     deployment_repository = ConfigDeploymentRepository.from_router_config(router_config)
     list_deployments_use_case = ListDeployments(deployment_repository=deployment_repository)
     secret_provider = EnvSecretProvider()
-    auth_header_builder = AuthHeaderBuilder(secret_provider=secret_provider)
+    token_provider = ManagedIdentityTokenProvider()
+    auth_header_builder = AuthHeaderBuilder(
+        secret_provider=secret_provider,
+        token_provider=token_provider,
+    )
     outbound_invoker = HttpxOutboundInvoker()
     route_chat_completion_use_case = RouteChatCompletion(
         deployment_repository=deployment_repository,
@@ -52,6 +58,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         deployment_repository=deployment_repository,
         list_deployments_use_case=list_deployments_use_case,
         secret_provider=secret_provider,
+        token_provider=token_provider,
         auth_header_builder=auth_header_builder,
         outbound_invoker=outbound_invoker,
         route_chat_completion_use_case=route_chat_completion_use_case,

@@ -38,9 +38,10 @@ Current API surface:
 - `POST /v1/chat/completions/{deployment_id}` proxies to the selected upstream for the deployment
 - `POST /v1/embeddings/{deployment_id}` proxies to the selected upstream for the deployment
 
-Current bootstrap auth support:
+Current outbound auth support:
 
 - `none`
 - `api_key` with `secret_ref` resolved through `env://ENV_VAR_NAME`
+- `managed_identity` with in-memory token caching keyed by `(auth_mode, client_id, scope)`
 
-`managed_identity` remains part of the configuration contract, but the actual outbound auth implementation is planned for a later phase.
+Managed Identity remains an outbound router concern. It does not imply forwarding client bearer tokens to upstreams.

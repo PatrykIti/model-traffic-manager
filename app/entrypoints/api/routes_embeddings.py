@@ -12,6 +12,7 @@ from app.domain.errors import (
     OutboundConnectionError,
     OutboundTimeoutError,
     SecretResolutionError,
+    TokenAcquisitionError,
     UnsupportedAuthModeError,
 )
 from app.infrastructure.bootstrap.container import BootstrapContainer
@@ -38,6 +39,8 @@ async def embeddings(request: Request, deployment_id: str) -> Response:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except UnsupportedAuthModeError as exc:
         raise HTTPException(status_code=501, detail=str(exc)) from exc
+    except TokenAcquisitionError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     except OutboundTimeoutError as exc:
         raise HTTPException(status_code=504, detail=str(exc)) from exc
     except OutboundConnectionError as exc:

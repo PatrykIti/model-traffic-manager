@@ -42,3 +42,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 9 | 2026-03-13 | Phase 2 single-upstream routing and first proxy path | feature/routing |
 | 10 | 2026-03-14 | Phase 2 status reconciliation and forward backlog expansion | docs/planning |
 | 11 | 2026-03-14 | Phase 2 embeddings proxy path and surface parity | feature/routing |
+| 12 | 2026-03-14 | Phase 3 Managed Identity outbound auth and token cache | feature/auth |

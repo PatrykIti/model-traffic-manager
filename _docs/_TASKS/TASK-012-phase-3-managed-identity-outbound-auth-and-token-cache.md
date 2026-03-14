@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Large
 **Dependencies:** TASK-009, TASK-010
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -47,19 +47,19 @@ Out of scope:
 
 ### TASK-012-01: Azure token provider contract and in-memory cache
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define the token acquisition contract and implement the local in-memory cache behavior.
 
 ### TASK-012-02: Managed Identity auth header integration and bootstrap wiring
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Wire Managed Identity into the auth header builder, container, and runtime validation path.
 
 ### TASK-012-03: Documentation, security contract, and operations guidance
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Explain how the new auth mode works operationally and how it stays separate from client auth.
 

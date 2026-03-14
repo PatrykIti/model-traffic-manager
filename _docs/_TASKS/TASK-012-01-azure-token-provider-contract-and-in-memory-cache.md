@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-012
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -21,13 +21,13 @@ Define how the router acquires and reuses Azure tokens for `managed_identity` au
 
 ### TASK-012-01-01: Credential selection and token acquisition semantics
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define which credential path is used and how token acquisition errors surface back into the application.
 
 ### TASK-012-01-02: Cache key, expiry skew, and refresh behavior
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define when a cached token is reused and when the router proactively refreshes it.
 

@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 36 work items
+- **To Do:** 28 work items
 - **In Progress:** 0 work items
-- **Done:** 72 work items
+- **Done:** 80 work items
 
 ---
 
@@ -57,14 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-012 | Phase 3 Managed Identity Outbound Auth and Token Cache | High | Large | Make `managed_identity` a real outbound auth path |
-| TASK-012-01 | Azure Token Provider Contract and In-Memory Cache | High | Medium | Token acquisition and in-process reuse rules |
-| TASK-012-01-01 | Credential Selection and Token Acquisition Semantics | High | Small | Azure credential selection and error translation rules |
-| TASK-012-01-02 | Cache Key, Expiry Skew, and Refresh Behavior | High | Small | Deterministic token reuse and refresh logic |
-| TASK-012-02 | Managed Identity Auth Header Integration and Bootstrap Wiring | High | Medium | Wire the new auth mode through the runtime |
-| TASK-012-02-01 | Container Wiring and Config/Runtime Validation Alignment | High | Small | Keep config and runtime assumptions synchronized |
-| TASK-012-02-02 | Unit and Local Integration Coverage with Credential Stubs | High | Medium | Default tests without live Azure tokens |
-| TASK-012-03 | Documentation, Security Contract, and Operations Guidance | High | Small | Public explanation of Managed Identity behavior |
 | TASK-013 | Phase 4 Multi-Upstream Routing and Tiered Failover | High | Large | Replace bootstrap selection with the real routing model |
 | TASK-013-01 | Routing Decision Model and Deterministic Selection Policy | High | Medium | Tier-aware selection and balancing model |
 | TASK-013-01-01 | Availability Filtering by State and Tier Grouping | High | Small | Eligibility filtering before balancing |
@@ -179,3 +171,11 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-011-01 | Embeddings Request/Response Contract and API Surface | High | Small | Embeddings route contract and HTTP surface implemented |
 | TASK-011-02 | `RouteEmbeddings` Use Case and Outbound Reuse | High | Medium | Embeddings use case added on existing outbound/auth plumbing |
 | TASK-011-03 | `integration-local` Coverage, Docs, and Example Config Alignment | High | Medium | Local proof, example config, and docs updated for embeddings |
+| TASK-012 | Phase 3 Managed Identity Outbound Auth and Token Cache | High | Large | Managed Identity auth and token cache implemented |
+| TASK-012-01 | Azure Token Provider Contract and In-Memory Cache | High | Medium | Token acquisition and reuse rules implemented |
+| TASK-012-01-01 | Credential Selection and Token Acquisition Semantics | High | Small | Azure credential acquisition wrapped behind a repository port |
+| TASK-012-01-02 | Cache Key, Expiry Skew, and Refresh Behavior | High | Small | In-memory token reuse and refresh behavior implemented |
+| TASK-012-02 | Managed Identity Auth Header Integration and Bootstrap Wiring | High | Medium | Managed Identity wired through auth builder and container |
+| TASK-012-02-01 | Container Wiring and Config/Runtime Validation Alignment | High | Small | Runtime wiring aligned with the existing config contract |
+| TASK-012-02-02 | Unit and Local Integration Coverage with Credential Stubs | High | Medium | Managed Identity path proven locally with stubs |
+| TASK-012-03 | Documentation, Security Contract, and Operations Guidance | High | Small | Official docs updated for Managed Identity behavior |
