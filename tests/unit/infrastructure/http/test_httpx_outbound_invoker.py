@@ -75,3 +75,27 @@ def test_httpx_outbound_invoker_maps_connection_error() -> None:
             headers={},
             timeout_ms=30000,
         )
+
+
+def test_httpx_outbound_invoker_builds_granular_timeout_policy() -> None:
+    invoker = HttpxOutboundInvoker(
+        connect_timeout_ms=2000,
+        write_timeout_ms=4000,
+        pool_timeout_ms=1000,
+    )
+
+    timeout = invoker._build_timeout(30000)
+
+    assert timeout.connect == 2.0
+    assert timeout.read == 30.0
+    assert timeout.write == 4.0
+    assert timeout.pool == 1.0
+
+
+def test_httpx_outbound_invoker_closes_shared_client() -> None:
+    client = httpx.Client()
+    invoker = HttpxOutboundInvoker(client=client)
+
+    invoker.close()
+
+    assert client.is_closed is True

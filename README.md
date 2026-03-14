@@ -43,10 +43,8 @@ What is already implemented:
 - structured runtime decision events and a Prometheus `/metrics` endpoint
 - trace foundation for inbound requests and outbound model attempts
 - opt-in `integration-azure` and `e2e-aks` workflows plus a repo-local Terraform wrapper for higher-level validation
-
-Still ahead:
-
-- timeout/pool tuning and broader hardening
+- persistent outbound HTTP client tuning with explicit connection limits and timeout policy
+- `make release-check` as the current release gate for quality, workflow, and Terraform validation
 
 ## Local bootstrap
 

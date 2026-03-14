@@ -7,7 +7,7 @@
 **Category:** Observability and Hardening
 **Estimated Effort:** Large
 **Dependencies:** TASK-008, TASK-014, TASK-015
-**Status:** **In Progress** (2026-03-14)
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -54,7 +54,7 @@ Turn the previously planned higher-level validation model into real executable c
 
 ### TASK-016-04: Performance, timeout policy, pool tuning, and release checks
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Finish the hardening work needed before treating the router as a stronger release candidate.
 

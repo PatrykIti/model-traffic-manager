@@ -17,9 +17,11 @@ The current runtime includes:
 - structured runtime events for route selection, health updates, limiter rejections, and request completion
 - a Prometheus `/metrics` endpoint
 - trace spans for inbound requests plus outbound model attempt spans
+- a persistent outbound HTTP client with explicit connection-pool and timeout policy
+- `make release-check` as the current release validation command
 
 Future iterations will extend this into:
 
-- Azure-backed validation of observability behavior
+- broader scale and chaos-style validation
 - richer troubleshooting guidance and operator runbooks
-- hardening around exporter configuration and runtime tuning
+- exporter-specific production tuning

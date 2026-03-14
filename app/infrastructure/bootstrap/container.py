@@ -70,7 +70,13 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         secret_provider=secret_provider,
         token_provider=token_provider,
     )
-    outbound_invoker = HttpxOutboundInvoker()
+    outbound_invoker = HttpxOutboundInvoker(
+        connect_timeout_ms=settings.outbound_connect_timeout_ms,
+        write_timeout_ms=settings.outbound_write_timeout_ms,
+        pool_timeout_ms=settings.outbound_pool_timeout_ms,
+        max_connections=settings.outbound_max_connections,
+        max_keepalive_connections=settings.outbound_max_keepalive_connections,
+    )
     failure_classifier = UpstreamFailureClassifier()
     health_state_policy = HealthStatePolicy(
         failure_threshold=router_config.router.health.failure_threshold,

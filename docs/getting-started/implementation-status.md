@@ -17,9 +17,7 @@ Current repository status:
 - Redis-backed limiter adapters exist behind application ports
 - request correlation, structured runtime events, `/metrics`, and trace foundations are implemented
 - opt-in `integration-azure` and `e2e-aks` workflows plus repo-local higher-level test artifacts are implemented
+- outbound HTTP connection-pool tuning and explicit timeout policy are implemented
+- `make release-check` validates the current release gate locally
 - health endpoints, `GET /deployments`, `POST /v1/chat/completions/{deployment_id}`, and `POST /v1/embeddings/{deployment_id}` are covered by tests
 - public documentation and internal delivery documentation are split
-
-Still ahead:
-
-- timeout, pooling, and broader hardening

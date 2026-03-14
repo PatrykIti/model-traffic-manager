@@ -36,6 +36,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             config_path=str(settings.config_path),
         )
         yield
+        container.outbound_invoker.close()
         logger.info("application_shutdown", environment=settings.environment)
 
     app = FastAPI(

@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 1 work item
-- **In Progress:** 1 work item
-- **Done:** 106 work items
+- **To Do:** 0 work items
+- **In Progress:** 0 work items
+- **Done:** 108 work items
 
 ---
 
@@ -57,15 +57,12 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-016-04 | Performance, Timeout Policy, Pool Tuning, and Release Checks | High | Medium | Final hardening before broader release |
-
 ---
 
 ## In Progress
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-016 | Explainable Routing, Observability, and Release Hardening | High | Large | Runtime observability and Azure-backed validation are completed; hardening remains |
 
 ---
 
@@ -179,3 +176,5 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-016-01-02 | Reference Documentation and Troubleshooting Views | High | Small | Decision reason reference expanded for runtime events |
 | TASK-016-02 | Metrics, Traces, and Readiness/Health Observability Expansion | High | Medium | `/metrics`, trace foundation, and observability runtime wiring implemented |
 | TASK-016-03 | `integration-azure` and `e2e-aks` Activation | High | Large | Azure-backed workflows, repo-local wrapper, and higher-level test suites activated |
+| TASK-016-04 | Performance, Timeout Policy, Pool Tuning, and Release Checks | High | Medium | Timeout policy, pool tuning, and release gate implemented |
+| TASK-016 | Explainable Routing, Observability, and Release Hardening | High | Large | Observability, validation activation, and hardening completed |

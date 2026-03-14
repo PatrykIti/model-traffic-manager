@@ -48,3 +48,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 15 | 2026-03-14 | Basic rate limiting and concurrency limiting | feature/limits |
 | 16 | 2026-03-14 | Explainable routing and runtime observability foundation | feature/observability |
 | 17 | 2026-03-14 | Azure-backed validation activation and test harness scaffolding | validation/infra |
+| 18 | 2026-03-14 | Release hardening and final TASK-016 completion | hardening/release |

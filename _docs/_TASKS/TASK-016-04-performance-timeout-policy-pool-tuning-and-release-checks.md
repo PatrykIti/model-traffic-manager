@@ -7,7 +7,7 @@
 **Category:** Hardening
 **Estimated Effort:** Medium
 **Dependencies:** TASK-016
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -34,4 +34,6 @@ Detailed work:
 
 - `docs/operations/observability-and-health.md`
 - `docs/getting-started/implementation-status.md`
+- `docs/getting-started/overview.md`
+- `README.md`
 - `_docs/_TASKS/TASK-016-04-performance-timeout-policy-pool-tuning-and-release-checks.md`

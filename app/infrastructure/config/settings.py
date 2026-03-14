@@ -14,6 +14,11 @@ class AppSettings(BaseSettings):
     reload: bool = False
     config_path: Path = Field(default=Path("configs/example.router.yaml"))
     log_level: str = "INFO"
+    outbound_connect_timeout_ms: int = 5000
+    outbound_write_timeout_ms: int = 30000
+    outbound_pool_timeout_ms: int = 5000
+    outbound_max_connections: int = 100
+    outbound_max_keepalive_connections: int = 20
 
     model_config = SettingsConfigDict(
         env_prefix="MODEL_TRAFFIC_MANAGER_",
