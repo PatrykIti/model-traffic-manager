@@ -8,9 +8,11 @@ from fastapi.responses import JSONResponse, Response
 
 from app.application.dto.embeddings_request import EmbeddingsRequest
 from app.domain.errors import (
+    ConcurrencyLimitExceededError,
     DeploymentNotFound,
     OutboundConnectionError,
     OutboundTimeoutError,
+    RequestRateLimitExceededError,
     SecretResolutionError,
     TokenAcquisitionError,
     UnsupportedAuthModeError,
@@ -38,6 +40,14 @@ async def embeddings(request: Request, deployment_id: str) -> Response:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SecretResolutionError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except RequestRateLimitExceededError as exc:
+        raise HTTPException(
+            status_code=429,
+            detail=str(exc),
+            headers={"Retry-After": str(exc.retry_after_seconds or 1)},
+        ) from exc
+    except ConcurrencyLimitExceededError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     except UnsupportedAuthModeError as exc:
         raise HTTPException(status_code=501, detail=str(exc)) from exc
     except TokenAcquisitionError as exc:

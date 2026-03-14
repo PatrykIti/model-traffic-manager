@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.application.deployment_limit_guard import DeploymentLimitGuard
+from app.application.ports.concurrency_limiter import ConcurrencyLimiter
 from app.application.ports.health_state_repository import HealthStateRepository
+from app.application.ports.request_rate_limiter import RequestRateLimiter
 from app.application.use_cases.list_deployments import ListDeployments
 from app.application.use_cases.route_chat_completion import RouteChatCompletion
 from app.application.use_cases.route_embeddings import RouteEmbeddings
@@ -20,6 +23,8 @@ from app.infrastructure.health.in_memory_health_state_repository import (
     InMemoryHealthStateRepository,
 )
 from app.infrastructure.http.httpx_outbound_invoker import HttpxOutboundInvoker
+from app.infrastructure.limits.in_memory_concurrency_limiter import InMemoryConcurrencyLimiter
+from app.infrastructure.limits.in_memory_request_rate_limiter import InMemoryRequestRateLimiter
 
 
 @dataclass(slots=True)
@@ -31,6 +36,9 @@ class BootstrapContainer:
     secret_provider: EnvSecretProvider
     token_provider: ManagedIdentityTokenProvider
     health_state_repository: HealthStateRepository
+    request_rate_limiter: RequestRateLimiter
+    concurrency_limiter: ConcurrencyLimiter
+    deployment_limit_guard: DeploymentLimitGuard
     auth_header_builder: AuthHeaderBuilder
     outbound_invoker: HttpxOutboundInvoker
     failure_classifier: UpstreamFailureClassifier
@@ -47,6 +55,12 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
     secret_provider = EnvSecretProvider()
     token_provider = ManagedIdentityTokenProvider()
     health_state_repository = InMemoryHealthStateRepository()
+    request_rate_limiter = InMemoryRequestRateLimiter()
+    concurrency_limiter = InMemoryConcurrencyLimiter()
+    deployment_limit_guard = DeploymentLimitGuard(
+        request_rate_limiter=request_rate_limiter,
+        concurrency_limiter=concurrency_limiter,
+    )
     auth_header_builder = AuthHeaderBuilder(
         secret_provider=secret_provider,
         token_provider=token_provider,
@@ -63,6 +77,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         deployment_repository=deployment_repository,
         auth_header_builder=auth_header_builder,
         outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
@@ -75,6 +90,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         deployment_repository=deployment_repository,
         auth_header_builder=auth_header_builder,
         outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
@@ -91,6 +107,9 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         secret_provider=secret_provider,
         token_provider=token_provider,
         health_state_repository=health_state_repository,
+        request_rate_limiter=request_rate_limiter,
+        concurrency_limiter=concurrency_limiter,
+        deployment_limit_guard=deployment_limit_guard,
         auth_header_builder=auth_header_builder,
         outbound_invoker=outbound_invoker,
         failure_classifier=failure_classifier,

@@ -23,6 +23,9 @@ def test_startup_initializes_container() -> None:
     assert container.route_embeddings_use_case is not None
     assert container.token_provider is not None
     assert container.health_state_repository is not None
+    assert container.request_rate_limiter is not None
+    assert container.concurrency_limiter is not None
+    assert container.deployment_limit_guard is not None
     assert container.failure_classifier is not None
     assert container.health_state_policy is not None
     assert container.routing_selector is not None

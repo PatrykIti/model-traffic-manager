@@ -10,6 +10,9 @@ The current runtime includes:
 - in-memory health-state persistence for upstreams
 - cooldown and circuit-open transitions that affect routing eligibility
 - a Redis-backed health-state adapter implementation behind the repository port
+- deployment-level request-rate limiting and concurrency limiting
+- HTTP rejection behavior for limiter saturation (`429` for request-rate, `503` for concurrency)
+- Redis-backed limiter adapters behind the application ports
 
 Future iterations will extend this into:
 

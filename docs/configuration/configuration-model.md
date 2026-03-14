@@ -18,5 +18,11 @@ Current runtime behavior:
 - YAML is parsed and validated into typed Pydantic models
 - invalid config stops application startup
 - validated deployments are mapped into domain entities and exposed through the deployment repository
+- deployment `limits` are enforced for request rate and concurrency on the active proxy paths
+
+The current deployment-level `limits` fields are:
+
+- `max_concurrency`
+- `request_rate_per_second`
 
 For AKS deployment patterns and the trade-offs between Secret-, env-, and ConfigMap-based delivery, see [../operations/aks-configuration-delivery.md](../operations/aks-configuration-delivery.md).

@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-013, TASK-014
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -46,19 +46,19 @@ Out of scope:
 
 ### TASK-015-01: Deployment-level limit contracts and rejection model
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define the application-facing limiter behavior and error surface.
 
 ### TASK-015-02: Local and Redis-backed limiter adapters
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Implement the MVP storage and coordination layer for limits.
 
 ### TASK-015-03: Entrypoint integration, tests, and docs
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Apply the limiters to the HTTP entrypoint and prove the behavior.
 
@@ -85,6 +85,8 @@ Apply the limiters to the HTTP entrypoint and prove the behavior.
 ## Documentation Updates Required
 
 - `docs/configuration/configuration-model.md`
+- `docs/getting-started/overview.md`
+- `README.md`
 - `docs/operations/observability-and-health.md`
 - `docs/getting-started/implementation-status.md`
 - `_docs/_TASKS/TASK-015-basic-rate-limiting-and-concurrency-limiting.md`

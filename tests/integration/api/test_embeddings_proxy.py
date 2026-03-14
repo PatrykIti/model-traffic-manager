@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from app.entrypoints.api.main import create_app
 from app.infrastructure.config.settings import AppSettings
+from app.infrastructure.limits.in_memory_concurrency_limiter import InMemoryConcurrencyLimiter
 
 
 def build_settings(config_path: Path) -> AppSettings:
@@ -330,3 +331,70 @@ shared_services: {}
     assert second_response.status_code == 503
     assert "No healthy upstream" in second_response.json()["detail"]
     assert primary_route.call_count == 1
+
+
+@respx.mock
+def test_embeddings_proxy_returns_503_when_deployment_concurrency_limit_is_exceeded(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class SaturatedConcurrencyLimiter(InMemoryConcurrencyLimiter):
+        def acquire(self, deployment_id: str, max_concurrency: int) -> str | None:
+            return None
+
+    config_path = tmp_path / "router.yaml"
+    config_path.write_text(
+        """
+router:
+  instance_name: concurrency-limit-test
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: limited-embeddings
+    kind: embeddings
+    protocol: openai_embeddings
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 1
+      request_rate_per_second: 10
+    upstreams:
+      - id: upstream-primary
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/embeddings-concurrency
+        auth:
+          mode: none
+
+shared_services: {}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        "app.infrastructure.bootstrap.container.InMemoryConcurrencyLimiter",
+        lambda: SaturatedConcurrencyLimiter(),
+    )
+    upstream_route = respx.post("https://example.invalid/embeddings-concurrency").mock(
+        return_value=httpx.Response(200, json={"data": [{"embedding": [0.9, 1.0]}]})
+    )
+
+    app = create_app(build_settings(config_path))
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/embeddings/limited-embeddings",
+            json={"input": "Hello"},
+        )
+
+    assert response.status_code == 503
+    assert "concurrency limit" in response.json()["detail"]
+    assert upstream_route.call_count == 0

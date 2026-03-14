@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 11 work items
+- **To Do:** 7 work items
 - **In Progress:** 0 work items
-- **Done:** 97 work items
+- **Done:** 101 work items
 
 ---
 
@@ -57,10 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-015 | Basic Rate Limiting and Concurrency Limiting | High | Medium | Remaining MVP limit controls at deployment level |
-| TASK-015-01 | Deployment-Level Limit Contracts and Rejection Model | High | Small | Application-facing limiter contracts |
-| TASK-015-02 | Local and Redis-Backed Limiter Adapters | High | Medium | Limiter storage and coordination implementations |
-| TASK-015-03 | Entrypoint Integration, Tests, and Docs | High | Medium | HTTP enforcement and documentation |
 | TASK-016 | Explainable Routing, Observability, and Release Hardening | High | Large | Make the MVP observable and better validated |
 | TASK-016-01 | Decision Reason Logging, Request Correlation, and Operator Diagnostics | High | Medium | Explainable runtime event model |
 | TASK-016-01-01 | Structured Event Schema for Selection, Failover, Limiter, and Breaker Updates | High | Small | Stable event payloads for core decisions |
@@ -179,3 +175,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-014-02-02 | Redis-Backed Repository Adapter and Persistence Behavior | High | Medium | Redis health-state adapter implemented behind the port |
 | TASK-014-03 | Circuit Breaker Thresholds and Router Integration | High | Medium | Cooldown and circuit-open state integrated into routing |
 | TASK-014-04 | Operations Docs, Observability Hooks, and Validation Alignment | High | Small | Public docs and tracking updated for health-state behavior |
+| TASK-015 | Basic Rate Limiting and Concurrency Limiting | High | Medium | Deployment-level request-rate and concurrency limiting implemented |
+| TASK-015-01 | Deployment-Level Limit Contracts and Rejection Model | High | Small | Application-facing limiter contracts and rejection errors implemented |
+| TASK-015-02 | Local and Redis-Backed Limiter Adapters | High | Medium | In-memory and Redis-backed limiter adapters implemented |
+| TASK-015-03 | Entrypoint Integration, Tests, and Docs | High | Medium | HTTP rejection behavior, tests, and docs updated for limits |

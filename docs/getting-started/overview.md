@@ -11,4 +11,4 @@ It is designed to:
 - authenticate outbound calls through Managed Identity whenever possible
 - keep routing decisions observable and explainable
 
-The repository is intentionally being built in stages. The current implementation already covers the runnable shell, deployment registry, both current proxy paths, Managed Identity outbound auth, tiered multi-upstream failover, and the first health-state behaviors including cooldown and circuit breaking. The next stages focus on limiting and richer observability.
+The repository is intentionally being built in stages. The current implementation already covers the runnable shell, deployment registry, both current proxy paths, Managed Identity outbound auth, tiered multi-upstream failover, health-state behavior including cooldown and circuit breaking, and deployment-level request limiting. The next stages focus on richer observability and higher-level validation.

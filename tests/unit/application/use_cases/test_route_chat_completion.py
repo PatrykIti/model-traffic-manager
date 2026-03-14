@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from app.application.deployment_limit_guard import DeploymentLimitGuard
 from app.application.dto.chat_completion_request import ChatCompletionRequest
 from app.application.dto.outbound_response import OutboundResponse
 from app.application.use_cases.route_chat_completion import RouteChatCompletion
@@ -15,6 +16,8 @@ from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
 from app.infrastructure.health.in_memory_health_state_repository import (
     InMemoryHealthStateRepository,
 )
+from app.infrastructure.limits.in_memory_concurrency_limiter import InMemoryConcurrencyLimiter
+from app.infrastructure.limits.in_memory_request_rate_limiter import InMemoryRequestRateLimiter
 
 
 class FakeDeploymentRepository:
@@ -83,6 +86,13 @@ def build_health_components() -> tuple[
     )
 
 
+def build_limit_guard() -> DeploymentLimitGuard:
+    return DeploymentLimitGuard(
+        request_rate_limiter=InMemoryRequestRateLimiter(now_provider=lambda: 100),
+        concurrency_limiter=InMemoryConcurrencyLimiter(),
+    )
+
+
 def build_deployment(auth_policy: AuthPolicy, *, upstream_count: int = 1) -> Deployment:
     upstreams = tuple(
         Upstream(
@@ -147,10 +157,12 @@ def test_route_chat_completion_returns_outbound_response() -> None:
     auth_builder = FakeAuthHeaderBuilder()
     outbound_invoker = FakeOutboundInvoker()
     health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
     use_case = RouteChatCompletion(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
@@ -184,10 +196,12 @@ def test_route_chat_completion_uses_first_upstream_deterministically() -> None:
     auth_builder = FakeAuthHeaderBuilder()
     outbound_invoker = FakeOutboundInvoker()
     health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
     use_case = RouteChatCompletion(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
@@ -220,10 +234,12 @@ def test_route_chat_completion_supports_api_key_auth() -> None:
     auth_builder = FakeAuthHeaderBuilder()
     outbound_invoker = FakeOutboundInvoker()
     health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
     use_case = RouteChatCompletion(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
@@ -246,10 +262,12 @@ def test_route_chat_completion_supports_api_key_auth() -> None:
 
 def test_route_chat_completion_raises_when_deployment_is_missing() -> None:
     health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
     use_case = RouteChatCompletion(
         deployment_repository=FakeDeploymentRepository({}),
         auth_header_builder=FakeAuthHeaderBuilder(),
         outbound_invoker=FakeOutboundInvoker(),
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
@@ -283,10 +301,12 @@ def test_route_chat_completion_retries_within_same_tier_before_returning() -> No
         }
     )
     health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
     use_case = RouteChatCompletion(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
@@ -322,10 +342,12 @@ def test_route_chat_completion_does_not_retry_non_retriable_response() -> None:
         }
     )
     health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
     use_case = RouteChatCompletion(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
         health_state_repository=health_state_repository,
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,

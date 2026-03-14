@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from app.entrypoints.api.main import create_app
 from app.infrastructure.config.settings import AppSettings
+from app.infrastructure.limits.in_memory_request_rate_limiter import InMemoryRequestRateLimiter
 
 
 def build_settings(config_path: Path) -> AppSettings:
@@ -341,3 +342,72 @@ shared_services: {}
     assert second_response.status_code == 200
     assert primary_route.call_count == 1
     assert secondary_route.call_count == 2
+
+
+@respx.mock
+def test_chat_proxy_returns_429_when_deployment_request_rate_limit_is_exceeded(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "router.yaml"
+    config_path.write_text(
+        """
+router:
+  instance_name: request-rate-limit-test
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: limited-chat
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 1
+    upstreams:
+      - id: upstream-primary
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/chat-rate-limit
+        auth:
+          mode: none
+
+shared_services: {}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    deterministic_limiter = InMemoryRequestRateLimiter(now_provider=lambda: 100)
+    monkeypatch.setattr(
+        "app.infrastructure.bootstrap.container.InMemoryRequestRateLimiter",
+        lambda: deterministic_limiter,
+    )
+    upstream_route = respx.post("https://example.invalid/chat-rate-limit").mock(
+        return_value=httpx.Response(200, json={"id": "chatcmpl-limited", "choices": []})
+    )
+
+    app = create_app(build_settings(config_path))
+    with TestClient(app) as client:
+        first_response = client.post(
+            "/v1/chat/completions/limited-chat",
+            json={"messages": [{"role": "user", "content": "Hello"}]},
+        )
+        second_response = client.post(
+            "/v1/chat/completions/limited-chat",
+            json={"messages": [{"role": "user", "content": "Hello again"}]},
+        )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 429
+    assert second_response.headers["retry-after"] == "1"
+    assert upstream_route.call_count == 1
