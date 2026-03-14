@@ -11,10 +11,12 @@ Current repository status:
 - proxy paths for chat completions and embeddings are implemented
 - outbound auth supports `none`, `api_key`, and `managed_identity`
 - tiered multi-upstream selection and request-level failover are implemented
+- in-memory health-state persistence, cooldown after `429`, and circuit-open behavior are implemented
+- a Redis-backed health-state adapter exists behind the repository port
 - health endpoints, `GET /deployments`, `POST /v1/chat/completions/{deployment_id}`, and `POST /v1/embeddings/{deployment_id}` are covered by tests
 - public documentation and internal delivery documentation are split
 
 Still ahead:
 
-- persistent health/failover state management
-- cooldown and circuit breaker behavior
+- rate limiting and concurrency limiting
+- metrics, traces, and richer decision observability

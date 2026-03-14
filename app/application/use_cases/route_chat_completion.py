@@ -4,14 +4,20 @@ from app.application.dto.chat_completion_request import ChatCompletionRequest
 from app.application.dto.outbound_response import OutboundResponse
 from app.application.ports.auth_header_builder import AuthHeaderBuilderPort
 from app.application.ports.deployment_repository import DeploymentRepository
+from app.application.ports.health_state_repository import HealthStateRepository
 from app.application.ports.outbound_invoker import OutboundInvoker
+from app.domain.entities.upstream import Upstream
 from app.domain.errors import (
     DeploymentNotFound,
     OutboundConnectionError,
     OutboundTimeoutError,
     UpstreamSelectionError,
 )
+from app.domain.services.health_state_policy import HealthStatePolicy
 from app.domain.services.tiered_failover_selector import TieredFailoverSelector
+from app.domain.services.upstream_failure_classifier import UpstreamFailureClassifier
+from app.domain.value_objects.failure_classification import FailureClassification, FailureReason
+from app.domain.value_objects.health_state import HealthState
 
 
 class RouteChatCompletion:
@@ -20,6 +26,9 @@ class RouteChatCompletion:
         deployment_repository: DeploymentRepository,
         auth_header_builder: AuthHeaderBuilderPort,
         outbound_invoker: OutboundInvoker,
+        health_state_repository: HealthStateRepository,
+        failure_classifier: UpstreamFailureClassifier,
+        health_state_policy: HealthStatePolicy,
         routing_selector: TieredFailoverSelector,
         timeout_ms: int,
         max_attempts: int,
@@ -28,6 +37,9 @@ class RouteChatCompletion:
         self._deployment_repository = deployment_repository
         self._auth_header_builder = auth_header_builder
         self._outbound_invoker = outbound_invoker
+        self._health_state_repository = health_state_repository
+        self._failure_classifier = failure_classifier
+        self._health_state_policy = health_state_policy
         self._routing_selector = routing_selector
         self._timeout_ms = timeout_ms
         self._max_attempts = max_attempts
@@ -43,6 +55,7 @@ class RouteChatCompletion:
         if not deployment.upstreams:
             raise UpstreamSelectionError("Deployment does not define any upstreams.")
 
+        states = self._load_states(deployment.id, deployment.upstreams)
         attempted_upstream_ids: set[str] = set()
         last_response: OutboundResponse | None = None
         last_transport_error: OutboundTimeoutError | OutboundConnectionError | None = None
@@ -51,6 +64,7 @@ class RouteChatCompletion:
             selection = self._routing_selector.select(
                 deployment_id=deployment.id,
                 upstreams=deployment.upstreams,
+                states=states,
                 excluded_upstream_ids=frozenset(attempted_upstream_ids),
             )
             if selection is None:
@@ -67,18 +81,57 @@ class RouteChatCompletion:
                     timeout_ms=self._timeout_ms,
                 )
             except (OutboundTimeoutError, OutboundConnectionError) as exc:
+                failure = self._failure_classifier.classify_transport_error(exc)
+                states[selection.upstream.id] = self._health_state_policy.record_failure(
+                    states.get(selection.upstream.id, HealthState()),
+                    failure,
+                )
+                self._health_state_repository.set_state(
+                    deployment.id,
+                    selection.upstream.id,
+                    states[selection.upstream.id],
+                )
                 last_transport_error = exc
-                if not self._can_retry_transport_failure(
+                if not self._can_retry_failure(
+                    failure=failure,
                     attempted_upstream_ids=attempted_upstream_ids,
                     upstream_count=len(deployment.upstreams),
                 ):
                     raise
                 continue
 
-            last_response = response
-            if not self._is_retriable_response(response):
+            if response.status_code < 400:
+                states[selection.upstream.id] = self._health_state_policy.record_success(
+                    states.get(selection.upstream.id, HealthState())
+                )
+                self._health_state_repository.set_state(
+                    deployment.id,
+                    selection.upstream.id,
+                    states[selection.upstream.id],
+                )
                 return response
-            if not self._can_retry_response(
+
+            last_response = response
+            failure = self._failure_classifier.classify_response(
+                status_code=response.status_code,
+                headers=response.headers,
+                json_body=response.json_body,
+                text_body=response.text_body,
+            )
+            if not self._is_retriable_failure(failure, response):
+                return response
+
+            states[selection.upstream.id] = self._health_state_policy.record_failure(
+                states.get(selection.upstream.id, HealthState()),
+                failure,
+            )
+            self._health_state_repository.set_state(
+                deployment.id,
+                selection.upstream.id,
+                states[selection.upstream.id],
+            )
+            if not self._can_retry_failure(
+                failure=failure,
                 attempted_upstream_ids=attempted_upstream_ids,
                 upstream_count=len(deployment.upstreams),
             ):
@@ -88,17 +141,49 @@ class RouteChatCompletion:
             return last_response
         if last_transport_error is not None:
             raise last_transport_error
-        raise UpstreamSelectionError("No upstream could be selected for the request.")
+        raise UpstreamSelectionError("No healthy upstream is currently available for the request.")
 
-    def _is_retriable_response(self, response: OutboundResponse) -> bool:
-        return response.status_code in self._retryable_status_codes
-
-    def _can_retry_response(self, attempted_upstream_ids: set[str], upstream_count: int) -> bool:
-        return len(attempted_upstream_ids) < upstream_count
-
-    def _can_retry_transport_failure(
+    def _is_retriable_failure(
         self,
+        failure: FailureClassification,
+        response: OutboundResponse | None = None,
+    ) -> bool:
+        if not failure.retriable:
+            return False
+        if failure.reason in {
+            FailureReason.TIMEOUT,
+            FailureReason.NETWORK_ERROR,
+            FailureReason.QUOTA_EXHAUSTED,
+        }:
+            return True
+        return response is not None and response.status_code in self._retryable_status_codes
+
+    def _can_retry_failure(
+        self,
+        failure: FailureClassification,
         attempted_upstream_ids: set[str],
         upstream_count: int,
     ) -> bool:
-        return len(attempted_upstream_ids) < upstream_count
+        return failure.retriable and len(attempted_upstream_ids) < upstream_count
+
+    def _load_states(
+        self,
+        deployment_id: str,
+        upstreams: tuple[Upstream, ...],
+    ) -> dict[str, HealthState]:
+        upstream_ids = tuple(upstream.id for upstream in upstreams)
+        states = self._health_state_repository.get_states(deployment_id, upstream_ids)
+        normalized_states: dict[str, HealthState] = {}
+
+        for upstream in upstreams:
+            state = states.get(upstream.id, HealthState())
+            normalized_state = self._health_state_policy.normalize(state)
+            normalized_states[upstream.id] = normalized_state
+            if normalized_state != state:
+                self._health_state_repository.set_state(
+                    deployment_id,
+                    upstream.id,
+                    normalized_state,
+                )
+
+        return normalized_states

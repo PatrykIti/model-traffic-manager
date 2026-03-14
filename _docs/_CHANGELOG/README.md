@@ -44,3 +44,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 11 | 2026-03-14 | Phase 2 embeddings proxy path and surface parity | feature/routing |
 | 12 | 2026-03-14 | Phase 3 Managed Identity outbound auth and token cache | feature/auth |
 | 13 | 2026-03-14 | Phase 4 multi-upstream routing and tiered failover | feature/routing |
+| 14 | 2026-03-14 | Phase 5 failure classification, health state, cooldown, and circuit breaker | feature/health |

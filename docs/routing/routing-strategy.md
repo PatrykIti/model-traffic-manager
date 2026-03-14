@@ -15,4 +15,5 @@ Current implementation status:
 - multi-upstream tier selection is implemented
 - weighted round robin is used inside the selected tier
 - request-level failover can move to another eligible upstream on retriable failures
-- persistent health-state filtering, cooldown, and circuit breaker behavior are still ahead
+- persisted health-state filtering now affects candidate availability
+- cooldown and circuit-open states can block an upstream before selection

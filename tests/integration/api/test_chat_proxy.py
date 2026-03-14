@@ -264,3 +264,80 @@ shared_services: {}
     assert response.status_code == 200
     assert response.json() == {"id": "chatcmpl-failover", "choices": []}
     assert len(fallback_route.calls) == 1
+
+
+@respx.mock
+def test_chat_proxy_skips_rate_limited_upstream_during_cooldown(tmp_path: Path) -> None:
+    config_path = tmp_path / "router.yaml"
+    config_path.write_text(
+        """
+router:
+  instance_name: cooldown-test
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: cooldown-chat
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: upstream-primary-a
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/chat-primary-a
+        auth:
+          mode: none
+      - id: upstream-primary-b
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/chat-primary-b
+        auth:
+          mode: none
+
+shared_services: {}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    primary_route = respx.post("https://example.invalid/chat-primary-a").mock(
+        return_value=httpx.Response(
+            429,
+            headers={"Retry-After": "60"},
+            json={"error": {"message": "too many requests"}},
+        )
+    )
+    secondary_route = respx.post("https://example.invalid/chat-primary-b").mock(
+        return_value=httpx.Response(200, json={"id": "chatcmpl-cooldown", "choices": []})
+    )
+
+    app = create_app(build_settings(config_path))
+    with TestClient(app) as client:
+        first_response = client.post(
+            "/v1/chat/completions/cooldown-chat",
+            json={"messages": [{"role": "user", "content": "Hello"}]},
+        )
+        second_response = client.post(
+            "/v1/chat/completions/cooldown-chat",
+            json={"messages": [{"role": "user", "content": "Hello again"}]},
+        )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert primary_route.call_count == 1
+    assert secondary_route.call_count == 2

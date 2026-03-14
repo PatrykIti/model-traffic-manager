@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-014
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -21,13 +21,13 @@ Define the failure model that drives retries, cooldown, and circuit breaker upda
 
 ### TASK-014-01-01: HTTP, network, and quota signatures and mapping rules
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define how transport, HTTP, and quota-related failures map into router-owned classifications.
 
 ### TASK-014-01-02: `Retry-After` parsing and cooldown semantics
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define how `429` responses influence cooldown state and retry timing.
 

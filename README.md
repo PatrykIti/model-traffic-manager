@@ -21,7 +21,7 @@ The repository is being prepared to host a small, observable, explainable servic
 
 ## Current status
 
-The repository has completed the bootstrap and configuration foundation phases, includes both Phase 2 proxy paths, and now supports Phase 3 Managed Identity outbound auth.
+The repository has completed the bootstrap and configuration foundation phases, includes both Phase 2 proxy paths, supports Phase 3 Managed Identity outbound auth, and now includes the first Phase 5 health-state behavior.
 
 What is already implemented:
 
@@ -32,10 +32,11 @@ What is already implemented:
 - `POST /v1/embeddings/{deployment_id}` with tiered multi-upstream failover
 - outbound auth modes `none`, `api_key`, and `managed_identity`
 - weighted round robin inside the lowest available tier for request selection
+- in-memory health-state persistence, cooldown after `429`, and per-upstream circuit breaker transitions
+- a Redis-backed health-state adapter behind the repository port
 
 Still ahead:
 
-- health-state persistence, cooldown, and circuit breaker behavior
 - rate limiting, concurrency limiting, and richer observability
 
 ## Local bootstrap

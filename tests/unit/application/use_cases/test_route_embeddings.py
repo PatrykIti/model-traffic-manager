@@ -8,8 +8,13 @@ from app.application.use_cases.route_embeddings import RouteEmbeddings
 from app.domain.entities.deployment import Deployment
 from app.domain.entities.upstream import Upstream
 from app.domain.errors import DeploymentNotFound
+from app.domain.services.health_state_policy import HealthStatePolicy
 from app.domain.services.tiered_failover_selector import TieredFailoverSelector
+from app.domain.services.upstream_failure_classifier import UpstreamFailureClassifier
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
+from app.infrastructure.health.in_memory_health_state_repository import (
+    InMemoryHealthStateRepository,
+)
 
 
 class FakeDeploymentRepository:
@@ -65,6 +70,23 @@ class FakeOutboundInvoker:
         )
 
 
+def build_health_components() -> tuple[
+    InMemoryHealthStateRepository,
+    UpstreamFailureClassifier,
+    HealthStatePolicy,
+]:
+    return (
+        InMemoryHealthStateRepository(),
+        UpstreamFailureClassifier(),
+        HealthStatePolicy(
+            failure_threshold=2,
+            cooldown_seconds=30,
+            half_open_after_seconds=60,
+            now_provider=lambda: 100,
+        ),
+    )
+
+
 def build_deployment(auth_policy: AuthPolicy, *, upstream_count: int = 1) -> Deployment:
     upstreams = tuple(
         Upstream(
@@ -95,10 +117,14 @@ def test_route_embeddings_returns_outbound_response() -> None:
     repository = FakeDeploymentRepository({deployment.id: deployment})
     auth_builder = FakeAuthHeaderBuilder()
     outbound_invoker = FakeOutboundInvoker()
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
     use_case = RouteEmbeddings(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
         routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
         max_attempts=3,
@@ -128,10 +154,14 @@ def test_route_embeddings_uses_first_upstream_deterministically() -> None:
     repository = FakeDeploymentRepository({deployment.id: deployment})
     auth_builder = FakeAuthHeaderBuilder()
     outbound_invoker = FakeOutboundInvoker()
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
     use_case = RouteEmbeddings(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
         routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
         max_attempts=3,
@@ -160,10 +190,14 @@ def test_route_embeddings_supports_api_key_auth() -> None:
     repository = FakeDeploymentRepository({deployment.id: deployment})
     auth_builder = FakeAuthHeaderBuilder()
     outbound_invoker = FakeOutboundInvoker()
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
     use_case = RouteEmbeddings(
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
         routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
         max_attempts=3,
@@ -182,10 +216,14 @@ def test_route_embeddings_supports_api_key_auth() -> None:
 
 
 def test_route_embeddings_raises_when_deployment_is_missing() -> None:
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
     use_case = RouteEmbeddings(
         deployment_repository=FakeDeploymentRepository({}),
         auth_header_builder=FakeAuthHeaderBuilder(),
         outbound_invoker=FakeOutboundInvoker(),
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
         routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
         max_attempts=3,
@@ -243,10 +281,14 @@ def test_route_embeddings_retries_into_higher_tier_after_primary_failure() -> No
             ],
         }
     )
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
     use_case = RouteEmbeddings(
         deployment_repository=repository,
         auth_header_builder=FakeAuthHeaderBuilder(),
         outbound_invoker=outbound_invoker,
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
         routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
         max_attempts=3,

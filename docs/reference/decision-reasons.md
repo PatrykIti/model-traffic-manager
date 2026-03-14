@@ -2,10 +2,13 @@
 
 # Decision Reasons
 
-Examples of routing decision reasons expected in the MVP:
+Current routing decision reasons include:
 
-- `selected_primary_healthy`
-- `selected_secondary_primary_rate_limited`
-- `selected_dr_primary_circuit_open`
+- `selected_primary_weighted_round_robin`
+- `selected_failover_tier_weighted_round_robin`
+- `selected_same_tier_retry_candidate`
+- `selected_higher_tier_retry_candidate`
 
-This catalog should grow into a stable reference once route selection is implemented.
+These reasons explain which tier was selected and whether the router stayed in the same tier or moved higher during retry flow.
+
+Future observability work should expand this catalog with emitted event examples and troubleshooting guidance.

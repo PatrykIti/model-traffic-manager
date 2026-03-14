@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Large
 **Dependencies:** TASK-013
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -45,25 +45,25 @@ Out of scope:
 
 ### TASK-014-01: Failure taxonomy and retriable classification
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define the failure model that drives retries and state updates.
 
 ### TASK-014-02: Health state repository and state-transition rules
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Implement how health data is stored and updated across attempts and requests.
 
 ### TASK-014-03: Circuit breaker thresholds and router integration
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Apply the new health state to routing decisions and failover behavior.
 
 ### TASK-014-04: Operations docs, observability hooks, and validation alignment
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Document the health model and prove the behavior through tests and tracking.
 
@@ -90,6 +90,11 @@ Document the health model and prove the behavior through tests and tracking.
 ## Documentation Updates Required
 
 - `docs/routing/failover-and-health.md`
+- `docs/routing/routing-strategy.md`
+- `docs/architecture/request-lifecycle.md`
+- `docs/getting-started/overview.md`
+- `docs/getting-started/implementation-status.md`
+- `README.md`
 - `docs/operations/observability-and-health.md`
 - `docs/reference/decision-reasons.md`
 - `_docs/_TASKS/TASK-014-phase-5-failure-classification-health-state-cooldown-and-circuit-breaker.md`

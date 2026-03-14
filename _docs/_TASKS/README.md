@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 20 work items
+- **To Do:** 11 work items
 - **In Progress:** 0 work items
-- **Done:** 88 work items
+- **Done:** 97 work items
 
 ---
 
@@ -57,15 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-014 | Phase 5 Failure Classification, Health State, Cooldown, and Circuit Breaker | High | Large | Health-aware runtime behavior and persistence |
-| TASK-014-01 | Failure Taxonomy and Retriable Classification | High | Medium | Canonical failure model for retries and state |
-| TASK-014-01-01 | HTTP, Network, and Quota Signatures and Mapping Rules | High | Small | Explicit mapping from failures to router reasons |
-| TASK-014-01-02 | `Retry-After` Parsing and Cooldown Semantics | High | Small | Cooldown rules after `429` |
-| TASK-014-02 | Health State Repository and State-Transition Rules | High | Medium | Shared and local health-state handling |
-| TASK-014-02-01 | In-Memory Bootstrap Repository and Transition Tests | High | Small | Local default health repository |
-| TASK-014-02-02 | Redis-Backed Repository Adapter and Persistence Behavior | High | Medium | Shared health-state persistence adapter |
-| TASK-014-03 | Circuit Breaker Thresholds and Router Integration | High | Medium | Apply breaker state to candidate selection |
-| TASK-014-04 | Operations Docs, Observability Hooks, and Validation Alignment | High | Small | Explain and validate the new health model |
 | TASK-015 | Basic Rate Limiting and Concurrency Limiting | High | Medium | Remaining MVP limit controls at deployment level |
 | TASK-015-01 | Deployment-Level Limit Contracts and Rejection Model | High | Small | Application-facing limiter contracts |
 | TASK-015-02 | Local and Redis-Backed Limiter Adapters | High | Medium | Limiter storage and coordination implementations |
@@ -179,3 +170,12 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-013-02-01 | Retriable vs Non-Retriable Failure Flow | High | Small | Retry rules and stop conditions implemented |
 | TASK-013-02-02 | Decision Reasons and Next-Candidate Transitions | High | Small | Selector reasons and candidate progression implemented |
 | TASK-013-03 | API and Local Integration Coverage with Documentation Alignment | High | Medium | Local failover proof and routing docs updated |
+| TASK-014 | Phase 5 Failure Classification, Health State, Cooldown, and Circuit Breaker | High | Large | Health-aware routing and persistence implemented |
+| TASK-014-01 | Failure Taxonomy and Retriable Classification | High | Medium | Failure classification model and retry semantics implemented |
+| TASK-014-01-01 | HTTP, Network, and Quota Signatures and Mapping Rules | High | Small | Response and transport failure mappings implemented |
+| TASK-014-01-02 | `Retry-After` Parsing and Cooldown Semantics | High | Small | `Retry-After` parsing and cooldown handling implemented |
+| TASK-014-02 | Health State Repository and State-Transition Rules | High | Medium | Health-state persistence and transition policy implemented |
+| TASK-014-02-01 | In-Memory Bootstrap Repository and Transition Tests | High | Small | Default in-memory health repository implemented |
+| TASK-014-02-02 | Redis-Backed Repository Adapter and Persistence Behavior | High | Medium | Redis health-state adapter implemented behind the port |
+| TASK-014-03 | Circuit Breaker Thresholds and Router Integration | High | Medium | Cooldown and circuit-open state integrated into routing |
+| TASK-014-04 | Operations Docs, Observability Hooks, and Validation Alignment | High | Small | Public docs and tracking updated for health-state behavior |

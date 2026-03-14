@@ -22,4 +22,7 @@ Current implementation status:
 
 - request-level failover across multiple upstreams is implemented
 - retriable HTTP and transport failures can move traffic to another eligible upstream
-- health-state persistence, cooldown, and circuit breaker behavior are still ahead
+- in-memory health-state persistence is active in the bootstrap runtime
+- `429` responses can place an upstream into a rate-limited cooldown window
+- repeated retriable failures can open a per-upstream circuit
+- a Redis-backed health-state adapter exists for shared persistence, but the default runtime still uses in-memory state

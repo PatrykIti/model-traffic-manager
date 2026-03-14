@@ -269,3 +269,64 @@ shared_services: {}
     assert response.status_code == 200
     assert response.json() == {"data": [{"embedding": [0.8, 0.9]}]}
     assert len(fallback_route.calls) == 1
+
+
+@respx.mock
+def test_embeddings_proxy_returns_503_when_circuit_is_open(tmp_path: Path) -> None:
+    config_path = tmp_path / "router.yaml"
+    config_path.write_text(
+        """
+router:
+  instance_name: circuit-open-test
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 1
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: circuit-open-embeddings
+    kind: embeddings
+    protocol: openai_embeddings
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: upstream-primary
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/embeddings-primary
+        auth:
+          mode: none
+
+shared_services: {}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    primary_route = respx.post("https://example.invalid/embeddings-primary").mock(
+        return_value=httpx.Response(503, json={"error": "retry"})
+    )
+
+    app = create_app(build_settings(config_path))
+    with TestClient(app) as client:
+        first_response = client.post(
+            "/v1/embeddings/circuit-open-embeddings",
+            json={"input": "Hello"},
+        )
+        second_response = client.post(
+            "/v1/embeddings/circuit-open-embeddings",
+            json={"input": "Hello again"},
+        )
+
+    assert first_response.status_code == 503
+    assert second_response.status_code == 503
+    assert "No healthy upstream" in second_response.json()["detail"]
+    assert primary_route.call_count == 1

@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-014
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -21,13 +21,13 @@ Implement where health state lives and how successes and failures update it.
 
 ### TASK-014-02-01: In-memory bootstrap repository and transition tests
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Introduce a cheap repository for local development and deterministic default tests.
 
 ### TASK-014-02-02: Redis-backed repository adapter and persistence behavior
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Add the MVP persistence adapter for shared health state.
 
