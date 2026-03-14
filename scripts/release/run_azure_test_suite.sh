@@ -70,12 +70,15 @@ e2e_image="${E2E_IMAGE:-}"
 
 cleanup() {
   exit_code=$?
+  destroy_exit_code=0
 
   if [[ -n "$port_forward_pid" ]]; then
+    echo "Cleaning up: stopping port-forward process ${port_forward_pid}"
     kill "$port_forward_pid" >/dev/null 2>&1 || true
   fi
 
   if [[ "$SUITE" == "e2e-aks" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
+    echo "Cleaning up: deleting federated credential router-e2e-${run_id}"
     az identity federated-credential delete \
       --resource-group "$resource_group" \
       --identity-name "$UAI_NAME" \
@@ -83,10 +86,19 @@ cleanup() {
   fi
 
   if [[ "$apply_started" == "1" ]]; then
-    terraform -chdir="$scope_dir" destroy -auto-approve -input=false "${tf_args[@]}" >/dev/null 2>&1 || true
+    echo "Cleaning up: running terraform destroy for ${SUITE}"
+    if ! terraform -chdir="$scope_dir" destroy -auto-approve -input=false "${tf_args[@]}"; then
+      destroy_exit_code=$?
+      echo "Cleanup warning: terraform destroy failed for ${SUITE}" >&2
+    fi
   fi
 
   rm -rf "$tmp_dir"
+
+  if [[ "$exit_code" -eq 0 && "$destroy_exit_code" -ne 0 ]]; then
+    exit "$destroy_exit_code"
+  fi
+
   exit "$exit_code"
 }
 
