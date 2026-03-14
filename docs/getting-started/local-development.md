@@ -26,4 +26,6 @@ Useful first endpoints after startup:
 - `POST /v1/chat/completions/{deployment_id}`
 - `POST /v1/embeddings/{deployment_id}`
 
-If you test the Phase 2 `api_key` path locally, expose secret material through environment variables referenced by `env://...` secret refs.
+If you test the `api_key` path locally, expose secret material through environment variables referenced by `env://...` secret refs.
+
+If you test the `managed_identity` path locally, rely on the Azure credential chain available to the router process. The default repository config still uses `none`, so local startup does not require Azure auth by default.
