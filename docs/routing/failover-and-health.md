@@ -20,5 +20,6 @@ The MVP health model includes:
 
 Current implementation status:
 
-- these health and failover behaviors are planned but not implemented yet
-- the repository currently proxies chat completions through a single selected upstream without health-state persistence
+- request-level failover across multiple upstreams is implemented
+- retriable HTTP and transport failures can move traffic to another eligible upstream
+- health-state persistence, cooldown, and circuit breaker behavior are still ahead

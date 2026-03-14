@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-013
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -21,13 +21,13 @@ Extend the proxy use cases so retriable failures can move across candidates with
 
 ### TASK-013-02-01: Retriable vs non-retriable failure flow
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define when the router attempts another upstream and when it returns immediately.
 
 ### TASK-013-02-02: Decision reasons and next-candidate transitions
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Preserve enough decision context to explain why the router moved to the next candidate.
 

@@ -12,6 +12,7 @@ Core rules:
 
 Current implementation status:
 
-- the full `tiered_failover` policy is not implemented yet
-- the current Phase 2 path uses deterministic single-upstream selection
-- the later routing phases will replace that bootstrap behavior with tier-aware weighted selection and failover
+- multi-upstream tier selection is implemented
+- weighted round robin is used inside the selected tier
+- request-level failover can move to another eligible upstream on retriable failures
+- persistent health-state filtering, cooldown, and circuit breaker behavior are still ahead

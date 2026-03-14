@@ -8,6 +8,7 @@ from app.application.use_cases.route_chat_completion import RouteChatCompletion
 from app.domain.entities.deployment import Deployment
 from app.domain.entities.upstream import Upstream
 from app.domain.errors import DeploymentNotFound
+from app.domain.services.tiered_failover_selector import TieredFailoverSelector
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
 
 
@@ -34,8 +35,10 @@ class FakeAuthHeaderBuilder:
 
 
 class FakeOutboundInvoker:
-    def __init__(self) -> None:
+    def __init__(self, responses: dict[str, list[OutboundResponse]] | None = None) -> None:
         self.last_call: dict[str, object] | None = None
+        self.calls: list[dict[str, object]] = []
+        self._responses = responses or {}
 
     def post_json(
         self,
@@ -44,12 +47,17 @@ class FakeOutboundInvoker:
         headers: dict[str, str],
         timeout_ms: int,
     ) -> OutboundResponse:
-        self.last_call = {
+        call = {
             "endpoint": endpoint,
             "body": body,
             "headers": headers,
             "timeout_ms": timeout_ms,
         }
+        self.last_call = call
+        self.calls.append(call)
+        queued_responses = self._responses.get(endpoint)
+        if queued_responses:
+            return queued_responses.pop(0)
         return OutboundResponse(status_code=200, headers={}, json_body={"ok": True})
 
 
@@ -78,6 +86,39 @@ def build_deployment(auth_policy: AuthPolicy, *, upstream_count: int = 1) -> Dep
     )
 
 
+def build_same_tier_deployment(auth_policy: AuthPolicy) -> Deployment:
+    return Deployment(
+        id="local-health-check",
+        kind="llm",
+        protocol="openai_chat",
+        routing_strategy="tiered_failover",
+        max_concurrency=10,
+        request_rate_per_second=5,
+        upstreams=(
+            Upstream(
+                id="upstream-0",
+                provider="internal_mock",
+                account="local",
+                region="local",
+                tier=0,
+                weight=100,
+                endpoint="https://example.invalid/chat-0",
+                auth=auth_policy,
+            ),
+            Upstream(
+                id="upstream-1",
+                provider="internal_mock",
+                account="local",
+                region="local",
+                tier=0,
+                weight=100,
+                endpoint="https://example.invalid/chat-1",
+                auth=auth_policy,
+            ),
+        ),
+    )
+
+
 def test_route_chat_completion_returns_outbound_response() -> None:
     deployment = build_deployment(AuthPolicy(mode=AuthMode.NONE))
     repository = FakeDeploymentRepository({deployment.id: deployment})
@@ -87,7 +128,10 @@ def test_route_chat_completion_returns_outbound_response() -> None:
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
     )
 
     response = use_case.execute(
@@ -117,7 +161,10 @@ def test_route_chat_completion_uses_first_upstream_deterministically() -> None:
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
     )
 
     use_case.execute(
@@ -146,7 +193,10 @@ def test_route_chat_completion_supports_api_key_auth() -> None:
         deployment_repository=repository,
         auth_header_builder=auth_builder,
         outbound_invoker=outbound_invoker,
+        routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
     )
 
     use_case.execute(
@@ -165,7 +215,10 @@ def test_route_chat_completion_raises_when_deployment_is_missing() -> None:
         deployment_repository=FakeDeploymentRepository({}),
         auth_header_builder=FakeAuthHeaderBuilder(),
         outbound_invoker=FakeOutboundInvoker(),
+        routing_selector=TieredFailoverSelector(),
         timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
     )
 
     with pytest.raises(DeploymentNotFound):
@@ -175,3 +228,75 @@ def test_route_chat_completion_raises_when_deployment_is_missing() -> None:
                 payload={"messages": []},
             )
         )
+
+
+def test_route_chat_completion_retries_within_same_tier_before_returning() -> None:
+    deployment = build_same_tier_deployment(AuthPolicy(mode=AuthMode.NONE))
+    repository = FakeDeploymentRepository({deployment.id: deployment})
+    auth_builder = FakeAuthHeaderBuilder()
+    outbound_invoker = FakeOutboundInvoker(
+        responses={
+            "https://example.invalid/chat-0": [
+                OutboundResponse(status_code=503, headers={}, json_body={"error": "retry"}),
+            ],
+            "https://example.invalid/chat-1": [
+                OutboundResponse(status_code=200, headers={}, json_body={"ok": True}),
+            ],
+        }
+    )
+    use_case = RouteChatCompletion(
+        deployment_repository=repository,
+        auth_header_builder=auth_builder,
+        outbound_invoker=outbound_invoker,
+        routing_selector=TieredFailoverSelector(),
+        timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
+    )
+
+    response = use_case.execute(
+        ChatCompletionRequest(
+            deployment_id="local-health-check",
+            payload={"messages": [{"role": "user", "content": "Hello"}]},
+        )
+    )
+
+    assert response.status_code == 200
+    assert [call["endpoint"] for call in outbound_invoker.calls] == [
+        "https://example.invalid/chat-0",
+        "https://example.invalid/chat-1",
+    ]
+
+
+def test_route_chat_completion_does_not_retry_non_retriable_response() -> None:
+    deployment = build_deployment(AuthPolicy(mode=AuthMode.NONE), upstream_count=2)
+    repository = FakeDeploymentRepository({deployment.id: deployment})
+    auth_builder = FakeAuthHeaderBuilder()
+    outbound_invoker = FakeOutboundInvoker(
+        responses={
+            "https://example.invalid/chat-0": [
+                OutboundResponse(status_code=400, headers={}, json_body={"error": "bad_request"}),
+            ],
+        }
+    )
+    use_case = RouteChatCompletion(
+        deployment_repository=repository,
+        auth_header_builder=auth_builder,
+        outbound_invoker=outbound_invoker,
+        routing_selector=TieredFailoverSelector(),
+        timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
+    )
+
+    response = use_case.execute(
+        ChatCompletionRequest(
+            deployment_id="local-health-check",
+            payload={"messages": [{"role": "user", "content": "Hello"}]},
+        )
+    )
+
+    assert response.status_code == 400
+    assert [call["endpoint"] for call in outbound_invoker.calls] == [
+        "https://example.invalid/chat-0"
+    ]

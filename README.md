@@ -28,13 +28,13 @@ What is already implemented:
 - the runnable FastAPI application shell and quality automation
 - startup-time YAML validation and a config-backed deployment registry
 - health endpoints and `GET /deployments`
-- `POST /v1/chat/completions/{deployment_id}` with single-upstream selection
-- `POST /v1/embeddings/{deployment_id}` with single-upstream selection
+- `POST /v1/chat/completions/{deployment_id}` with tiered multi-upstream failover
+- `POST /v1/embeddings/{deployment_id}` with tiered multi-upstream failover
 - outbound auth modes `none`, `api_key`, and `managed_identity`
+- weighted round robin inside the lowest available tier for request selection
 
 Still ahead:
 
-- tiered multi-upstream routing and failover
 - health-state persistence, cooldown, and circuit breaker behavior
 - rate limiting, concurrency limiting, and richer observability
 

@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Large
 **Dependencies:** TASK-011, TASK-012
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -47,19 +47,19 @@ Out of scope:
 
 ### TASK-013-01: Routing decision model and deterministic selection policy
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Implement the domain and application shape of tier-aware selection.
 
 ### TASK-013-02: Request-attempt orchestration and failover for chat and embeddings
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Teach the use cases to retry across eligible candidates without hiding non-retriable failures.
 
 ### TASK-013-03: API and local integration coverage with documentation alignment
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Prove the new routing path locally and update the official explanation of the strategy.
 

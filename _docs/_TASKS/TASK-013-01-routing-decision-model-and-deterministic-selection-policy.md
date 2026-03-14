@@ -7,7 +7,7 @@
 **Category:** Core Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-013
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -21,13 +21,13 @@ Define the selection policy for multi-upstream deployments before health-state p
 
 ### TASK-013-01-01: Availability filtering by state and tier grouping
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define which upstreams remain eligible for selection before balancing happens.
 
 ### TASK-013-01-02: Weighted round robin implementation and deterministic tests
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Implement balancing inside a tier in a way that remains debuggable and test-friendly.
 

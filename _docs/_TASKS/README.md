@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 28 work items
+- **To Do:** 20 work items
 - **In Progress:** 0 work items
-- **Done:** 80 work items
+- **Done:** 88 work items
 
 ---
 
@@ -57,14 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-013 | Phase 4 Multi-Upstream Routing and Tiered Failover | High | Large | Replace bootstrap selection with the real routing model |
-| TASK-013-01 | Routing Decision Model and Deterministic Selection Policy | High | Medium | Tier-aware selection and balancing model |
-| TASK-013-01-01 | Availability Filtering by State and Tier Grouping | High | Small | Eligibility filtering before balancing |
-| TASK-013-01-02 | Weighted Round Robin Implementation and Deterministic Tests | High | Small | Testable balancing inside one tier |
-| TASK-013-02 | Request-Attempt Orchestration and Failover for Chat and Embeddings | High | Medium | Retry flow across candidates |
-| TASK-013-02-01 | Retriable vs Non-Retriable Failure Flow | High | Small | Retry rules and stop conditions |
-| TASK-013-02-02 | Decision Reasons and Next-Candidate Transitions | High | Small | Preserve explainable failover context |
-| TASK-013-03 | API and Local Integration Coverage with Documentation Alignment | High | Medium | Local proof and routing-doc updates |
 | TASK-014 | Phase 5 Failure Classification, Health State, Cooldown, and Circuit Breaker | High | Large | Health-aware runtime behavior and persistence |
 | TASK-014-01 | Failure Taxonomy and Retriable Classification | High | Medium | Canonical failure model for retries and state |
 | TASK-014-01-01 | HTTP, Network, and Quota Signatures and Mapping Rules | High | Small | Explicit mapping from failures to router reasons |
@@ -179,3 +171,11 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-012-02-01 | Container Wiring and Config/Runtime Validation Alignment | High | Small | Runtime wiring aligned with the existing config contract |
 | TASK-012-02-02 | Unit and Local Integration Coverage with Credential Stubs | High | Medium | Managed Identity path proven locally with stubs |
 | TASK-012-03 | Documentation, Security Contract, and Operations Guidance | High | Small | Official docs updated for Managed Identity behavior |
+| TASK-013 | Phase 4 Multi-Upstream Routing and Tiered Failover | High | Large | Tiered selection and request-level failover implemented |
+| TASK-013-01 | Routing Decision Model and Deterministic Selection Policy | High | Medium | Tier-aware selector and balancing model implemented |
+| TASK-013-01-01 | Availability Filtering by State and Tier Grouping | High | Small | Lowest-tier candidate grouping behavior implemented |
+| TASK-013-01-02 | Weighted Round Robin Implementation and Deterministic Tests | High | Small | Deterministic weighted rotation implemented and tested |
+| TASK-013-02 | Request-Attempt Orchestration and Failover for Chat and Embeddings | High | Medium | Retry flow across same-tier and higher-tier candidates implemented |
+| TASK-013-02-01 | Retriable vs Non-Retriable Failure Flow | High | Small | Retry rules and stop conditions implemented |
+| TASK-013-02-02 | Decision Reasons and Next-Candidate Transitions | High | Small | Selector reasons and candidate progression implemented |
+| TASK-013-03 | API and Local Integration Coverage with Documentation Alignment | High | Medium | Local failover proof and routing docs updated |

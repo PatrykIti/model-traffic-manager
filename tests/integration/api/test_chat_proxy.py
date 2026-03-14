@@ -196,3 +196,71 @@ shared_services: {}
     assert response.status_code == 200
     assert response.json() == {"id": "chatcmpl-789", "choices": []}
     assert route.calls[0].request.headers["authorization"] == "Bearer managed-identity-token"
+
+
+@respx.mock
+def test_chat_proxy_fails_over_to_next_upstream_on_retryable_status(tmp_path: Path) -> None:
+    config_path = tmp_path / "router.yaml"
+    config_path.write_text(
+        """
+router:
+  instance_name: failover-test
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: failover-chat
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: upstream-primary
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/chat-primary
+        auth:
+          mode: none
+      - id: upstream-secondary
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 1
+        weight: 100
+        endpoint: https://example.invalid/chat-secondary
+        auth:
+          mode: none
+
+shared_services: {}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    respx.post("https://example.invalid/chat-primary").mock(
+        return_value=httpx.Response(503, json={"error": "retry"})
+    )
+    fallback_route = respx.post("https://example.invalid/chat-secondary").mock(
+        return_value=httpx.Response(200, json={"id": "chatcmpl-failover", "choices": []})
+    )
+
+    app = create_app(build_settings(config_path))
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/chat/completions/failover-chat",
+            json={"messages": [{"role": "user", "content": "Hello"}]},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {"id": "chatcmpl-failover", "choices": []}
+    assert len(fallback_route.calls) == 1
