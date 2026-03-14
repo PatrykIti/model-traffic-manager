@@ -10,4 +10,8 @@ Core rules:
 - distribute traffic inside a tier with weighted round robin
 - keep routing decisions explainable
 
-The routing shell is not implemented yet, but the repository is being prepared specifically for this model.
+Current implementation status:
+
+- the full `tiered_failover` policy is not implemented yet
+- the current Phase 2 path uses deterministic single-upstream selection
+- the later routing phases will replace that bootstrap behavior with tier-aware weighted selection and failover

@@ -17,3 +17,8 @@ The MVP health model includes:
 - circuit breaker per upstream
 - retry only for retriable failures
 - observable decision reasons for failover
+
+Current implementation status:
+
+- these health and failover behaviors are planned but not implemented yet
+- the repository currently proxies chat completions through a single selected upstream without health-state persistence

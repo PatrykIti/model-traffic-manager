@@ -13,7 +13,11 @@ Target request flow:
 7. health/metrics are updated
 8. response is returned
 
-During bootstrap, only the health route path is implemented, but the repository structure is already shaped for the full lifecycle above.
+Current status:
+
+- `GET /deployments` is implemented through the config-backed deployment repository
+- `POST /v1/chat/completions/{deployment_id}` is implemented for deterministic single-upstream routing
+- health-state loading, failover, retry attempts, metrics, and decision logging are still ahead
 
 Current implemented path:
 

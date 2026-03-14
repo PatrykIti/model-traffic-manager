@@ -110,7 +110,7 @@ Expose the proxy path through FastAPI and prove it through local integration tes
 
 ### TASK-009-05: Documentation, task tracking, and validation alignment
 
-**Status:** To Do
+**Status:** Done (2026-03-13)
 
 Update official docs, internal task tracking, and changelog after the implementation is complete.
 

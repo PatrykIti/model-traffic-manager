@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 0 work items
+- **To Do:** 40 work items
 - **In Progress:** 0 work items
-- **Done:** 65 work items
+- **Done:** 68 work items
 
 ---
 
@@ -57,6 +57,46 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
+| TASK-011 | Phase 2 Embeddings Proxy Path and Surface Parity | High | Medium | Complete the remaining single-upstream endpoint surface |
+| TASK-011-01 | Embeddings Request/Response Contract and API Surface | High | Small | Add the embeddings route contract and baseline HTTP surface |
+| TASK-011-02 | `RouteEmbeddings` Use Case and Outbound Reuse | High | Medium | Reuse the current outbound and auth plumbing for embeddings |
+| TASK-011-03 | `integration-local` Coverage, Docs, and Example Config Alignment | High | Medium | Local proof and public-doc parity for embeddings |
+| TASK-012 | Phase 3 Managed Identity Outbound Auth and Token Cache | High | Large | Make `managed_identity` a real outbound auth path |
+| TASK-012-01 | Azure Token Provider Contract and In-Memory Cache | High | Medium | Token acquisition and in-process reuse rules |
+| TASK-012-01-01 | Credential Selection and Token Acquisition Semantics | High | Small | Azure credential selection and error translation rules |
+| TASK-012-01-02 | Cache Key, Expiry Skew, and Refresh Behavior | High | Small | Deterministic token reuse and refresh logic |
+| TASK-012-02 | Managed Identity Auth Header Integration and Bootstrap Wiring | High | Medium | Wire the new auth mode through the runtime |
+| TASK-012-02-01 | Container Wiring and Config/Runtime Validation Alignment | High | Small | Keep config and runtime assumptions synchronized |
+| TASK-012-02-02 | Unit and Local Integration Coverage with Credential Stubs | High | Medium | Default tests without live Azure tokens |
+| TASK-012-03 | Documentation, Security Contract, and Operations Guidance | High | Small | Public explanation of Managed Identity behavior |
+| TASK-013 | Phase 4 Multi-Upstream Routing and Tiered Failover | High | Large | Replace bootstrap selection with the real routing model |
+| TASK-013-01 | Routing Decision Model and Deterministic Selection Policy | High | Medium | Tier-aware selection and balancing model |
+| TASK-013-01-01 | Availability Filtering by State and Tier Grouping | High | Small | Eligibility filtering before balancing |
+| TASK-013-01-02 | Weighted Round Robin Implementation and Deterministic Tests | High | Small | Testable balancing inside one tier |
+| TASK-013-02 | Request-Attempt Orchestration and Failover for Chat and Embeddings | High | Medium | Retry flow across candidates |
+| TASK-013-02-01 | Retriable vs Non-Retriable Failure Flow | High | Small | Retry rules and stop conditions |
+| TASK-013-02-02 | Decision Reasons and Next-Candidate Transitions | High | Small | Preserve explainable failover context |
+| TASK-013-03 | API and Local Integration Coverage with Documentation Alignment | High | Medium | Local proof and routing-doc updates |
+| TASK-014 | Phase 5 Failure Classification, Health State, Cooldown, and Circuit Breaker | High | Large | Health-aware runtime behavior and persistence |
+| TASK-014-01 | Failure Taxonomy and Retriable Classification | High | Medium | Canonical failure model for retries and state |
+| TASK-014-01-01 | HTTP, Network, and Quota Signatures and Mapping Rules | High | Small | Explicit mapping from failures to router reasons |
+| TASK-014-01-02 | `Retry-After` Parsing and Cooldown Semantics | High | Small | Cooldown rules after `429` |
+| TASK-014-02 | Health State Repository and State-Transition Rules | High | Medium | Shared and local health-state handling |
+| TASK-014-02-01 | In-Memory Bootstrap Repository and Transition Tests | High | Small | Local default health repository |
+| TASK-014-02-02 | Redis-Backed Repository Adapter and Persistence Behavior | High | Medium | Shared health-state persistence adapter |
+| TASK-014-03 | Circuit Breaker Thresholds and Router Integration | High | Medium | Apply breaker state to candidate selection |
+| TASK-014-04 | Operations Docs, Observability Hooks, and Validation Alignment | High | Small | Explain and validate the new health model |
+| TASK-015 | Basic Rate Limiting and Concurrency Limiting | High | Medium | Remaining MVP limit controls at deployment level |
+| TASK-015-01 | Deployment-Level Limit Contracts and Rejection Model | High | Small | Application-facing limiter contracts |
+| TASK-015-02 | Local and Redis-Backed Limiter Adapters | High | Medium | Limiter storage and coordination implementations |
+| TASK-015-03 | Entrypoint Integration, Tests, and Docs | High | Medium | HTTP enforcement and documentation |
+| TASK-016 | Explainable Routing, Observability, and Release Hardening | High | Large | Make the MVP observable and better validated |
+| TASK-016-01 | Decision Reason Logging, Request Correlation, and Operator Diagnostics | High | Medium | Explainable runtime event model |
+| TASK-016-01-01 | Structured Event Schema for Selection, Failover, Limiter, and Breaker Updates | High | Small | Stable event payloads for core decisions |
+| TASK-016-01-02 | Reference Documentation and Troubleshooting Views | High | Small | Operator-facing reading guide for decision data |
+| TASK-016-02 | Metrics, Traces, and Readiness/Health Observability Expansion | High | Medium | Prometheus, OpenTelemetry, and richer health signals |
+| TASK-016-03 | `integration-azure` and `e2e-aks` Activation | High | Large | Turn planned higher-level tests into real coverage |
+| TASK-016-04 | Performance, Timeout Policy, Pool Tuning, and Release Checks | High | Medium | Final hardening before broader release |
 
 ---
 
@@ -136,3 +176,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-009-04-01 | `routes_chat.py` and Application Wiring | High | Small | Route registration and container wiring implemented |
 | TASK-009-04-02 | `integration-local` Coverage with Mocked Upstream Behavior | High | Medium | Respx-backed end-to-end local tests implemented |
 | TASK-009-05 | Documentation, Task Tracking, and Validation Alignment | High | Small | Final docs and tracking updates completed |
+| TASK-010 | Phase 2 Status Reconciliation and Forward Backlog Expansion | High | Small | Post-Phase-2 cleanup and forward planning completed |
+| TASK-010-01 | Official Documentation and Repository Metadata Reconciliation | High | Small | Stale status wording and tracking mismatch corrected |
+| TASK-010-02 | Forward Task Tree Expansion for the Remaining MVP | High | Small | Task tree extended through the remaining MVP work |

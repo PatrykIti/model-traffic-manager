@@ -21,7 +21,23 @@ The repository is being prepared to host a small, observable, explainable servic
 
 ## Current status
 
-The repository is in Phase 0 bootstrap. It now contains the first runnable project scaffold, the initial FastAPI shell, quality automation, and the official/internal documentation split.
+The repository has completed the bootstrap and configuration foundation phases and now includes the first Phase 2 proxy path.
+
+What is already implemented:
+
+- the runnable FastAPI application shell and quality automation
+- startup-time YAML validation and a config-backed deployment registry
+- health endpoints and `GET /deployments`
+- `POST /v1/chat/completions/{deployment_id}` with single-upstream selection
+- outbound auth modes `none` and `api_key`
+
+Still ahead:
+
+- `POST /v1/embeddings/{deployment_id}`
+- outbound `managed_identity`
+- tiered multi-upstream routing and failover
+- health-state persistence, cooldown, and circuit breaker behavior
+- rate limiting, concurrency limiting, and richer observability
 
 ## Local bootstrap
 
