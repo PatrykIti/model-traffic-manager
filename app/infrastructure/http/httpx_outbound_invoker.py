@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from typing import Any
 
 import httpx
+from opentelemetry import trace
 
 from app.application.dto.outbound_response import OutboundResponse
 from app.domain.errors import OutboundConnectionError, OutboundTimeoutError
@@ -18,9 +19,13 @@ class HttpxOutboundInvoker:
         timeout_ms: int,
     ) -> OutboundResponse:
         timeout = timeout_ms / 1000
+        tracer = trace.get_tracer(__name__)
         try:
-            with httpx.Client(timeout=timeout) as client:
-                response = client.post(endpoint, json=body, headers=dict(headers))
+            with tracer.start_as_current_span("outbound_http_post_json") as span:
+                span.set_attribute("http.url", endpoint)
+                span.set_attribute("router.timeout_ms", timeout_ms)
+                with httpx.Client(timeout=timeout) as client:
+                    response = client.post(endpoint, json=body, headers=dict(headers))
         except httpx.TimeoutException as exc:
             raise OutboundTimeoutError(f"Upstream request timed out: {exc}") from exc
         except httpx.RequestError as exc:

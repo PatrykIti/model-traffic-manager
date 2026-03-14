@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 7 work items
-- **In Progress:** 0 work items
-- **Done:** 101 work items
+- **To Do:** 2 work items
+- **In Progress:** 1 work item
+- **Done:** 105 work items
 
 ---
 
@@ -57,11 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-016 | Explainable Routing, Observability, and Release Hardening | High | Large | Make the MVP observable and better validated |
-| TASK-016-01 | Decision Reason Logging, Request Correlation, and Operator Diagnostics | High | Medium | Explainable runtime event model |
-| TASK-016-01-01 | Structured Event Schema for Selection, Failover, Limiter, and Breaker Updates | High | Small | Stable event payloads for core decisions |
-| TASK-016-01-02 | Reference Documentation and Troubleshooting Views | High | Small | Operator-facing reading guide for decision data |
-| TASK-016-02 | Metrics, Traces, and Readiness/Health Observability Expansion | High | Medium | Prometheus, OpenTelemetry, and richer health signals |
 | TASK-016-03 | `integration-azure` and `e2e-aks` Activation | High | Large | Turn planned higher-level tests into real coverage |
 | TASK-016-04 | Performance, Timeout Policy, Pool Tuning, and Release Checks | High | Medium | Final hardening before broader release |
 
@@ -71,6 +66,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
+| TASK-016 | Explainable Routing, Observability, and Release Hardening | High | Large | Runtime observability foundation completed; Azure activation and hardening remain |
 
 ---
 
@@ -179,3 +175,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-015-01 | Deployment-Level Limit Contracts and Rejection Model | High | Small | Application-facing limiter contracts and rejection errors implemented |
 | TASK-015-02 | Local and Redis-Backed Limiter Adapters | High | Medium | In-memory and Redis-backed limiter adapters implemented |
 | TASK-015-03 | Entrypoint Integration, Tests, and Docs | High | Medium | HTTP rejection behavior, tests, and docs updated for limits |
+| TASK-016-01 | Decision Reason Logging, Request Correlation, and Operator Diagnostics | High | Medium | Runtime decision events and request correlation implemented |
+| TASK-016-01-01 | Structured Event Schema for Selection, Failover, Limiter, and Breaker Updates | High | Small | Runtime event schema implemented in code and docs |
+| TASK-016-01-02 | Reference Documentation and Troubleshooting Views | High | Small | Decision reason reference expanded for runtime events |
+| TASK-016-02 | Metrics, Traces, and Readiness/Health Observability Expansion | High | Medium | `/metrics`, trace foundation, and observability runtime wiring implemented |

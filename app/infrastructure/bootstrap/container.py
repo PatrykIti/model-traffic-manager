@@ -6,6 +6,7 @@ from app.application.deployment_limit_guard import DeploymentLimitGuard
 from app.application.ports.concurrency_limiter import ConcurrencyLimiter
 from app.application.ports.health_state_repository import HealthStateRepository
 from app.application.ports.request_rate_limiter import RequestRateLimiter
+from app.application.ports.runtime_event_recorder import RuntimeEventRecorder
 from app.application.use_cases.list_deployments import ListDeployments
 from app.application.use_cases.route_chat_completion import RouteChatCompletion
 from app.application.use_cases.route_embeddings import RouteEmbeddings
@@ -25,6 +26,7 @@ from app.infrastructure.health.in_memory_health_state_repository import (
 from app.infrastructure.http.httpx_outbound_invoker import HttpxOutboundInvoker
 from app.infrastructure.limits.in_memory_concurrency_limiter import InMemoryConcurrencyLimiter
 from app.infrastructure.limits.in_memory_request_rate_limiter import InMemoryRequestRateLimiter
+from app.infrastructure.observability.runtime_event_recorder import StructuredRuntimeEventRecorder
 
 
 @dataclass(slots=True)
@@ -39,6 +41,7 @@ class BootstrapContainer:
     request_rate_limiter: RequestRateLimiter
     concurrency_limiter: ConcurrencyLimiter
     deployment_limit_guard: DeploymentLimitGuard
+    runtime_event_recorder: RuntimeEventRecorder
     auth_header_builder: AuthHeaderBuilder
     outbound_invoker: HttpxOutboundInvoker
     failure_classifier: UpstreamFailureClassifier
@@ -57,9 +60,11 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
     health_state_repository = InMemoryHealthStateRepository()
     request_rate_limiter = InMemoryRequestRateLimiter()
     concurrency_limiter = InMemoryConcurrencyLimiter()
+    runtime_event_recorder = StructuredRuntimeEventRecorder()
     deployment_limit_guard = DeploymentLimitGuard(
         request_rate_limiter=request_rate_limiter,
         concurrency_limiter=concurrency_limiter,
+        runtime_event_recorder=runtime_event_recorder,
     )
     auth_header_builder = AuthHeaderBuilder(
         secret_provider=secret_provider,
@@ -82,6 +87,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
         routing_selector=routing_selector,
+        runtime_event_recorder=runtime_event_recorder,
         timeout_ms=router_config.router.timeout_ms,
         max_attempts=router_config.router.max_attempts,
         retryable_status_codes=tuple(router_config.router.retryable_status_codes),
@@ -95,6 +101,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         failure_classifier=failure_classifier,
         health_state_policy=health_state_policy,
         routing_selector=routing_selector,
+        runtime_event_recorder=runtime_event_recorder,
         timeout_ms=router_config.router.timeout_ms,
         max_attempts=router_config.router.max_attempts,
         retryable_status_codes=tuple(router_config.router.retryable_status_codes),
@@ -110,6 +117,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         request_rate_limiter=request_rate_limiter,
         concurrency_limiter=concurrency_limiter,
         deployment_limit_guard=deployment_limit_guard,
+        runtime_event_recorder=runtime_event_recorder,
         auth_header_builder=auth_header_builder,
         outbound_invoker=outbound_invoker,
         failure_classifier=failure_classifier,

@@ -16,4 +16,4 @@ Operational role:
 - this service is the internal LLM traffic manager used by the chatbot system backend
 - tenant onboarding, placement, namespace provisioning, and SaaS control-plane routing belong to the separate orchestrator/admin service
 
-The repository is intentionally being built in stages. The current implementation already covers the runnable shell, deployment registry, both current proxy paths, Managed Identity outbound auth, tiered multi-upstream failover, health-state behavior including cooldown and circuit breaking, and deployment-level request limiting. The next stages focus on richer observability and higher-level validation.
+The repository is intentionally being built in stages. The current implementation already covers the runnable shell, deployment registry, both current proxy paths, Managed Identity outbound auth, tiered multi-upstream failover, health-state behavior including cooldown and circuit breaking, deployment-level request limiting, and the first runtime observability layer. The next stages focus on higher-level Azure-backed validation and hardening.

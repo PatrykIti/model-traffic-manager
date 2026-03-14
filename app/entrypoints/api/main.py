@@ -11,14 +11,18 @@ from app.entrypoints.api.routes_chat import router as chat_router
 from app.entrypoints.api.routes_deployments import router as deployments_router
 from app.entrypoints.api.routes_embeddings import router as embeddings_router
 from app.entrypoints.api.routes_health import router as health_router
+from app.entrypoints.api.routes_metrics import router as metrics_router
 from app.infrastructure.bootstrap.container import build_container
 from app.infrastructure.config.settings import AppSettings, load_settings
 from app.infrastructure.observability.logging import configure_logging, get_logger
+from app.infrastructure.observability.request_context import request_context_middleware
+from app.infrastructure.observability.tracing import configure_tracing
 
 
 def create_app(settings: AppSettings | None = None) -> FastAPI:
     settings = settings or load_settings()
     configure_logging(settings.log_level)
+    configure_tracing(settings.app_name)
     logger = get_logger(__name__)
     container = build_container(settings)
 
@@ -40,9 +44,11 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         description="Policy-driven AI traffic router for Azure and AKS",
         lifespan=lifespan,
     )
+    app.middleware("http")(request_context_middleware)
     app.include_router(chat_router)
     app.include_router(embeddings_router)
     app.include_router(health_router)
+    app.include_router(metrics_router)
     app.include_router(deployments_router)
     register_error_handlers(app)
     return app

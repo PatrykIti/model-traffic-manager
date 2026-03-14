@@ -7,7 +7,7 @@
 **Category:** Observability and Hardening
 **Estimated Effort:** Large
 **Dependencies:** TASK-008, TASK-014, TASK-015
-**Status:** **To Do**
+**Status:** **In Progress** (2026-03-14)
 
 ---
 
@@ -36,13 +36,13 @@ Business goal:
 
 ### TASK-016-01: Decision reason logging, request correlation, and operator diagnostics
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Make route-selection and failover decisions reconstructable for operators.
 
 ### TASK-016-02: Metrics, traces, and readiness/health observability expansion
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Expose the runtime signals needed for monitoring and troubleshooting.
 

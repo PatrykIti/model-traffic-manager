@@ -11,4 +11,24 @@ Current routing decision reasons include:
 
 These reasons explain which tier was selected and whether the router stayed in the same tier or moved higher during retry flow.
 
-Future observability work should expand this catalog with emitted event examples and troubleshooting guidance.
+Current runtime event types that use these reasons include:
+
+- `route_selected`
+- `health_state_updated`
+- `limiter_rejected`
+- `request_completed`
+
+Key runtime event fields include:
+
+- `request_id`
+- `deployment_id`
+- `endpoint_kind`
+- `upstream_id`
+- `selected_tier`
+- `decision_reason`
+- `failure_reason`
+- `health_status`
+- `limiter_reason`
+- `status_code`
+
+Future observability work should expand this catalog with Azure-backed validation and troubleshooting guidance.

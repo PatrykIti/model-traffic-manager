@@ -39,10 +39,14 @@ What is already implemented:
 - a Redis-backed health-state adapter behind the repository port
 - deployment-level request-rate limiting and concurrency limiting
 - Redis-backed limiter adapters behind repository ports
+- request correlation with `x-request-id`
+- structured runtime decision events and a Prometheus `/metrics` endpoint
+- trace foundation for inbound requests and outbound model attempts
 
 Still ahead:
 
-- richer observability
+- `integration-azure` and `e2e-aks` activation
+- timeout/pool tuning and broader hardening
 
 ## Local bootstrap
 

@@ -5,6 +5,7 @@ import pytest
 from app.application.deployment_limit_guard import DeploymentLimitGuard
 from app.application.dto.chat_completion_request import ChatCompletionRequest
 from app.application.dto.outbound_response import OutboundResponse
+from app.application.dto.runtime_event import RuntimeEvent
 from app.application.use_cases.route_chat_completion import RouteChatCompletion
 from app.domain.entities.deployment import Deployment
 from app.domain.entities.upstream import Upstream
@@ -67,6 +68,14 @@ class FakeOutboundInvoker:
         if queued_responses:
             return queued_responses.pop(0)
         return OutboundResponse(status_code=200, headers={}, json_body={"ok": True})
+
+
+class FakeRuntimeEventRecorder:
+    def __init__(self) -> None:
+        self.events: list[RuntimeEvent] = []
+
+    def record(self, event: RuntimeEvent) -> None:
+        self.events.append(event)
 
 
 def build_health_components() -> tuple[
@@ -368,3 +377,40 @@ def test_route_chat_completion_does_not_retry_non_retriable_response() -> None:
     assert [call["endpoint"] for call in outbound_invoker.calls] == [
         "https://example.invalid/chat-0"
     ]
+
+
+def test_route_chat_completion_emits_selection_and_completion_events() -> None:
+    deployment = build_deployment(AuthPolicy(mode=AuthMode.NONE))
+    repository = FakeDeploymentRepository({deployment.id: deployment})
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
+    event_recorder = FakeRuntimeEventRecorder()
+    use_case = RouteChatCompletion(
+        deployment_repository=repository,
+        auth_header_builder=FakeAuthHeaderBuilder(),
+        outbound_invoker=FakeOutboundInvoker(),
+        deployment_limit_guard=deployment_limit_guard,
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
+        routing_selector=TieredFailoverSelector(),
+        timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
+        runtime_event_recorder=event_recorder,
+    )
+
+    use_case.execute(
+        ChatCompletionRequest(
+            deployment_id="local-health-check",
+            payload={"messages": [{"role": "user", "content": "Hello"}]},
+            request_id="req-123",
+        )
+    )
+
+    assert [event.event_type for event in event_recorder.events] == [
+        "route_selected",
+        "request_completed",
+    ]
+    assert event_recorder.events[0].request_id == "req-123"
+    assert event_recorder.events[1].outcome == "success"

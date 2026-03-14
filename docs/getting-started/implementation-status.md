@@ -15,9 +15,11 @@ Current repository status:
 - a Redis-backed health-state adapter exists behind the repository port
 - deployment-level request-rate limiting and concurrency limiting are implemented
 - Redis-backed limiter adapters exist behind application ports
+- request correlation, structured runtime events, `/metrics`, and trace foundations are implemented
 - health endpoints, `GET /deployments`, `POST /v1/chat/completions/{deployment_id}`, and `POST /v1/embeddings/{deployment_id}` are covered by tests
 - public documentation and internal delivery documentation are split
 
 Still ahead:
 
-- metrics, traces, and richer decision observability
+- `integration-azure` and `e2e-aks` activation
+- timeout, pooling, and broader hardening

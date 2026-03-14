@@ -3,10 +3,12 @@ from __future__ import annotations
 from app.application.deployment_limit_guard import DeploymentLimitGuard
 from app.application.dto.chat_completion_request import ChatCompletionRequest
 from app.application.dto.outbound_response import OutboundResponse
+from app.application.dto.runtime_event import RuntimeEvent
 from app.application.ports.auth_header_builder import AuthHeaderBuilderPort
 from app.application.ports.deployment_repository import DeploymentRepository
 from app.application.ports.health_state_repository import HealthStateRepository
 from app.application.ports.outbound_invoker import OutboundInvoker
+from app.application.ports.runtime_event_recorder import RuntimeEventRecorder
 from app.domain.entities.upstream import Upstream
 from app.domain.errors import (
     DeploymentNotFound,
@@ -35,6 +37,7 @@ class RouteChatCompletion:
         timeout_ms: int,
         max_attempts: int,
         retryable_status_codes: tuple[int, ...],
+        runtime_event_recorder: RuntimeEventRecorder | None = None,
     ) -> None:
         self._deployment_repository = deployment_repository
         self._auth_header_builder = auth_header_builder
@@ -44,6 +47,7 @@ class RouteChatCompletion:
         self._failure_classifier = failure_classifier
         self._health_state_policy = health_state_policy
         self._routing_selector = routing_selector
+        self._runtime_event_recorder = runtime_event_recorder
         self._timeout_ms = timeout_ms
         self._max_attempts = max_attempts
         self._retryable_status_codes = retryable_status_codes
@@ -58,14 +62,18 @@ class RouteChatCompletion:
         if not deployment.upstreams:
             raise UpstreamSelectionError("Deployment does not define any upstreams.")
 
-        lease_id = self._deployment_limit_guard.acquire(deployment)
+        lease_id = self._deployment_limit_guard.acquire(
+            deployment,
+            request_id=request.request_id,
+            endpoint_kind="chat_completions",
+        )
         try:
             states = self._load_states(deployment.id, deployment.upstreams)
             attempted_upstream_ids: set[str] = set()
             last_response: OutboundResponse | None = None
             last_transport_error: OutboundTimeoutError | OutboundConnectionError | None = None
 
-            for _ in range(self._max_attempts):
+            for attempt in range(1, self._max_attempts + 1):
                 selection = self._routing_selector.select(
                     deployment_id=deployment.id,
                     upstreams=deployment.upstreams,
@@ -77,6 +85,21 @@ class RouteChatCompletion:
 
                 attempted_upstream_ids.add(selection.upstream.id)
                 headers = self._auth_header_builder.build(selection.upstream.auth)
+                self._record_event(
+                    RuntimeEvent(
+                        event_type="route_selected",
+                        endpoint_kind="chat_completions",
+                        deployment_id=deployment.id,
+                        request_id=request.request_id,
+                        attempt=attempt,
+                        upstream_id=selection.upstream.id,
+                        provider=selection.upstream.provider,
+                        account=selection.upstream.account,
+                        region=selection.upstream.region,
+                        selected_tier=selection.selected_tier,
+                        decision_reason=selection.reason,
+                    )
+                )
 
                 try:
                     response = self._outbound_invoker.post_json(
@@ -96,6 +119,21 @@ class RouteChatCompletion:
                         selection.upstream.id,
                         states[selection.upstream.id],
                     )
+                    self._record_event(
+                        RuntimeEvent(
+                            event_type="health_state_updated",
+                            endpoint_kind="chat_completions",
+                            deployment_id=deployment.id,
+                            request_id=request.request_id,
+                            attempt=attempt,
+                            upstream_id=selection.upstream.id,
+                            selected_tier=selection.selected_tier,
+                            decision_reason=selection.reason,
+                            failure_reason=failure.reason.value,
+                            health_status=states[selection.upstream.id].status.value,
+                            outcome="retryable_transport_failure",
+                        )
+                    )
                     last_transport_error = exc
                     if not self._can_retry_failure(
                         failure=failure,
@@ -114,6 +152,20 @@ class RouteChatCompletion:
                         selection.upstream.id,
                         states[selection.upstream.id],
                     )
+                    self._record_event(
+                        RuntimeEvent(
+                            event_type="request_completed",
+                            endpoint_kind="chat_completions",
+                            deployment_id=deployment.id,
+                            request_id=request.request_id,
+                            attempt=attempt,
+                            upstream_id=selection.upstream.id,
+                            selected_tier=selection.selected_tier,
+                            decision_reason=selection.reason,
+                            outcome="success",
+                            status_code=response.status_code,
+                        )
+                    )
                     return response
 
                 last_response = response
@@ -124,6 +176,21 @@ class RouteChatCompletion:
                     text_body=response.text_body,
                 )
                 if not self._is_retriable_failure(failure, response):
+                    self._record_event(
+                        RuntimeEvent(
+                            event_type="request_completed",
+                            endpoint_kind="chat_completions",
+                            deployment_id=deployment.id,
+                            request_id=request.request_id,
+                            attempt=attempt,
+                            upstream_id=selection.upstream.id,
+                            selected_tier=selection.selected_tier,
+                            decision_reason=selection.reason,
+                            outcome="non_retriable_response",
+                            failure_reason=failure.reason.value,
+                            status_code=response.status_code,
+                        )
+                    )
                     return response
 
                 states[selection.upstream.id] = self._health_state_policy.record_failure(
@@ -135,11 +202,43 @@ class RouteChatCompletion:
                     selection.upstream.id,
                     states[selection.upstream.id],
                 )
+                self._record_event(
+                    RuntimeEvent(
+                        event_type="health_state_updated",
+                        endpoint_kind="chat_completions",
+                        deployment_id=deployment.id,
+                        request_id=request.request_id,
+                        attempt=attempt,
+                        upstream_id=selection.upstream.id,
+                        selected_tier=selection.selected_tier,
+                        decision_reason=selection.reason,
+                        failure_reason=failure.reason.value,
+                        health_status=states[selection.upstream.id].status.value,
+                        retry_after_seconds=failure.retry_after_seconds,
+                        outcome="retryable_response",
+                        status_code=response.status_code,
+                    )
+                )
                 if not self._can_retry_failure(
                     failure=failure,
                     attempted_upstream_ids=attempted_upstream_ids,
                     upstream_count=len(deployment.upstreams),
                 ):
+                    self._record_event(
+                        RuntimeEvent(
+                            event_type="request_completed",
+                            endpoint_kind="chat_completions",
+                            deployment_id=deployment.id,
+                            request_id=request.request_id,
+                            attempt=attempt,
+                            upstream_id=selection.upstream.id,
+                            selected_tier=selection.selected_tier,
+                            decision_reason=selection.reason,
+                            outcome="retriable_response_exhausted",
+                            failure_reason=failure.reason.value,
+                            status_code=response.status_code,
+                        )
+                    )
                     return response
 
             if last_response is not None:
@@ -196,3 +295,7 @@ class RouteChatCompletion:
                 )
 
         return normalized_states
+
+    def _record_event(self, event: RuntimeEvent) -> None:
+        if self._runtime_event_recorder is not None:
+            self._runtime_event_recorder.record(event)

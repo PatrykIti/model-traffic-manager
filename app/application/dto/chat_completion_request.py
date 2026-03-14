@@ -8,3 +8,4 @@ from typing import Any
 class ChatCompletionRequest:
     deployment_id: str
     payload: Any
+    request_id: str | None = None

@@ -398,3 +398,24 @@ shared_services: {}
     assert response.status_code == 503
     assert "concurrency limit" in response.json()["detail"]
     assert upstream_route.call_count == 0
+
+
+@respx.mock
+def test_metrics_endpoint_exposes_prometheus_metrics() -> None:
+    respx.post(
+        "https://example.invalid/openai/deployments/local-embeddings-check/embeddings"
+    ).mock(
+        return_value=httpx.Response(
+            200,
+            json={"data": [{"embedding": [0.1, 0.2, 0.3], "index": 0}]},
+        )
+    )
+
+    app = create_app()
+    with TestClient(app) as client:
+        _ = client.post("/v1/embeddings/local-embeddings-check", json={"input": "Hello"})
+        response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "router_request_duration_seconds" in response.text
+    assert "router_route_attempts_total" in response.text

@@ -34,7 +34,11 @@ async def embeddings(request: Request, deployment_id: str) -> Response:
 
     try:
         outbound_response = container.route_embeddings_use_case.execute(
-            EmbeddingsRequest(deployment_id=deployment_id, payload=payload)
+            EmbeddingsRequest(
+                deployment_id=deployment_id,
+                payload=payload,
+                request_id=request.state.request_id,
+            )
         )
     except DeploymentNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

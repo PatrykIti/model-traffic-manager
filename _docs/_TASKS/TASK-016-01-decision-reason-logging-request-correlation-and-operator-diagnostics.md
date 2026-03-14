@@ -7,7 +7,7 @@
 **Category:** Observability Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-016
-**Status:** **To Do**
+**Status:** **Done** (2026-03-14)
 
 ---
 
@@ -21,13 +21,13 @@ Add the decision-level logging and correlation data needed to explain router beh
 
 ### TASK-016-01-01: Structured event schema for selection, failover, limiter, and breaker updates
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Define the event payloads emitted by the router for core control-path decisions.
 
 ### TASK-016-01-02: Reference documentation and troubleshooting views
 
-**Status:** To Do
+**Status:** Done (2026-03-14)
 
 Explain how operators should read the emitted decision data during incident response.
 

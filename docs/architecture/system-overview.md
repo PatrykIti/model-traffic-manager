@@ -19,7 +19,8 @@ What is already implemented:
 - `ListDeployments` as the first application use case
 - `RouteChatCompletion` and `RouteEmbeddings` as the current proxying use cases
 - tiered multi-upstream selection with weighted round robin and request-level failover
-- `/deployments`, `/v1/chat/completions/{deployment_id}`, `/v1/embeddings/{deployment_id}`, and health endpoints as the current HTTP surfaces
+- request correlation, runtime decision events, and `/metrics` as the current observability surface
+- `/deployments`, `/v1/chat/completions/{deployment_id}`, `/v1/embeddings/{deployment_id}`, health endpoints, and `/metrics` as the current HTTP surfaces
 
 Boundary note:
 

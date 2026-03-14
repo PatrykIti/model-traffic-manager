@@ -34,7 +34,11 @@ async def chat_completions(request: Request, deployment_id: str) -> Response:
 
     try:
         outbound_response = container.route_chat_completion_use_case.execute(
-            ChatCompletionRequest(deployment_id=deployment_id, payload=payload)
+            ChatCompletionRequest(
+                deployment_id=deployment_id,
+                payload=payload,
+                request_id=request.state.request_id,
+            )
         )
     except DeploymentNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

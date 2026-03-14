@@ -411,3 +411,21 @@ shared_services: {}
     assert second_response.status_code == 429
     assert second_response.headers["retry-after"] == "1"
     assert upstream_route.call_count == 1
+
+
+@respx.mock
+def test_chat_proxy_returns_request_id_header() -> None:
+    respx.post(
+        "https://example.invalid/openai/deployments/local-health-check/chat/completions"
+    ).mock(return_value=httpx.Response(200, json={"id": "chatcmpl-req", "choices": []}))
+
+    app = create_app()
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/chat/completions/local-health-check",
+            headers={"x-request-id": "req-test-123"},
+            json={"messages": [{"role": "user", "content": "Hello"}]},
+        )
+
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] == "req-test-123"
