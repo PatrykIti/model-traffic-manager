@@ -7,7 +7,7 @@
 **Category:** Architecture and Feature Planning
 **Estimated Effort:** Large
 **Dependencies:** TASK-021
-**Status:** **To Do**
+**Status:** **Done** (2026-03-15)
 
 ---
 
@@ -42,31 +42,35 @@ Key architectural direction:
 
 ### TASK-023-01: Shared-service taxonomy, routing profiles, and failover policy split
 
-**Status:** To Do
+**Status:** Done (2026-03-15)
 
 Define which shared-service classes should support router-managed failover, which should use a single provider-managed endpoint, and which should stay direct-access from the backend.
 
 ### TASK-023-02: Configuration and domain model for shared-service execution policies
 
-**Status:** To Do
+**Status:** Done (2026-03-15)
 
 Extend the config/domain contract so shared services can declare access mode, transport shape, and routing policy explicitly.
 
 ### TASK-023-03: First backend-facing shared-service proxy path for HTTP/JSON services
 
-**Status:** To Do
+**Status:** Done (2026-03-15)
 
 Implement the first narrow shared-service execution path through the router for backend callers where router-managed auth, observability, and optional failover are valuable.
 
 ### TASK-023-04: Direct-access model for provider-managed storage and large object workloads
 
-**Status:** To Do
+**Status:** Done (2026-03-15)
 
 Document and implement the boundary where services such as Azure Storage remain backend-direct with Managed Identity instead of becoming generic router-proxied traffic.
 
 ### TASK-023-05: Validation, observability, and official documentation for shared-service execution
 
-**Status:** To Do
+**Status:** Done (2026-03-15)
+
+Implementation note:
+- this planning task tree was realized by the executable implementation captured under `TASK-024*`
+- the planning conclusions remain useful as the architectural rationale for the implemented shared-service execution model
 
 Add tests, diagnostics, and official docs for the final shared-service execution model.
 

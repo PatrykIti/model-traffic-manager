@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 49 work items
+- **To Do:** 43 work items
 - **In Progress:** 0 work items
-- **Done:** 143 work items
+- **Done:** 149 work items
 
 ---
 
@@ -57,12 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-023 | Shared Services Access Model and Router Execution Surface | High | Large | Shared-service execution model for backend callers without turning the router into a generic gateway |
-| TASK-023-01 | Shared-Service Taxonomy, Routing Profiles, and Failover Policy Split | High | Medium | Policy split between provider-managed, direct, single-endpoint, and failover service classes |
-| TASK-023-02 | Configuration and Domain Model for Shared-Service Execution Policies | High | Medium | Typed contract for shared-service execution mode and routing policy |
-| TASK-023-03 | First Backend-Facing Shared-Service Proxy Path for HTTP/JSON Services | High | Medium | Narrow first proxy route for backend-facing shared HTTP services |
-| TASK-023-04 | Direct-Access Model for Provider-Managed Storage and Large Object Workloads | High | Medium | Keep storage-style workloads out of generic router proxying by default |
-| TASK-023-05 | Validation, Observability, and Official Documentation for Shared-Service Execution | High | Medium | Tests and public docs for the final shared-service model |
 
 ---
 
@@ -215,6 +209,12 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-021-04 | Explainable Routing Rejection Diagnostics and Status Reconciliation | High | Medium | Rejected-candidate diagnostics and final docs/status reconciliation completed |
 | TASK-022 | Environment Example and Root README Reconciliation | High | Small | Root environment contract and repository README aligned to the active runtime |
 | TASK-022-01 | Structured `.env.example` and Root README Refresh | High | Small | Categorized environment reference and root README status refresh completed |
+| TASK-023 | Shared Services Access Model and Router Execution Surface | High | Large | Planning and architecture for shared-service execution completed and realized by TASK-024 |
+| TASK-023-01 | Shared-Service Taxonomy, Routing Profiles, and Failover Policy Split | High | Medium | Shared-service policy split completed as the design baseline for implementation |
+| TASK-023-02 | Configuration and Domain Model for Shared-Service Execution Policies | High | Medium | Shared-service execution contract planned and then implemented in TASK-024 |
+| TASK-023-03 | First Backend-Facing Shared-Service Proxy Path for HTTP/JSON Services | High | Medium | Backend-facing shared-service proxy path planned and then implemented in TASK-024 |
+| TASK-023-04 | Direct-Access Model for Provider-Managed Storage and Large Object Workloads | High | Medium | Direct-access boundary for storage-style workloads defined and carried into implementation |
+| TASK-023-05 | Validation, Observability, and Official Documentation for Shared-Service Execution | High | Medium | Validation and docs plan completed and then executed in TASK-024 |
 | TASK-024 | Shared Services Execution Model and Backend-Facing Proxy Surface | High | Large | Executable shared-service modes implemented without turning the router into a generic gateway |
 | TASK-024-01 | Shared-Service Config and Domain Contract for Execution Modes | High | Medium | Typed execution-mode model for shared services implemented |
 | TASK-024-02 | Backend-Facing Shared-Service Execution Use Case and API Route | High | Medium | First shared-service proxy route for backend callers implemented |
