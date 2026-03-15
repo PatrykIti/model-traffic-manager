@@ -157,14 +157,24 @@ if [[ "$SUITE" == "e2e-aks" && -z "$e2e_image" ]]; then
     exit 1
   fi
 
+  if ! docker buildx version >/dev/null 2>&1; then
+    echo "Docker buildx is required for e2e-aks image builds." >&2
+    exit 1
+  fi
+
   ghcr_owner="${GHCR_OWNER:-$(gh api user -q .login)}"
   ghcr_username="${GHCR_USERNAME:-$ghcr_owner}"
   ghcr_token="${GHCR_TOKEN:-$(gh auth token)}"
   e2e_image="ghcr.io/${ghcr_owner,,}/model-traffic-manager:e2e-local-${run_id}"
+  e2e_image_platform="${E2E_IMAGE_PLATFORM:-linux/amd64}"
 
   echo "$ghcr_token" | docker login ghcr.io -u "$ghcr_username" --password-stdin
-  docker build -f docker/Dockerfile -t "$e2e_image" .
-  docker push "$e2e_image"
+  docker buildx build \
+    --platform "$e2e_image_platform" \
+    -f docker/Dockerfile \
+    -t "$e2e_image" \
+    --push \
+    .
 fi
 
 terraform -chdir="$scope_dir" init -backend=false
