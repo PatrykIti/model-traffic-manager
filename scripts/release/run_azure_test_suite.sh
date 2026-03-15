@@ -68,6 +68,7 @@ aks_cluster_name=""
 e2e_namespace="${E2E_NAMESPACE:-e2e-router}"
 e2e_image="${E2E_IMAGE:-}"
 federated_credential_created="0"
+e2e_image_pull_secret_name="${E2E_IMAGE_PULL_SECRET_NAME:-ghcr-pull}"
 
 print_e2e_diagnostics() {
   if [[ "$SUITE" != "e2e-aks" || -z "$aks_cluster_name" ]]; then
@@ -206,7 +207,31 @@ export E2E_NAMESPACE="$e2e_namespace"
 export E2E_IMAGE="$e2e_image"
 export E2E_UAI_CLIENT_ID="$uai_client_id"
 
+if [[ "$e2e_image" == ghcr.io/* ]]; then
+  ghcr_username="${GHCR_USERNAME:-${GHCR_OWNER:-$(gh api user -q .login 2>/dev/null || true)}}"
+  ghcr_token="${GHCR_TOKEN:-$(gh auth token 2>/dev/null || true)}"
+
+  if [[ -z "$ghcr_username" || -z "$ghcr_token" ]]; then
+    echo "Private GHCR image pull requires GHCR_TOKEN and GHCR_USERNAME (or an authenticated gh cli session)." >&2
+    exit 1
+  fi
+
+  echo "Configuring image pull secret ${e2e_image_pull_secret_name} for ${e2e_namespace}"
+  kubectl create secret docker-registry "$e2e_image_pull_secret_name" \
+    --docker-server=ghcr.io \
+    --docker-username="$ghcr_username" \
+    --docker-password="$ghcr_token" \
+    --namespace "$e2e_namespace" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
+
 python3 scripts/release/render_template.py infra/e2e-aks/k8s/router-serviceaccount.yaml.tmpl | kubectl apply -f -
+if [[ "$e2e_image" == ghcr.io/* ]]; then
+  kubectl patch serviceaccount/router-app \
+    -n "$e2e_namespace" \
+    --type merge \
+    -p "{\"imagePullSecrets\":[{\"name\":\"${e2e_image_pull_secret_name}\"}]}"
+fi
 python3 scripts/release/render_template.py infra/e2e-aks/k8s/router-deployment.yaml.tmpl | kubectl apply -f -
 kubectl apply -n "$e2e_namespace" -f infra/e2e-aks/k8s/router-service.yaml
 
