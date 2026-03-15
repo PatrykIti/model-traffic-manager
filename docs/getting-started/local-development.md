@@ -26,12 +26,19 @@ Useful first endpoints after startup:
 - `GET /health/live`
 - `GET /health/ready`
 - `GET /deployments`
+- `GET /shared-services`
 - `POST /v1/chat/completions/{deployment_id}`
 - `POST /v1/embeddings/{deployment_id}`
 
 If you test the `api_key` path locally, expose secret material through environment variables referenced by `env://...` secret refs.
 
 If you test the `managed_identity` path locally, rely on the Azure credential chain available to the router process. The default repository config still uses `none`, so local startup does not require Azure auth by default.
+
+If you want to exercise shared runtime state locally, set:
+
+- `MODEL_TRAFFIC_MANAGER_RUNTIME_STATE_BACKEND=redis`
+- `MODEL_TRAFFIC_MANAGER_REDIS_URL=redis://...`
+- optional `MODEL_TRAFFIC_MANAGER_REDIS_KEY_PREFIX=router`
 
 For higher-level local Azure-backed runs:
 
@@ -46,3 +53,4 @@ Live-model notes:
 - `make e2e-aks-live-model-local` provisions extra Azure OpenAI infrastructure and consumes real model quota
 - the current live-model profile targets `swedencentral` and validates `gpt-5` plus `gpt-5.1`
 - this suite is intentionally separate because model quota and regional model availability can change independently of the smoke AKS path
+- the next meaningful higher-level additions are a Redis-backed AKS profile and a live-model embeddings path once the infra profile provisions an embeddings deployment

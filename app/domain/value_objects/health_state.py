@@ -9,6 +9,7 @@ from app.domain.value_objects.failure_classification import FailureReason
 
 class HealthStatus(StrEnum):
     HEALTHY = "healthy"
+    HALF_OPEN = "half_open"
     RATE_LIMITED = "rate_limited"
     QUOTA_EXHAUSTED = "quota_exhausted"
     COOLDOWN = "cooldown"
@@ -37,4 +38,4 @@ class HealthState:
             )
 
     def is_available(self) -> bool:
-        return self.status is HealthStatus.HEALTHY
+        return self.status in {HealthStatus.HEALTHY, HealthStatus.HALF_OPEN}

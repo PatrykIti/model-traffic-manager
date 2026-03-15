@@ -17,6 +17,10 @@ class DeploymentNotFound(DomainError):
     """Raised when a deployment cannot be found in the registry."""
 
 
+class DeploymentContractMismatchError(DomainError):
+    """Raised when a deployment is invoked through an incompatible endpoint contract."""
+
+
 class SecretResolutionError(DomainError):
     """Raised when secret material cannot be resolved."""
 

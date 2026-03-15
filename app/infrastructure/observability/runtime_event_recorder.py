@@ -51,12 +51,24 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             "region": event.region,
             "selected_tier": event.selected_tier,
             "decision_reason": event.decision_reason,
+            "failover_reason": event.failover_reason,
             "outcome": event.outcome,
             "failure_reason": event.failure_reason,
             "health_status": event.health_status,
             "limiter_reason": event.limiter_reason,
             "retry_after_seconds": event.retry_after_seconds,
             "status_code": event.status_code,
+            "rejected_candidates": [
+                {
+                    "upstream_id": candidate.upstream_id,
+                    "provider": candidate.provider,
+                    "account": candidate.account,
+                    "region": candidate.region,
+                    "tier": candidate.tier,
+                    "reason": candidate.reason,
+                }
+                for candidate in event.rejected_candidates
+            ],
         }
         self._logger.info("runtime_event", **payload)
         self._record_metrics(event)
@@ -94,6 +106,8 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             attributes["router.upstream_id"] = event.upstream_id
         if event.decision_reason is not None:
             attributes["router.decision_reason"] = event.decision_reason
+        if event.failover_reason is not None:
+            attributes["router.failover_reason"] = event.failover_reason
         if event.failure_reason is not None:
             attributes["router.failure_reason"] = event.failure_reason
         if event.health_status is not None:

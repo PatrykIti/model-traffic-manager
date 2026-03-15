@@ -18,7 +18,18 @@ Current runtime behavior:
 - YAML is parsed and validated into typed Pydantic models
 - invalid config stops application startup
 - validated deployments are mapped into domain entities and exposed through the deployment repository
+- validated shared services are mapped into domain entities and exposed through the shared-service registry
 - deployment `limits` are enforced for request rate and concurrency on the active proxy paths
+
+Supported MVP deployment contracts:
+
+- `kind: llm` with `protocol: openai_chat`
+- `kind: embeddings` with `protocol: openai_embeddings`
+
+Current shared-service runtime surface:
+
+- `GET /shared-services` returns the validated shared-service registry
+- shared-service summaries expose the configured service name, endpoint, and auth mode
 
 The current deployment-level `limits` fields are:
 

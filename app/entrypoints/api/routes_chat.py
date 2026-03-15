@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse, Response
 from app.application.dto.chat_completion_request import ChatCompletionRequest
 from app.domain.errors import (
     ConcurrencyLimitExceededError,
+    DeploymentContractMismatchError,
     DeploymentNotFound,
     OutboundConnectionError,
     OutboundTimeoutError,
@@ -40,6 +41,8 @@ async def chat_completions(request: Request, deployment_id: str) -> Response:
                 request_id=request.state.request_id,
             )
         )
+    except DeploymentContractMismatchError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     except DeploymentNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except SecretResolutionError as exc:

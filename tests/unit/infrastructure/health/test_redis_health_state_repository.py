@@ -12,9 +12,23 @@ class FakeRedisClient:
     def get(self, key: str) -> str | None:
         return self.storage.get(key)
 
-    def set(self, key: str, value: str) -> bool:
+    def set(
+        self,
+        key: str,
+        value: str,
+        *,
+        nx: bool = False,
+        ex: int | None = None,
+    ) -> bool:
+        if nx and key in self.storage:
+            return False
         self.storage[key] = value
         return True
+
+    def delete(self, key: str) -> int:
+        existed = key in self.storage
+        self.storage.pop(key, None)
+        return 1 if existed else 0
 
 
 def test_redis_health_state_repository_serializes_and_loads_state() -> None:
@@ -41,3 +55,15 @@ def test_redis_health_state_repository_serializes_and_loads_state() -> None:
             last_failure_reason=FailureReason.UNHEALTHY,
         )
     }
+
+
+def test_redis_health_state_repository_tracks_half_open_probe_reservations() -> None:
+    redis_client = FakeRedisClient()
+    repository = RedisHealthStateRepository(redis_client=redis_client)
+
+    assert repository.try_acquire_half_open_probe("deployment-a", "upstream-a", 30) is True
+    assert repository.try_acquire_half_open_probe("deployment-a", "upstream-a", 30) is False
+
+    repository.clear_half_open_probe("deployment-a", "upstream-a")
+
+    assert repository.try_acquire_half_open_probe("deployment-a", "upstream-a", 30) is True

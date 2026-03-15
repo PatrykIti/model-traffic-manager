@@ -50,6 +50,56 @@ def test_embeddings_proxy_returns_404_when_deployment_is_missing() -> None:
     assert "missing-deployment" in response.json()["detail"]
 
 
+def test_embeddings_proxy_returns_409_for_incompatible_deployment_contract(tmp_path: Path) -> None:
+    config_path = tmp_path / "router.yaml"
+    config_path.write_text(
+        """
+router:
+  instance_name: mismatch-test
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: incompatible-embeddings
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: upstream-chat
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/chat
+        auth:
+          mode: none
+
+shared_services: {}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    app = create_app(build_settings(config_path))
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/embeddings/incompatible-embeddings",
+            json={"input": "Hello"},
+        )
+
+    assert response.status_code == 409
+    assert "does not support embeddings" in response.json()["detail"]
+
+
 @respx.mock
 def test_embeddings_proxy_maps_connection_error_to_502() -> None:
     request = httpx.Request(

@@ -11,7 +11,7 @@ class RedisCounterStore(Protocol):
     def get(self, key: str) -> str | bytes | None:
         """Return the stored counter payload."""
 
-    def set(self, key: str, value: str) -> bool | None:
+    def set(self, key: str, value: str, *, ex: int | None = None) -> bool | None:
         """Persist the current counter payload."""
 
 
@@ -34,7 +34,7 @@ class RedisRequestRateLimiter(RequestRateLimiter):
         if count >= requests_per_second:
             return 1
 
-        self._redis_client.set(key, str(count + 1))
+        self._redis_client.set(key, str(count + 1), ex=2)
         return None
 
 

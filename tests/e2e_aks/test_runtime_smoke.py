@@ -23,10 +23,12 @@ def test_router_runtime_health_and_metrics_smoke() -> None:
         live = client.get("/health/live")
         ready = client.get("/health/ready")
         deployments = client.get("/deployments")
+        shared_services = client.get("/shared-services")
         metrics = client.get("/metrics")
 
     assert live.status_code == 200
     assert ready.status_code == 200
     assert deployments.status_code == 200
+    assert shared_services.status_code == 200
     assert metrics.status_code == 200
     assert "router_request_duration_seconds" in metrics.text

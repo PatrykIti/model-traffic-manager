@@ -9,11 +9,12 @@ from app.application.dto.runtime_event import RuntimeEvent
 from app.application.use_cases.route_chat_completion import RouteChatCompletion
 from app.domain.entities.deployment import Deployment
 from app.domain.entities.upstream import Upstream
-from app.domain.errors import DeploymentNotFound
+from app.domain.errors import DeploymentContractMismatchError, DeploymentNotFound
 from app.domain.services.health_state_policy import HealthStatePolicy
 from app.domain.services.tiered_failover_selector import TieredFailoverSelector
 from app.domain.services.upstream_failure_classifier import UpstreamFailureClassifier
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
+from app.domain.value_objects.health_state import HealthState, HealthStatus
 from app.infrastructure.health.in_memory_health_state_repository import (
     InMemoryHealthStateRepository,
 )
@@ -414,3 +415,89 @@ def test_route_chat_completion_emits_selection_and_completion_events() -> None:
     ]
     assert event_recorder.events[0].request_id == "req-123"
     assert event_recorder.events[1].outcome == "success"
+
+
+def test_route_chat_completion_rejects_incompatible_deployment_contract() -> None:
+    deployment = Deployment(
+        id="wrong-chat-deployment",
+        kind="embeddings",
+        protocol="openai_embeddings",
+        routing_strategy="tiered_failover",
+        max_concurrency=10,
+        request_rate_per_second=5,
+        upstreams=(
+            Upstream(
+                id="upstream-0",
+                provider="internal_mock",
+                account="local",
+                region="local",
+                tier=0,
+                weight=100,
+                endpoint="https://example.invalid/embeddings-0",
+                auth=AuthPolicy(mode=AuthMode.NONE),
+            ),
+        ),
+    )
+    repository = FakeDeploymentRepository({deployment.id: deployment})
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    deployment_limit_guard = build_limit_guard()
+    use_case = RouteChatCompletion(
+        deployment_repository=repository,
+        auth_header_builder=FakeAuthHeaderBuilder(),
+        outbound_invoker=FakeOutboundInvoker(),
+        deployment_limit_guard=deployment_limit_guard,
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
+        routing_selector=TieredFailoverSelector(),
+        timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
+    )
+
+    with pytest.raises(DeploymentContractMismatchError):
+        use_case.execute(
+            ChatCompletionRequest(
+                deployment_id="wrong-chat-deployment",
+                payload={"messages": []},
+            )
+        )
+
+
+def test_route_chat_completion_emits_failover_reason_and_rejected_candidates() -> None:
+    deployment = build_deployment(AuthPolicy(mode=AuthMode.NONE), upstream_count=2)
+    repository = FakeDeploymentRepository({deployment.id: deployment})
+    health_state_repository, failure_classifier, health_state_policy = build_health_components()
+    health_state_repository.set_state(
+        deployment.id,
+        "upstream-0",
+        HealthState(status=HealthStatus.CIRCUIT_OPEN, circuit_open_until=999),
+    )
+    event_recorder = FakeRuntimeEventRecorder()
+    use_case = RouteChatCompletion(
+        deployment_repository=repository,
+        auth_header_builder=FakeAuthHeaderBuilder(),
+        outbound_invoker=FakeOutboundInvoker(),
+        deployment_limit_guard=build_limit_guard(),
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
+        routing_selector=TieredFailoverSelector(),
+        timeout_ms=30000,
+        max_attempts=3,
+        retryable_status_codes=(429, 500, 502, 503, 504),
+        runtime_event_recorder=event_recorder,
+    )
+
+    use_case.execute(
+        ChatCompletionRequest(
+            deployment_id=deployment.id,
+            payload={"messages": [{"role": "user", "content": "Hello"}]},
+            request_id="req-456",
+        )
+    )
+
+    route_selected = event_recorder.events[0]
+    assert route_selected.failover_reason == "lower_tier_circuit_open"
+    assert route_selected.rejected_candidates[0].upstream_id == "upstream-0"
+    assert route_selected.rejected_candidates[0].reason == "circuit_open"

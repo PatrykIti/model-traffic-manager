@@ -10,7 +10,7 @@ class FakeRedisClient:
     def get(self, key: str) -> str | None:
         return self.storage.get(key)
 
-    def set(self, key: str, value: str) -> bool:
+    def set(self, key: str, value: str, *, ex: int | None = None) -> bool:
         self.storage[key] = value
         return True
 

@@ -4,12 +4,13 @@
 
 Current routing decision reasons include:
 
-- `selected_primary_weighted_round_robin`
-- `selected_failover_tier_weighted_round_robin`
-- `selected_same_tier_retry_candidate`
-- `selected_higher_tier_retry_candidate`
+- `selected_primary_healthy`
+- `selected_failover_tier`
+- `selected_same_tier_retry`
+- `selected_higher_tier_retry`
+- `selected_half_open_probe`
 
-These reasons explain which tier was selected and whether the router stayed in the same tier or moved higher during retry flow.
+These reasons explain whether the router selected a healthy primary candidate, failed over to a higher tier, retried within the same tier, or deliberately sent a half-open recovery probe.
 
 Current runtime event types that use these reasons include:
 
@@ -26,9 +27,28 @@ Key runtime event fields include:
 - `upstream_id`
 - `selected_tier`
 - `decision_reason`
+- `failover_reason`
 - `failure_reason`
 - `health_status`
 - `limiter_reason`
 - `status_code`
+- `rejected_candidates`
 
-Future observability work should expand this catalog with Azure-backed validation and troubleshooting guidance.
+`rejected_candidates` records the upstreams filtered out before a route decision, including:
+
+- `upstream_id`
+- `provider`
+- `account`
+- `region`
+- `tier`
+- rejection `reason`
+
+Common rejection reasons include:
+
+- `rate_limited`
+- `quota_exhausted`
+- `unhealthy`
+- `circuit_open`
+- `half_open_waiting_probe`
+- `half_open_probe_in_progress`
+- `already_attempted`

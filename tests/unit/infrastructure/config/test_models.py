@@ -94,3 +94,19 @@ def test_router_config_model_rejects_missing_api_key_fields() -> None:
 
     with pytest.raises(ValidationError):
         RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_unsupported_deployment_kind() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["kind"] = "audio"
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_unsupported_deployment_protocol() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["protocol"] = "openai_audio"
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)

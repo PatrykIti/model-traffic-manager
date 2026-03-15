@@ -13,8 +13,8 @@ class ListDeployments:
         return tuple(
             DeploymentSummary(
                 id=deployment.id,
-                kind=deployment.kind,
-                protocol=deployment.protocol,
+                kind=deployment.kind.value,
+                protocol=deployment.protocol.value,
                 routing_strategy=deployment.routing_strategy,
                 upstream_count=deployment.upstream_count,
                 providers=deployment.providers,

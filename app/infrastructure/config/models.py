@@ -4,7 +4,8 @@ from typing import Literal
 
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, model_validator
 
-from app.domain.entities.deployment import Deployment
+from app.domain.entities.deployment import Deployment, DeploymentKind, DeploymentProtocol
+from app.domain.entities.shared_service import SharedService
 from app.domain.entities.upstream import Upstream
 from app.domain.errors import ConfigValidationError
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
@@ -93,8 +94,8 @@ class UpstreamConfigModel(BaseModel):
 
 class DeploymentConfigModel(BaseModel):
     id: str = Field(min_length=1)
-    kind: str = Field(min_length=1)
-    protocol: str = Field(min_length=1)
+    kind: DeploymentKind
+    protocol: DeploymentProtocol
     routing: RoutingConfigModel
     limits: LimitsConfigModel
     upstreams: list[UpstreamConfigModel] = Field(min_length=1)
@@ -122,6 +123,13 @@ class SharedServiceConfigModel(BaseModel):
     endpoint: AnyHttpUrl
     auth: AuthConfigModel
 
+    def to_domain(self, name: str) -> SharedService:
+        return SharedService(
+            name=name,
+            endpoint=str(self.endpoint),
+            auth=self.auth.to_domain(),
+        )
+
 
 class RouterConfigModel(BaseModel):
     router: RouterRuntimeConfigModel
@@ -137,6 +145,12 @@ class RouterConfigModel(BaseModel):
 
     def to_domain_deployments(self) -> tuple[Deployment, ...]:
         return tuple(deployment.to_domain() for deployment in self.deployments)
+
+    def to_domain_shared_services(self) -> tuple[SharedService, ...]:
+        return tuple(
+            shared_service.to_domain(name)
+            for name, shared_service in sorted(self.shared_services.items())
+        )
 
 
 def validate_router_config(raw_config: object) -> RouterConfigModel:

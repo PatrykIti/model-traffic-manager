@@ -27,6 +27,8 @@ Current validation rules already enforced by the application:
 
 - deployment IDs must be unique
 - upstream IDs must be unique inside a deployment
+- only MVP deployment contracts are accepted:
+  `llm` with `openai_chat`, or `embeddings` with `openai_embeddings`
 - `managed_identity` requires `scope`
 - `api_key` requires `header_name` and `secret_ref`
 - `tier` must be greater than or equal to zero
@@ -35,8 +37,14 @@ Current validation rules already enforced by the application:
 Current API surface:
 
 - `GET /deployments` returns the validated deployment registry as deployment summaries
+- `GET /shared-services` returns the validated shared-service registry
 - `POST /v1/chat/completions/{deployment_id}` proxies to the selected upstream for the deployment
 - `POST /v1/embeddings/{deployment_id}` proxies to the selected upstream for the deployment
+
+Request-path guardrails:
+
+- chat completions requests fail with `409` if the deployment does not support the chat contract
+- embeddings requests fail with `409` if the deployment does not support the embeddings contract
 
 Current outbound auth support:
 

@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 43 work items
 - **In Progress:** 0 work items
-- **Done:** 132 work items
+- **Done:** 137 work items
 
 ---
 
@@ -202,3 +202,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-020-01 | Live-Model AKS Scope and Azure OpenAI Infrastructure | High | Medium | AKS, Azure OpenAI deployments, and RBAC scope implemented |
 | TASK-020-02 | Live-Model Runner and Router Configuration Generation | High | Small | Dedicated runner and Terraform-output-based runtime config implemented |
 | TASK-020-03 | Live-Model E2E Test Suite and Operator Docs | High | Small | Real model-response validation and operator guidance completed |
+| TASK-021 | MVP Closure, Runtime State Activation, and Contract Hardening | High | Large | Remaining application-side MVP gaps closed and documentation reconciled |
+| TASK-021-01 | Supported Deployment Contracts, Endpoint Guards, and Shared-Service Registry | High | Medium | MVP contract validation and active shared-service registry implemented |
+| TASK-021-02 | Half-Open Circuit Recovery and Health-State Transition Hardening | High | Medium | Real half-open probe semantics and hardened recovery transitions implemented |
+| TASK-021-03 | Redis-Backed Runtime State Activation and Shared Coordination | High | Medium | Active runtime switch for Redis-backed health and limiter coordination implemented |
+| TASK-021-04 | Explainable Routing Rejection Diagnostics and Status Reconciliation | High | Medium | Rejected-candidate diagnostics and final docs/status reconciliation completed |

@@ -113,6 +113,14 @@ Current repository activation:
 - scope-specific overrides: `infra/e2e-aks/env/dev1.tfvars` and `infra/e2e-aks/env/prd1.tfvars`
 - local command: `make e2e-aks-local`
 
+Current smoke coverage:
+
+- `GET /health/live`
+- `GET /health/ready`
+- `GET /deployments`
+- `GET /shared-services`
+- `GET /metrics`
+
 ### 5. `e2e-aks-live-model`
 
 Purpose:
@@ -132,6 +140,12 @@ Current repository activation:
 - infra scope: `infra/e2e-aks-live-model/`
 - current model profile: `gpt-5` and `gpt-5.1` in `swedencentral`
 
+Current live-model coverage:
+
+- real `POST /v1/chat/completions/{deployment_id}` requests through AKS
+- router config generated from Terraform outputs
+- live response validation with a non-empty assistant message
+
 Default rule:
 
 - use this suite deliberately because it consumes real model quota and provisions broader temporary infrastructure
@@ -139,6 +153,11 @@ Default rule:
 Default rule:
 
 - this level remains opt-in and is not part of the default PR quality workflow
+
+Recommended next additions:
+
+- a Redis-backed AKS profile that proves shared health and limiter state in-cluster
+- a live-model embeddings profile once the dedicated infrastructure provisions an embeddings deployment
 
 ## Phase mapping
 

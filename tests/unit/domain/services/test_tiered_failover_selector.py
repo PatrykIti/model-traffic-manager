@@ -31,7 +31,7 @@ def test_selector_picks_lowest_available_tier() -> None:
     assert selection is not None
     assert selection.upstream.id == "tier-0"
     assert selection.selected_tier == 0
-    assert selection.reason == "selected_primary_weighted_round_robin"
+    assert selection.reason == "selected_primary_healthy"
 
 
 def test_selector_uses_weighted_round_robin_within_tier() -> None:
@@ -80,9 +80,11 @@ def test_selector_moves_to_next_candidate_when_excluded() -> None:
     assert higher_tier is not None
     assert initial.upstream.id == "primary-a"
     assert retry.upstream.id == "primary-b"
-    assert retry.reason == "selected_same_tier_retry_candidate"
+    assert retry.reason == "selected_same_tier_retry"
+    assert retry.failover_reason == "previous_attempt_failed"
     assert higher_tier.upstream.id == "secondary-a"
-    assert higher_tier.reason == "selected_higher_tier_retry_candidate"
+    assert higher_tier.reason == "selected_higher_tier_retry"
+    assert higher_tier.failover_reason == "previous_attempt_failed"
 
 
 def test_selector_skips_unavailable_primary_tier_states() -> None:
@@ -101,4 +103,38 @@ def test_selector_skips_unavailable_primary_tier_states() -> None:
     assert selection is not None
     assert selection.upstream.id == "secondary-a"
     assert selection.selected_tier == 1
-    assert selection.reason == "selected_failover_tier_weighted_round_robin"
+    assert selection.reason == "selected_failover_tier"
+    assert selection.failover_reason == "lower_tier_circuit_open"
+    assert selection.rejected_candidates[0].reason == "circuit_open"
+
+
+def test_selector_prefers_healthy_candidates_over_half_open_candidates() -> None:
+    selector = TieredFailoverSelector()
+    upstreams = (
+        build_upstream("primary-healthy", tier=0, weight=100),
+        build_upstream("primary-half-open", tier=0, weight=100),
+    )
+
+    selection = selector.select(
+        "deployment-a",
+        upstreams,
+        states={"primary-half-open": HealthState(status=HealthStatus.HALF_OPEN)},
+    )
+
+    assert selection is not None
+    assert selection.upstream.id == "primary-healthy"
+    assert selection.rejected_candidates[0].reason == "half_open_waiting_probe"
+
+
+def test_selector_marks_temporarily_blocked_half_open_candidates() -> None:
+    selector = TieredFailoverSelector()
+    upstreams = (build_upstream("primary-half-open", tier=0, weight=100),)
+
+    selection = selector.select(
+        "deployment-a",
+        upstreams,
+        states={"primary-half-open": HealthState(status=HealthStatus.HALF_OPEN)},
+        temporarily_blocked_upstream_ids=frozenset({"primary-half-open"}),
+    )
+
+    assert selection is None

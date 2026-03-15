@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from math import ceil
+
 from app.application.deployment_limit_guard import DeploymentLimitGuard
 from app.application.dto.embeddings_request import EmbeddingsRequest
 from app.application.dto.outbound_response import OutboundResponse
@@ -11,16 +13,17 @@ from app.application.ports.outbound_invoker import OutboundInvoker
 from app.application.ports.runtime_event_recorder import RuntimeEventRecorder
 from app.domain.entities.upstream import Upstream
 from app.domain.errors import (
+    DeploymentContractMismatchError,
     DeploymentNotFound,
     OutboundConnectionError,
     OutboundTimeoutError,
     UpstreamSelectionError,
 )
 from app.domain.services.health_state_policy import HealthStatePolicy
-from app.domain.services.tiered_failover_selector import TieredFailoverSelector
+from app.domain.services.tiered_failover_selector import RouteSelection, TieredFailoverSelector
 from app.domain.services.upstream_failure_classifier import UpstreamFailureClassifier
 from app.domain.value_objects.failure_classification import FailureClassification, FailureReason
-from app.domain.value_objects.health_state import HealthState
+from app.domain.value_objects.health_state import HealthState, HealthStatus
 
 
 class RouteEmbeddings:
@@ -58,6 +61,10 @@ class RouteEmbeddings:
             raise DeploymentNotFound(
                 f"Deployment '{request.deployment_id}' was not found in the registry."
             )
+        if not deployment.supports_embeddings():
+            raise DeploymentContractMismatchError(
+                f"Deployment '{request.deployment_id}' does not support embeddings."
+            )
 
         if not deployment.upstreams:
             raise UpstreamSelectionError("Deployment does not define any upstreams.")
@@ -70,20 +77,25 @@ class RouteEmbeddings:
         try:
             states = self._load_states(deployment.id, deployment.upstreams)
             attempted_upstream_ids: set[str] = set()
+            probe_blocked_upstream_ids: set[str] = set()
             last_response: OutboundResponse | None = None
             last_transport_error: OutboundTimeoutError | OutboundConnectionError | None = None
+            next_failover_reason: str | None = None
 
             for attempt in range(1, self._max_attempts + 1):
-                selection = self._routing_selector.select(
+                selection_result = self._select_candidate(
                     deployment_id=deployment.id,
                     upstreams=deployment.upstreams,
                     states=states,
-                    excluded_upstream_ids=frozenset(attempted_upstream_ids),
+                    attempted_upstream_ids=attempted_upstream_ids,
+                    probe_blocked_upstream_ids=probe_blocked_upstream_ids,
                 )
-                if selection is None:
+                if selection_result is None:
                     break
+                selection, has_half_open_probe = selection_result
 
                 attempted_upstream_ids.add(selection.upstream.id)
+                probe_blocked_upstream_ids.clear()
                 headers = self._auth_header_builder.build(selection.upstream.auth)
                 self._record_event(
                     RuntimeEvent(
@@ -98,6 +110,8 @@ class RouteEmbeddings:
                         region=selection.upstream.region,
                         selected_tier=selection.selected_tier,
                         decision_reason=selection.reason,
+                        failover_reason=next_failover_reason or selection.failover_reason,
+                        rejected_candidates=selection.rejected_candidates,
                     )
                 )
 
@@ -109,6 +123,11 @@ class RouteEmbeddings:
                         timeout_ms=self._timeout_ms,
                     )
                 except (OutboundTimeoutError, OutboundConnectionError) as exc:
+                    if has_half_open_probe:
+                        self._health_state_repository.clear_half_open_probe(
+                            deployment.id,
+                            selection.upstream.id,
+                        )
                     failure = self._failure_classifier.classify_transport_error(exc)
                     states[selection.upstream.id] = self._health_state_policy.record_failure(
                         states.get(selection.upstream.id, HealthState()),
@@ -129,12 +148,14 @@ class RouteEmbeddings:
                             upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
+                            failover_reason=next_failover_reason or selection.failover_reason,
                             failure_reason=failure.reason.value,
                             health_status=states[selection.upstream.id].status.value,
                             outcome="retryable_transport_failure",
                         )
                     )
                     last_transport_error = exc
+                    next_failover_reason = failure.reason.value
                     if not self._can_retry_failure(
                         failure=failure,
                         attempted_upstream_ids=attempted_upstream_ids,
@@ -144,6 +165,11 @@ class RouteEmbeddings:
                     continue
 
                 if response.status_code < 400:
+                    if has_half_open_probe:
+                        self._health_state_repository.clear_half_open_probe(
+                            deployment.id,
+                            selection.upstream.id,
+                        )
                     states[selection.upstream.id] = self._health_state_policy.record_success(
                         states.get(selection.upstream.id, HealthState())
                     )
@@ -162,6 +188,7 @@ class RouteEmbeddings:
                             upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
+                            failover_reason=next_failover_reason or selection.failover_reason,
                             outcome="success",
                             status_code=response.status_code,
                         )
@@ -176,6 +203,11 @@ class RouteEmbeddings:
                     text_body=response.text_body,
                 )
                 if not self._is_retriable_failure(failure, response):
+                    if has_half_open_probe:
+                        self._health_state_repository.clear_half_open_probe(
+                            deployment.id,
+                            selection.upstream.id,
+                        )
                     self._record_event(
                         RuntimeEvent(
                             event_type="request_completed",
@@ -186,6 +218,7 @@ class RouteEmbeddings:
                             upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
+                            failover_reason=next_failover_reason or selection.failover_reason,
                             outcome="non_retriable_response",
                             failure_reason=failure.reason.value,
                             status_code=response.status_code,
@@ -193,6 +226,11 @@ class RouteEmbeddings:
                     )
                     return response
 
+                if has_half_open_probe:
+                    self._health_state_repository.clear_half_open_probe(
+                        deployment.id,
+                        selection.upstream.id,
+                    )
                 states[selection.upstream.id] = self._health_state_policy.record_failure(
                     states.get(selection.upstream.id, HealthState()),
                     failure,
@@ -212,6 +250,7 @@ class RouteEmbeddings:
                         upstream_id=selection.upstream.id,
                         selected_tier=selection.selected_tier,
                         decision_reason=selection.reason,
+                        failover_reason=next_failover_reason or selection.failover_reason,
                         failure_reason=failure.reason.value,
                         health_status=states[selection.upstream.id].status.value,
                         retry_after_seconds=failure.retry_after_seconds,
@@ -219,6 +258,7 @@ class RouteEmbeddings:
                         status_code=response.status_code,
                     )
                 )
+                next_failover_reason = failure.reason.value
                 if not self._can_retry_failure(
                     failure=failure,
                     attempted_upstream_ids=attempted_upstream_ids,
@@ -234,6 +274,7 @@ class RouteEmbeddings:
                             upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
+                            failover_reason=next_failover_reason or selection.failover_reason,
                             outcome="retriable_response_exhausted",
                             failure_reason=failure.reason.value,
                             status_code=response.status_code,
@@ -295,6 +336,42 @@ class RouteEmbeddings:
                 )
 
         return normalized_states
+
+    def _select_candidate(
+        self,
+        deployment_id: str,
+        upstreams: tuple[Upstream, ...],
+        states: dict[str, HealthState],
+        attempted_upstream_ids: set[str],
+        probe_blocked_upstream_ids: set[str],
+    ) -> tuple[RouteSelection, bool] | None:
+        while True:
+            selection = self._routing_selector.select(
+                deployment_id=deployment_id,
+                upstreams=upstreams,
+                states=states,
+                excluded_upstream_ids=frozenset(attempted_upstream_ids),
+                temporarily_blocked_upstream_ids=frozenset(probe_blocked_upstream_ids),
+            )
+            if selection is None:
+                return None
+
+            state = states.get(selection.upstream.id, HealthState())
+            if state.status is not HealthStatus.HALF_OPEN:
+                return selection, False
+
+            acquired = self._health_state_repository.try_acquire_half_open_probe(
+                deployment_id,
+                selection.upstream.id,
+                self._half_open_probe_ttl_seconds(),
+            )
+            if acquired:
+                return selection, True
+
+            probe_blocked_upstream_ids.add(selection.upstream.id)
+
+    def _half_open_probe_ttl_seconds(self) -> int:
+        return max(ceil(self._timeout_ms / 1000) + 1, 1)
 
     def _record_event(self, event: RuntimeEvent) -> None:
         if self._runtime_event_recorder is not None:

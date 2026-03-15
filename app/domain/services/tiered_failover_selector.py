@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from math import gcd
 
 from app.domain.entities.upstream import Upstream
-from app.domain.value_objects.health_state import HealthState
+from app.domain.value_objects.health_state import HealthState, HealthStatus
+from app.domain.value_objects.route_candidate_rejection import RouteCandidateRejection
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,6 +14,8 @@ class RouteSelection:
     upstream: Upstream
     selected_tier: int
     reason: str
+    failover_reason: str | None = None
+    rejected_candidates: tuple[RouteCandidateRejection, ...] = ()
 
 
 class TieredFailoverSelector:
@@ -25,14 +28,45 @@ class TieredFailoverSelector:
         upstreams: tuple[Upstream, ...],
         states: Mapping[str, HealthState] | None = None,
         excluded_upstream_ids: frozenset[str] = frozenset(),
+        temporarily_blocked_upstream_ids: frozenset[str] = frozenset(),
     ) -> RouteSelection | None:
         states = states or {}
-        available = tuple(
-            upstream
-            for upstream in upstreams
-            if upstream.id not in excluded_upstream_ids
-            and states.get(upstream.id, HealthState()).is_available()
-        )
+        available_healthy: list[Upstream] = []
+        available_half_open: list[Upstream] = []
+        half_open_waiting: list[Upstream] = []
+        rejected_candidates: list[RouteCandidateRejection] = []
+
+        for upstream in upstreams:
+            state = states.get(upstream.id, HealthState())
+            if upstream.id in excluded_upstream_ids:
+                rejected_candidates.append(self._build_rejection(upstream, "already_attempted"))
+                continue
+            if upstream.id in temporarily_blocked_upstream_ids:
+                rejected_candidates.append(
+                    self._build_rejection(upstream, "half_open_probe_in_progress")
+                )
+                continue
+            if state.status is HealthStatus.HEALTHY:
+                available_healthy.append(upstream)
+                continue
+            if state.status is HealthStatus.HALF_OPEN:
+                available_half_open.append(upstream)
+                half_open_waiting.append(upstream)
+                continue
+
+            rejected_candidates.append(
+                self._build_rejection(upstream, self._reason_for_state(state.status))
+            )
+
+        available = tuple(available_healthy)
+        if not available:
+            available = tuple(available_half_open)
+        else:
+            rejected_candidates.extend(
+                self._build_rejection(upstream, "half_open_waiting_probe")
+                for upstream in half_open_waiting
+            )
+
         if not available:
             return None
 
@@ -40,19 +74,30 @@ class TieredFailoverSelector:
         tier_upstreams = tuple(
             upstream for upstream in available if upstream.tier == selected_tier
         )
-        upstream = self._pick_weighted_round_robin(
+        selected_upstream = self._pick_weighted_round_robin(
             deployment_id=deployment_id,
             tier=selected_tier,
             upstreams=tier_upstreams,
             excluded_upstream_ids=excluded_upstream_ids,
         )
-        if upstream is None:
+        if selected_upstream is None:
             return None
 
         return RouteSelection(
-            upstream=upstream,
+            upstream=selected_upstream,
             selected_tier=selected_tier,
-            reason=self._build_reason(selected_tier, excluded_upstream_ids),
+            reason=self._build_reason(
+                selected_tier=selected_tier,
+                excluded_upstream_ids=excluded_upstream_ids,
+                selected_state=states.get(selected_upstream.id, HealthState()).status,
+            ),
+            failover_reason=self._build_failover_reason(
+                selected_tier=selected_tier,
+                excluded_upstream_ids=excluded_upstream_ids,
+                rejected_candidates=tuple(rejected_candidates),
+                selected_state=states.get(selected_upstream.id, HealthState()).status,
+            ),
+            rejected_candidates=tuple(rejected_candidates),
         )
 
     def _pick_weighted_round_robin(
@@ -110,12 +155,66 @@ class TieredFailoverSelector:
         return tuple(weight // common_divisor for weight in weights)
 
     @staticmethod
-    def _build_reason(selected_tier: int, excluded_upstream_ids: frozenset[str]) -> str:
+    def _build_reason(
+        selected_tier: int,
+        excluded_upstream_ids: frozenset[str],
+        selected_state: HealthStatus,
+    ) -> str:
+        if selected_state is HealthStatus.HALF_OPEN:
+            return "selected_half_open_probe"
         if not excluded_upstream_ids:
             if selected_tier == 0:
-                return "selected_primary_weighted_round_robin"
-            return "selected_failover_tier_weighted_round_robin"
+                return "selected_primary_healthy"
+            return "selected_failover_tier"
 
         if selected_tier == 0:
-            return "selected_same_tier_retry_candidate"
-        return "selected_higher_tier_retry_candidate"
+            return "selected_same_tier_retry"
+        return "selected_higher_tier_retry"
+
+    @staticmethod
+    def _build_failover_reason(
+        selected_tier: int,
+        excluded_upstream_ids: frozenset[str],
+        rejected_candidates: tuple[RouteCandidateRejection, ...],
+        selected_state: HealthStatus,
+    ) -> str | None:
+        if selected_state is HealthStatus.HALF_OPEN:
+            return "circuit_recovery_probe"
+        if excluded_upstream_ids:
+            return "previous_attempt_failed"
+        if selected_tier == 0:
+            return None
+
+        lower_tier_reasons = {
+            rejected.reason
+            for rejected in rejected_candidates
+            if rejected.tier < selected_tier and rejected.reason != "already_attempted"
+        }
+        if not lower_tier_reasons:
+            return None
+        if len(lower_tier_reasons) == 1:
+            return f"lower_tier_{next(iter(lower_tier_reasons))}"
+        return "lower_tier_mixed_rejections"
+
+    @staticmethod
+    def _reason_for_state(status: HealthStatus) -> str:
+        return {
+            HealthStatus.RATE_LIMITED: "rate_limited",
+            HealthStatus.QUOTA_EXHAUSTED: "quota_exhausted",
+            HealthStatus.COOLDOWN: "cooldown",
+            HealthStatus.UNHEALTHY: "unhealthy",
+            HealthStatus.CIRCUIT_OPEN: "circuit_open",
+            HealthStatus.HALF_OPEN: "half_open",
+            HealthStatus.HEALTHY: "healthy",
+        }[status]
+
+    @staticmethod
+    def _build_rejection(upstream: Upstream, reason: str) -> RouteCandidateRejection:
+        return RouteCandidateRejection(
+            upstream_id=upstream.id,
+            provider=upstream.provider,
+            account=upstream.account,
+            region=upstream.region,
+            tier=upstream.tier,
+            reason=reason,
+        )

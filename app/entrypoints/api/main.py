@@ -12,6 +12,7 @@ from app.entrypoints.api.routes_deployments import router as deployments_router
 from app.entrypoints.api.routes_embeddings import router as embeddings_router
 from app.entrypoints.api.routes_health import router as health_router
 from app.entrypoints.api.routes_metrics import router as metrics_router
+from app.entrypoints.api.routes_shared_services import router as shared_services_router
 from app.infrastructure.bootstrap.container import build_container
 from app.infrastructure.config.settings import AppSettings, load_settings
 from app.infrastructure.observability.logging import configure_logging, get_logger
@@ -37,6 +38,8 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         )
         yield
         container.outbound_invoker.close()
+        if container.redis_client is not None:
+            container.redis_client.close()
         logger.info("application_shutdown", environment=settings.environment)
 
     app = FastAPI(
@@ -51,6 +54,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     app.include_router(health_router)
     app.include_router(metrics_router)
     app.include_router(deployments_router)
+    app.include_router(shared_services_router)
     register_error_handlers(app)
     return app
 

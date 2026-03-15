@@ -98,5 +98,32 @@ def test_normalize_recovers_expired_states() -> None:
 
     assert rate_limited.status is HealthStatus.HEALTHY
     assert rate_limited.consecutive_failures == 1
-    assert circuit_open.status is HealthStatus.HEALTHY
+    assert circuit_open.status is HealthStatus.HALF_OPEN
     assert circuit_open.consecutive_failures == 2
+
+
+def test_record_failure_reopens_circuit_from_half_open_probe() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=2,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 200,
+    )
+
+    state = policy.record_failure(
+        HealthState(
+            status=HealthStatus.HALF_OPEN,
+            consecutive_failures=2,
+            last_failure_reason=FailureReason.UNHEALTHY,
+        ),
+        FailureClassification(
+            reason=FailureReason.RATE_LIMITED,
+            retriable=True,
+            retry_after_seconds=15,
+        ),
+    )
+
+    assert state.status is HealthStatus.CIRCUIT_OPEN
+    assert state.consecutive_failures == 3
+    assert state.circuit_open_until == 260
+    assert state.last_failure_reason is FailureReason.RATE_LIMITED

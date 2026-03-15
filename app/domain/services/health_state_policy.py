@@ -45,7 +45,7 @@ class HealthStatePolicy:
             and state.circuit_open_until <= now
         ):
             return HealthState(
-                status=HealthStatus.HEALTHY,
+                status=HealthStatus.HALF_OPEN,
                 consecutive_failures=state.consecutive_failures,
                 last_failure_reason=state.last_failure_reason,
             )
@@ -63,6 +63,20 @@ class HealthStatePolicy:
     ) -> HealthState:
         normalized_state = self.normalize(state)
         now = self._now_provider()
+
+        if normalized_state.status is HealthStatus.HALF_OPEN and failure.retriable:
+            reopen_seconds = self._half_open_after_seconds
+            if failure.retry_after_seconds is not None:
+                reopen_seconds = max(reopen_seconds, failure.retry_after_seconds)
+            return HealthState(
+                status=HealthStatus.CIRCUIT_OPEN,
+                consecutive_failures=max(
+                    normalized_state.consecutive_failures + 1,
+                    self._failure_threshold,
+                ),
+                circuit_open_until=now + reopen_seconds,
+                last_failure_reason=failure.reason,
+            )
 
         if failure.reason is FailureReason.RATE_LIMITED:
             cooldown_until = now + (

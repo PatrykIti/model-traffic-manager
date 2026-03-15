@@ -19,6 +19,12 @@ def test_non_healthy_state_is_not_available() -> None:
     assert state.is_available() is False
 
 
+def test_half_open_state_is_available_for_probe_selection() -> None:
+    state = HealthState(status=HealthStatus.HALF_OPEN, consecutive_failures=2)
+
+    assert state.is_available() is True
+
+
 def test_consecutive_failures_must_be_non_negative() -> None:
     with pytest.raises(DomainInvariantError):
         HealthState(consecutive_failures=-1)
