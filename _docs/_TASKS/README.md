@@ -57,49 +57,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-021 | Helm-Based AKS Packaging and Release Contract | High | Large | Replace raw AKS manifests with a stable chart-based release model |
-| TASK-021-01 | Helm Chart Structure and Values Surface | High | Medium | Create the repository-owned chart and baseline values model |
-| TASK-021-01-01 | Values Contract for Image, Config, Identity, Service, and Probes | High | Small | Define the minimal chart values contract |
-| TASK-021-02 | AKS Runner and Workflow Migration from Raw Manifests to Helm | High | Medium | Move AKS-backed validation paths to Helm release operations |
-| TASK-021-03 | Docs and Operator Release Guidance | High | Small | Document the chart contract and operator flow |
-| TASK-022 | ACR-Backed Image Delivery and AKS Registry Auth | High | Medium | Add an Azure-native registry path for AKS-backed validation |
-| TASK-022-01 | ACR Scope and Role-Assignment Contract | High | Medium | Define ACR and pull-permission infrastructure |
-| TASK-022-02 | Local and CI Build-Push Path and Naming Policy | High | Medium | Standardize ACR image build, tag, and push behavior |
-| TASK-022-03 | Docs and Operator Auth Guidance | High | Small | Document the ACR-backed auth path |
-| TASK-023 | Real Provider Parity in `integration-azure` | High | Medium | Add faster Azure-backed live-provider validation without AKS |
-| TASK-023-01 | Chat Completions Live Provider Request Path | High | Small | Add real provider chat validation to `integration-azure` |
-| TASK-023-02 | Embeddings Live Provider Request Path and Auth Matrix | High | Medium | Add live embeddings validation and explicit auth split |
-| TASK-023-02-01 | Managed Identity Provider Path | High | Small | Validate live embeddings under Managed Identity |
-| TASK-023-02-02 | API-Key Fallback Provider Path | High | Small | Add an explicit opt-in API-key live path |
-| TASK-023-03 | Cost Guardrails, Docs, and Operator Contract | High | Small | Document when to use the faster Azure-backed live path |
-| TASK-024 | Private-Endpoint Azure OpenAI Connectivity for Live Suites | High | Large | Add a private-path live validation model for Azure OpenAI |
-| TASK-024-01 | Network Scope Model for VNet, Private Endpoint, and Private DNS | High | Medium | Define the private connectivity Terraform shape |
-| TASK-024-01-01 | Public-Network-Disable and Name-Resolution Invariants | High | Small | Define the private-path DNS and exposure invariants |
-| TASK-024-02 | AKS Live-Suite Private-Path Deployment and Validation | High | Medium | Validate a real private-path response through AKS |
-| TASK-024-03 | Docs and Troubleshooting Runbook | High | Small | Document the private-path diagnostics and runbook |
-| TASK-025 | E2E AKS Embeddings Live-Model Suite | High | Medium | Add end-to-end live embeddings validation on AKS |
-| TASK-025-01 | Live-Model Scope and Config Reuse for Embeddings | High | Small | Reuse the current live-model shape for embeddings |
-| TASK-025-02 | AKS Embeddings Live Suite and Response Contract | High | Medium | Add real embeddings assertions through AKS |
-| TASK-025-03 | Docs and Task/Changelog Alignment | High | Small | Document the embeddings live suite and tracking updates |
-| TASK-026 | Router Performance Characterization and Load Baseline | High | Large | Add repeatable performance evidence for the router |
-| TASK-026-01 | Repeatable Load Profiles and Result Capture | High | Medium | Create the benchmark harness and result model |
-| TASK-026-01-01 | Latency, Throughput, Saturation Thresholds, and Reporting Format | High | Small | Define the benchmark output contract |
-| TASK-026-02 | Failure-Injected Performance and Degradation Scenarios | High | Medium | Measure degraded-path behavior under failure conditions |
-| TASK-026-02-01 | Timeout, `429`, and `5xx` Chaos Matrix and Assertions | High | Small | Define the minimum failure matrix for performance runs |
-| TASK-026-03 | Docs and Operator Benchmark Contract | High | Small | Document how router benchmarks are run and interpreted |
-| TASK-027 | Security Review and Secure-by-Default Hardening | High | Large | Run a router-focused security review and remediation pass |
-| TASK-027-01 | Threat Model and Trust-Boundary Review | High | Medium | Capture the router threat model and main boundaries |
-| TASK-027-01-01 | Inbound, Outbound, and Identity-Boundary Audit | High | Small | Audit identity separation across router flows |
-| TASK-027-02 | Secret, Config, Logging, and Telemetry Exposure Audit | High | Medium | Review runtime outputs for sensitive data exposure |
-| TASK-027-03 | Dependency, Container, and Supply-Chain Scanning Contract | High | Medium | Define the minimum scanning and artifact-review contract |
-| TASK-027-04 | Security Docs and Remediation Tracking | High | Small | Record findings and remediation outcomes |
-| TASK-028 | Release Maturity, Versioning, and Compatibility Contract | High | Medium | Define the release-candidate contract for the router |
-| TASK-028-01 | Stronger Coverage Gate and Flake-Resistance Contract | High | Small | Raise and stabilize the test-quality bar |
-| TASK-028-02 | Configuration Schema Versioning and Compatibility Policy | High | Medium | Define config evolution and compatibility rules |
-| TASK-028-03 | Release Checklist, Semantic Versioning, and Artifact Contract | High | Small | Define stable release expectations and artifact rules |
-| TASK-029 | Router `1.0` Readiness Review and Exit Criteria | High | Medium | Consolidate evidence into a future stable-release decision |
-| TASK-029-01 | Evidence Consolidation Across Validation, Performance, and Security | High | Small | Collect the evidence for a stable-release review |
-| TASK-029-02 | Go/No-Go Checklist and Remaining-Risk Register | High | Small | Capture the exit criteria and unresolved risks |
+
 ---
 
 ## In Progress
