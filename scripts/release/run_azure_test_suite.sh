@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 SUITE="${1:-}"
 ENVIRONMENT="${2:-dev1}"
@@ -69,6 +69,39 @@ e2e_namespace="${E2E_NAMESPACE:-e2e-router}"
 e2e_image="${E2E_IMAGE:-}"
 federated_credential_created="0"
 
+print_e2e_diagnostics() {
+  if [[ "$SUITE" != "e2e-aks" || -z "$aks_cluster_name" ]]; then
+    return
+  fi
+
+  echo "----- e2e-aks diagnostics: kubectl get all -----" >&2
+  kubectl get all -n "$e2e_namespace" >&2 || true
+
+  echo "----- e2e-aks diagnostics: deployment describe -----" >&2
+  kubectl describe deployment/router-app -n "$e2e_namespace" >&2 || true
+
+  while IFS= read -r pod_name; do
+    [[ -z "$pod_name" ]] && continue
+    echo "----- e2e-aks diagnostics: describe ${pod_name} -----" >&2
+    kubectl describe -n "$e2e_namespace" "pod/${pod_name}" >&2 || true
+    echo "----- e2e-aks diagnostics: logs ${pod_name} -----" >&2
+    kubectl logs -n "$e2e_namespace" "pod/${pod_name}" --all-containers=true --tail=200 >&2 || true
+  done < <(kubectl get pods -n "$e2e_namespace" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
+
+  echo "----- e2e-aks diagnostics: events -----" >&2
+  kubectl get events -n "$e2e_namespace" --sort-by=.metadata.creationTimestamp >&2 || true
+}
+
+on_error() {
+  local line_no="$1"
+  local failed_command="$2"
+  local exit_code="$3"
+
+  echo "Error: command failed at line ${line_no}: ${failed_command}" >&2
+  print_e2e_diagnostics
+  exit "$exit_code"
+}
+
 cleanup() {
   exit_code=$?
   destroy_exit_code=0
@@ -105,6 +138,7 @@ cleanup() {
 }
 
 trap cleanup EXIT INT TERM
+trap 'on_error "$LINENO" "$BASH_COMMAND" "$?"' ERR
 
 echo "Azure account: ${account_name}"
 echo "Subscription: ${subscription_id}"
