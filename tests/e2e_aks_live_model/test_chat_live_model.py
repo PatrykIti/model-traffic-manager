@@ -38,7 +38,7 @@ def test_router_returns_live_model_response() -> None:
                         "content": "Reply with exactly one short word: ok",
                     }
                 ],
-                "max_tokens": 8,
+                "max_completion_tokens": 8,
             }
 
             response = None
