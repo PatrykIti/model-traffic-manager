@@ -47,7 +47,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 0 work items
+- **To Do:** 24 work items
 - **In Progress:** 0 work items
 - **Done:** 132 work items
 
@@ -57,6 +57,30 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
+| TASK-021 | Helm-Based AKS Packaging and Release Contract | High | Large | Replace raw AKS manifests with a stable chart-based release model |
+| TASK-021-01 | Helm Chart Structure and Values Surface | High | Medium | Create the repository-owned chart and baseline values model |
+| TASK-021-01-01 | Values Contract for Image, Config, Identity, Service, and Probes | High | Small | Define the minimal chart values contract |
+| TASK-021-02 | AKS Runner and Workflow Migration from Raw Manifests to Helm | High | Medium | Move AKS-backed validation paths to Helm release operations |
+| TASK-021-03 | Docs and Operator Release Guidance | High | Small | Document the chart contract and operator flow |
+| TASK-022 | ACR-Backed Image Delivery and AKS Registry Auth | High | Medium | Add an Azure-native registry path for AKS-backed validation |
+| TASK-022-01 | ACR Scope and Role-Assignment Contract | High | Medium | Define ACR and pull-permission infrastructure |
+| TASK-022-02 | Local and CI Build-Push Path and Naming Policy | High | Medium | Standardize ACR image build, tag, and push behavior |
+| TASK-022-03 | Docs and Operator Auth Guidance | High | Small | Document the ACR-backed auth path |
+| TASK-023 | Real Provider Parity in `integration-azure` | High | Medium | Add faster Azure-backed live-provider validation without AKS |
+| TASK-023-01 | Chat Completions Live Provider Request Path | High | Small | Add real provider chat validation to `integration-azure` |
+| TASK-023-02 | Embeddings Live Provider Request Path and Auth Matrix | High | Medium | Add live embeddings validation and explicit auth split |
+| TASK-023-02-01 | Managed Identity Provider Path | High | Small | Validate live embeddings under Managed Identity |
+| TASK-023-02-02 | API-Key Fallback Provider Path | High | Small | Add an explicit opt-in API-key live path |
+| TASK-023-03 | Cost Guardrails, Docs, and Operator Contract | High | Small | Document when to use the faster Azure-backed live path |
+| TASK-024 | Private-Endpoint Azure OpenAI Connectivity for Live Suites | High | Large | Add a private-path live validation model for Azure OpenAI |
+| TASK-024-01 | Network Scope Model for VNet, Private Endpoint, and Private DNS | High | Medium | Define the private connectivity Terraform shape |
+| TASK-024-01-01 | Public-Network-Disable and Name-Resolution Invariants | High | Small | Define the private-path DNS and exposure invariants |
+| TASK-024-02 | AKS Live-Suite Private-Path Deployment and Validation | High | Medium | Validate a real private-path response through AKS |
+| TASK-024-03 | Docs and Troubleshooting Runbook | High | Small | Document the private-path diagnostics and runbook |
+| TASK-025 | E2E AKS Embeddings Live-Model Suite | High | Medium | Add end-to-end live embeddings validation on AKS |
+| TASK-025-01 | Live-Model Scope and Config Reuse for Embeddings | High | Small | Reuse the current live-model shape for embeddings |
+| TASK-025-02 | AKS Embeddings Live Suite and Response Contract | High | Medium | Add real embeddings assertions through AKS |
+| TASK-025-03 | Docs and Task/Changelog Alignment | High | Small | Document the embeddings live suite and tracking updates |
 ---
 
 ## In Progress
