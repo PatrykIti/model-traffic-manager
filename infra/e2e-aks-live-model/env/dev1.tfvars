@@ -11,10 +11,10 @@ openai_chat_deployments = [
     enabled               = true
   },
   {
-    router_deployment_id  = "gpt-5-2"
-    azure_deployment_name = "gpt-5-2"
-    model_name            = "gpt-5.2"
-    model_version         = "2025-12-11"
+    router_deployment_id  = "gpt-5"
+    azure_deployment_name = "gpt-5"
+    model_name            = "gpt-5"
+    model_version         = "2025-08-07"
     sku_name              = "GlobalStandard"
     capacity              = 1
     enabled               = true
