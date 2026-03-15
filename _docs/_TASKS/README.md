@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 43 work items
 - **In Progress:** 0 work items
-- **Done:** 149 work items
+- **Done:** 151 work items
 
 ---
 
@@ -218,4 +218,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-024 | Shared Services Execution Model and Backend-Facing Proxy Surface | High | Large | Executable shared-service modes implemented without turning the router into a generic gateway |
 | TASK-024-01 | Shared-Service Config and Domain Contract for Execution Modes | High | Medium | Typed execution-mode model for shared services implemented |
 | TASK-024-02 | Backend-Facing Shared-Service Execution Use Case and API Route | High | Medium | First shared-service proxy route for backend callers implemented |
+| TASK-025 | Shared-Service Example YAML Catalog | High | Small | Real shared-service example router configs added and linked from official docs |
+| TASK-025-01 | Official Shared-Service Example Router Configs | High | Small | Full example router YAMLs added for direct, single-endpoint, and failover service modes |
 | TASK-024-03 | Tests, Official Docs, and Changelog Alignment for Shared-Service Execution | High | Medium | Proof and docs for the new execution surface completed |

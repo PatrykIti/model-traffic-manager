@@ -57,3 +57,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 24 | 2026-03-15 | Environment example and root README reconciliation | docs/root |
 | 25 | 2026-03-15 | Shared services execution model and backend-facing proxy surface | feature/shared-services |
 | 26 | 2026-03-15 | Shared services planning closure and task reconciliation | docs/planning |
+| 27 | 2026-03-15 | Shared-service example YAML catalog | docs/examples |

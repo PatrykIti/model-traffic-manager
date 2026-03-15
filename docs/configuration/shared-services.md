@@ -82,6 +82,16 @@ For provider-managed storage and large object traffic, the preferred model remai
 - `POST /v1/shared-services/{service_id}`
   executes router-proxied HTTP/JSON shared services only
 
+## Full Example Files
+
+Ready-to-copy example router configs:
+
+- [shared-services-direct-backend-access.router.yaml](../../configs/examples/shared-services-direct-backend-access.router.yaml)
+- [shared-services-router-proxy-single-endpoint.router.yaml](../../configs/examples/shared-services-router-proxy-single-endpoint.router.yaml)
+- [shared-services-router-proxy-tiered-failover.router.yaml](../../configs/examples/shared-services-router-proxy-tiered-failover.router.yaml)
+
+These files show the full router config shape, not only the `shared_services` fragment.
+
 ## Example Shapes
 
 Direct backend access:
