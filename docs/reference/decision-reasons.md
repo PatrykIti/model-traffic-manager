@@ -9,8 +9,10 @@ Current routing decision reasons include:
 - `selected_same_tier_retry`
 - `selected_higher_tier_retry`
 - `selected_half_open_probe`
+- `selected_shared_service_single_endpoint`
+- `selected_provider_managed_endpoint`
 
-These reasons explain whether the router selected a healthy primary candidate, failed over to a higher tier, retried within the same tier, or deliberately sent a half-open recovery probe.
+These reasons explain whether the router selected a healthy primary candidate, failed over to a higher tier, retried within the same tier, deliberately sent a half-open recovery probe, or executed a shared service through a single semantic endpoint.
 
 Current runtime event types that use these reasons include:
 

@@ -21,6 +21,18 @@ class DeploymentContractMismatchError(DomainError):
     """Raised when a deployment is invoked through an incompatible endpoint contract."""
 
 
+class SharedServiceNotFound(DomainError):
+    """Raised when a shared service cannot be found in the registry."""
+
+
+class SharedServiceExecutionDisabledError(DomainError):
+    """Raised when a shared service is not callable through the router."""
+
+
+class SharedServiceTransportMismatchError(DomainError):
+    """Raised when a shared service does not match the requested transport surface."""
+
+
 class SecretResolutionError(DomainError):
     """Raised when secret material cannot be resolved."""
 

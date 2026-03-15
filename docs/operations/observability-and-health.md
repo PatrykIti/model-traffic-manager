@@ -15,6 +15,7 @@ The current runtime includes:
 - request correlation through `x-request-id`
 - structured runtime events for route selection, health updates, limiter rejections, and request completion
 - rejected-candidate metadata and explicit failover reasons in route-selection events
+- shared-service execution events on the same structured event stream when a shared service is router-callable
 - a Prometheus `/metrics` endpoint
 - trace spans for inbound requests plus outbound model attempt spans
 - a persistent outbound HTTP client with explicit connection-pool and timeout policy
@@ -23,6 +24,7 @@ The current runtime includes:
 Operational notes:
 
 - `GET /shared-services` exposes the runtime view of configured shared services
+- `POST /v1/shared-services/{service_id}` reuses the same request correlation and runtime event model for router-proxy shared services
 - `MODEL_TRAFFIC_MANAGER_RUNTIME_STATE_BACKEND=redis` switches health and limiter coordination to shared Redis state
 - the default local bootstrap still uses `in_memory` state for a zero-dependency startup path
 

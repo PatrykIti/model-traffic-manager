@@ -5,7 +5,12 @@ from typing import Literal
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, model_validator
 
 from app.domain.entities.deployment import Deployment, DeploymentKind, DeploymentProtocol
-from app.domain.entities.shared_service import SharedService
+from app.domain.entities.shared_service import (
+    SharedService,
+    SharedServiceAccessMode,
+    SharedServiceRoutingStrategy,
+    SharedServiceTransport,
+)
 from app.domain.entities.upstream import Upstream
 from app.domain.errors import ConfigValidationError
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
@@ -120,14 +125,90 @@ class DeploymentConfigModel(BaseModel):
 
 
 class SharedServiceConfigModel(BaseModel):
-    endpoint: AnyHttpUrl
-    auth: AuthConfigModel
+    transport: SharedServiceTransport = SharedServiceTransport.HTTP_JSON
+    access_mode: SharedServiceAccessMode
+    provider_managed_availability: bool = False
+    routing_strategy: SharedServiceRoutingStrategy | None = None
+    provider: str | None = None
+    account: str | None = None
+    region: str | None = None
+    endpoint: AnyHttpUrl | None = None
+    auth: AuthConfigModel | None = None
+    limits: LimitsConfigModel | None = None
+    upstreams: list[UpstreamConfigModel] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_shared_service(self) -> SharedServiceConfigModel:
+        if self.access_mode is SharedServiceAccessMode.DIRECT_BACKEND_ACCESS:
+            if self.routing_strategy is not None:
+                raise ValueError(
+                    "direct_backend_access shared services must not define routing_strategy"
+                )
+            if self.limits is not None:
+                raise ValueError("direct_backend_access shared services must not define limits")
+            if self.upstreams:
+                raise ValueError(
+                    "direct_backend_access shared services must not define upstreams"
+                )
+            if self.endpoint is None or self.auth is None:
+                raise ValueError(
+                    "direct_backend_access shared services must define endpoint and auth"
+                )
+            if not self.provider or not self.account or not self.region:
+                raise ValueError(
+                    "direct_backend_access shared services must define "
+                    "provider, account, and region"
+                )
+            return self
+
+        if self.routing_strategy is None:
+            raise ValueError("router_proxy shared services must define routing_strategy")
+        if self.limits is None:
+            raise ValueError("router_proxy shared services must define limits")
+        if not self.upstreams:
+            raise ValueError("router_proxy shared services must define upstreams")
+        if self.endpoint is not None or self.auth is not None:
+            raise ValueError(
+                "router_proxy shared services must not define top-level endpoint or auth"
+            )
+
+        upstream_ids = [upstream.id for upstream in self.upstreams]
+        if len(upstream_ids) != len(set(upstream_ids)):
+            raise ValueError("router_proxy shared services contain duplicate upstream IDs")
+        if (
+            self.routing_strategy is SharedServiceRoutingStrategy.SINGLE_ENDPOINT
+            and len(self.upstreams) != 1
+        ):
+            raise ValueError(
+                "shared services with routing_strategy=single_endpoint must define one upstream"
+            )
+        if (
+            self.routing_strategy is SharedServiceRoutingStrategy.TIERED_FAILOVER
+            and self.provider_managed_availability
+        ):
+            raise ValueError(
+                "provider_managed_availability cannot be combined with "
+                "routing_strategy=tiered_failover"
+            )
+        return self
 
     def to_domain(self, name: str) -> SharedService:
         return SharedService(
             name=name,
-            endpoint=str(self.endpoint),
-            auth=self.auth.to_domain(),
+            transport=self.transport,
+            access_mode=self.access_mode,
+            provider_managed_availability=self.provider_managed_availability,
+            routing_strategy=self.routing_strategy,
+            provider=self.provider,
+            account=self.account,
+            region=self.region,
+            endpoint=(str(self.endpoint) if self.endpoint is not None else None),
+            auth=(self.auth.to_domain() if self.auth is not None else None),
+            max_concurrency=(self.limits.max_concurrency if self.limits is not None else None),
+            request_rate_per_second=(
+                self.limits.request_rate_per_second if self.limits is not None else None
+            ),
+            upstreams=tuple(upstream.to_domain() for upstream in self.upstreams),
         )
 
 

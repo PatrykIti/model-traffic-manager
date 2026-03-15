@@ -29,7 +29,19 @@ Supported MVP deployment contracts:
 Current shared-service runtime surface:
 
 - `GET /shared-services` returns the validated shared-service registry
-- shared-service summaries expose the configured service name, endpoint, and auth mode
+- `POST /v1/shared-services/{service_id}` executes eligible shared services through the router
+- shared-service summaries expose execution mode, routing strategy, endpoint visibility, and upstream metadata
+
+Current shared-service execution model:
+
+- `access_mode: direct_backend_access`
+  the router stores semantic connection metadata, but the backend calls the service directly
+- `access_mode: router_proxy` with `routing_strategy: single_endpoint`
+  the router executes one HTTP/JSON downstream call without router-managed failover
+- `access_mode: router_proxy` with `routing_strategy: tiered_failover`
+  the router reuses the failover model already used for LLM traffic
+
+`provider_managed_availability: true` means the operator expects the service or provider to manage availability semantics outside router-controlled multi-upstream failover.
 
 The current deployment-level `limits` fields are:
 

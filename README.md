@@ -32,6 +32,7 @@ What is already implemented:
 - the runnable FastAPI application shell and quality automation
 - startup-time YAML validation and config-backed registries for deployments and shared services
 - health endpoints plus `GET /deployments` and `GET /shared-services`
+- `POST /v1/shared-services/{service_id}` for router-callable shared services
 - `POST /v1/chat/completions/{deployment_id}` with tiered multi-upstream failover
 - `POST /v1/embeddings/{deployment_id}` with tiered multi-upstream failover
 - strict MVP deployment-contract validation for chat and embeddings surfaces
@@ -41,6 +42,7 @@ What is already implemented:
 - in-memory and Redis-backed runtime state for health and limiter coordination
 - deployment-level request-rate limiting and concurrency limiting
 - rejected-candidate diagnostics and explicit failover reasons in runtime events
+- shared-service execution modes that distinguish direct backend access, single-endpoint router proxy, and tiered-failover router proxy
 - request correlation with `x-request-id`
 - structured runtime decision events and a Prometheus `/metrics` endpoint
 - trace foundation for inbound requests and outbound model attempts
@@ -68,6 +70,7 @@ Useful local endpoints after startup:
 - `GET /health/ready`
 - `GET /deployments`
 - `GET /shared-services`
+- `POST /v1/shared-services/{service_id}`
 - `POST /v1/chat/completions/{deployment_id}`
 - `POST /v1/embeddings/{deployment_id}`
 

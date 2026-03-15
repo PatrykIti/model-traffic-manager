@@ -26,6 +26,7 @@ def test_startup_initializes_container() -> None:
     assert container.route_chat_completion_use_case is not None
     assert container.route_embeddings_use_case is not None
     assert container.list_shared_services_use_case is not None
+    assert container.route_shared_service_use_case is not None
     assert container.token_provider is not None
     assert container.health_state_repository is not None
     assert container.request_rate_limiter is not None

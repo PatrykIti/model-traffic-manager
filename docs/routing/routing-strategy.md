@@ -17,3 +17,4 @@ Current implementation status:
 - request-level failover can move to another eligible upstream on retriable failures
 - persisted health-state filtering now affects candidate availability
 - cooldown and circuit-open states can block an upstream before selection
+- shared services can opt into the same tiered-failover model, but single-endpoint and direct-backend-access services do not inherit it automatically

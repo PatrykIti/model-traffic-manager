@@ -43,6 +43,10 @@ def _resolve_endpoint_kind(path: str) -> str:
         return "chat_completions"
     if path.startswith("/v1/embeddings"):
         return "embeddings"
+    if path.startswith("/v1/shared-services"):
+        return "shared_service"
+    if path.startswith("/shared-services"):
+        return "shared_service_registry"
     if path.startswith("/health"):
         return "health"
     if path == "/metrics":

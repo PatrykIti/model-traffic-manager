@@ -46,4 +46,33 @@ deployments:
         auth:
           mode: none
 
-shared_services: {}
+shared_services:
+  conversation_archive:
+    transport: http_json
+    access_mode: direct_backend_access
+    provider_managed_availability: true
+    provider: azure_storage
+    account: conversation-archive
+    region: westeurope
+    endpoint: https://conversation-archive.blob.core.windows.net
+    auth:
+      mode: managed_identity
+      scope: https://storage.azure.com/.default
+  transcript_registry:
+    transport: http_json
+    access_mode: router_proxy
+    provider_managed_availability: true
+    routing_strategy: single_endpoint
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: transcript-registry-primary
+        provider: internal_api
+        account: platform
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/shared/transcript-registry
+        auth:
+          mode: none

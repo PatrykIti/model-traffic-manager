@@ -27,6 +27,7 @@ Useful first endpoints after startup:
 - `GET /health/ready`
 - `GET /deployments`
 - `GET /shared-services`
+- `POST /v1/shared-services/{service_id}`
 - `POST /v1/chat/completions/{deployment_id}`
 - `POST /v1/embeddings/{deployment_id}`
 

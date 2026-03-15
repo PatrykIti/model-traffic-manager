@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 49 work items
 - **In Progress:** 0 work items
-- **Done:** 139 work items
+- **Done:** 143 work items
 
 ---
 
@@ -215,3 +215,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-021-04 | Explainable Routing Rejection Diagnostics and Status Reconciliation | High | Medium | Rejected-candidate diagnostics and final docs/status reconciliation completed |
 | TASK-022 | Environment Example and Root README Reconciliation | High | Small | Root environment contract and repository README aligned to the active runtime |
 | TASK-022-01 | Structured `.env.example` and Root README Refresh | High | Small | Categorized environment reference and root README status refresh completed |
+| TASK-024 | Shared Services Execution Model and Backend-Facing Proxy Surface | High | Large | Executable shared-service modes implemented without turning the router into a generic gateway |
+| TASK-024-01 | Shared-Service Config and Domain Contract for Execution Modes | High | Medium | Typed execution-mode model for shared services implemented |
+| TASK-024-02 | Backend-Facing Shared-Service Execution Use Case and API Route | High | Medium | First shared-service proxy route for backend callers implemented |
+| TASK-024-03 | Tests, Official Docs, and Changelog Alignment for Shared-Service Execution | High | Medium | Proof and docs for the new execution surface completed |

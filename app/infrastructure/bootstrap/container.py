@@ -14,6 +14,7 @@ from app.application.use_cases.list_deployments import ListDeployments
 from app.application.use_cases.list_shared_services import ListSharedServices
 from app.application.use_cases.route_chat_completion import RouteChatCompletion
 from app.application.use_cases.route_embeddings import RouteEmbeddings
+from app.application.use_cases.route_shared_service import RouteSharedService
 from app.domain.services.health_state_policy import HealthStatePolicy
 from app.domain.services.tiered_failover_selector import TieredFailoverSelector
 from app.domain.services.upstream_failure_classifier import UpstreamFailureClassifier
@@ -81,6 +82,7 @@ class BootstrapContainer:
     routing_selector: TieredFailoverSelector
     route_chat_completion_use_case: RouteChatCompletion
     route_embeddings_use_case: RouteEmbeddings
+    route_shared_service_use_case: RouteSharedService
 
 
 def build_container(settings: AppSettings) -> BootstrapContainer:
@@ -149,6 +151,20 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         max_attempts=router_config.router.max_attempts,
         retryable_status_codes=tuple(router_config.router.retryable_status_codes),
     )
+    route_shared_service_use_case = RouteSharedService(
+        shared_service_repository=shared_service_repository,
+        auth_header_builder=auth_header_builder,
+        outbound_invoker=outbound_invoker,
+        deployment_limit_guard=deployment_limit_guard,
+        health_state_repository=health_state_repository,
+        failure_classifier=failure_classifier,
+        health_state_policy=health_state_policy,
+        routing_selector=routing_selector,
+        runtime_event_recorder=runtime_event_recorder,
+        timeout_ms=router_config.router.timeout_ms,
+        max_attempts=router_config.router.max_attempts,
+        retryable_status_codes=tuple(router_config.router.retryable_status_codes),
+    )
     return BootstrapContainer(
         settings=settings,
         router_config=router_config,
@@ -171,6 +187,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         routing_selector=routing_selector,
         route_chat_completion_use_case=route_chat_completion_use_case,
         route_embeddings_use_case=route_embeddings_use_case,
+        route_shared_service_use_case=route_shared_service_use_case,
     )
 
 

@@ -40,6 +40,7 @@ Current API surface:
 - `GET /shared-services` returns the validated shared-service registry
 - `POST /v1/chat/completions/{deployment_id}` proxies to the selected upstream for the deployment
 - `POST /v1/embeddings/{deployment_id}` proxies to the selected upstream for the deployment
+- `POST /v1/shared-services/{service_id}` executes eligible shared services for backend callers
 
 Request-path guardrails:
 
@@ -53,3 +54,10 @@ Current outbound auth support:
 - `managed_identity` with in-memory token caching keyed by `(auth_mode, client_id, scope)`
 
 Managed Identity remains an outbound router concern. It does not imply forwarding client bearer tokens to upstreams.
+
+Shared-service notes:
+
+- `direct_backend_access` services are metadata-only from the router perspective; execution through the router is rejected
+- `single_endpoint` shared services are executed through one configured upstream without router-managed failover
+- `tiered_failover` shared services reuse the upstream health and failover model
+- provider-managed availability and router-managed tiered failover are intentionally distinct concerns

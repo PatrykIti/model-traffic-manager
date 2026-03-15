@@ -1,11 +1,26 @@
 from __future__ import annotations
 
+from typing import Protocol
+
 from app.application.dto.runtime_event import RuntimeEvent
 from app.application.ports.concurrency_limiter import ConcurrencyLimiter
 from app.application.ports.request_rate_limiter import RequestRateLimiter
 from app.application.ports.runtime_event_recorder import RuntimeEventRecorder
-from app.domain.entities.deployment import Deployment
 from app.domain.errors import ConcurrencyLimitExceededError, RequestRateLimitExceededError
+
+
+class LimitedRouteTarget(Protocol):
+    @property
+    def id(self) -> str:
+        """Stable identifier used by limiter storage."""
+
+    @property
+    def max_concurrency(self) -> int:
+        """Maximum concurrent requests allowed for the target."""
+
+    @property
+    def request_rate_per_second(self) -> int:
+        """Maximum request rate allowed for the target."""
 
 
 class DeploymentLimitGuard:
@@ -21,21 +36,21 @@ class DeploymentLimitGuard:
 
     def acquire(
         self,
-        deployment: Deployment,
+        target: LimitedRouteTarget,
         *,
         request_id: str | None = None,
         endpoint_kind: str,
     ) -> str:
         retry_after_seconds = self._request_rate_limiter.allow_request(
-            deployment_id=deployment.id,
-            requests_per_second=deployment.request_rate_per_second,
+            deployment_id=target.id,
+            requests_per_second=target.request_rate_per_second,
         )
         if retry_after_seconds is not None:
             self._record_event(
                 RuntimeEvent(
                     event_type="limiter_rejected",
                     endpoint_kind=endpoint_kind,
-                    deployment_id=deployment.id,
+                    deployment_id=target.id,
                     request_id=request_id,
                     limiter_reason="request_rate",
                     retry_after_seconds=retry_after_seconds,
@@ -43,26 +58,26 @@ class DeploymentLimitGuard:
                 )
             )
             raise RequestRateLimitExceededError(
-                deployment_id=deployment.id,
+                deployment_id=target.id,
                 retry_after_seconds=retry_after_seconds,
             )
 
         lease_id = self._concurrency_limiter.acquire(
-            deployment_id=deployment.id,
-            max_concurrency=deployment.max_concurrency,
+            deployment_id=target.id,
+            max_concurrency=target.max_concurrency,
         )
         if lease_id is None:
             self._record_event(
                 RuntimeEvent(
                     event_type="limiter_rejected",
                     endpoint_kind=endpoint_kind,
-                    deployment_id=deployment.id,
+                    deployment_id=target.id,
                     request_id=request_id,
                     limiter_reason="concurrency",
                     outcome="rejected",
                 )
             )
-            raise ConcurrencyLimitExceededError(deployment.id)
+            raise ConcurrencyLimitExceededError(target.id)
 
         return lease_id
 

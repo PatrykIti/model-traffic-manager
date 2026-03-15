@@ -49,7 +49,21 @@ def build_valid_config() -> dict[str, object]:
                 ],
             }
         ],
-        "shared_services": {},
+        "shared_services": {
+            "conversation_archive": {
+                "transport": "http_json",
+                "access_mode": "direct_backend_access",
+                "provider_managed_availability": True,
+                "provider": "azure_storage",
+                "account": "archive",
+                "region": "westeurope",
+                "endpoint": "https://archive.example.invalid",
+                "auth": {
+                    "mode": "managed_identity",
+                    "scope": "https://storage.azure.com/.default",
+                },
+            }
+        },
     }
 
 
@@ -58,6 +72,10 @@ def test_router_config_model_accepts_valid_config() -> None:
 
     assert config.router.instance_name == "ai-router-prod"
     assert config.deployments[0].id == "gpt-4o-chat"
+    assert (
+        config.shared_services["conversation_archive"].access_mode.value
+        == "direct_backend_access"
+    )
 
 
 def test_router_config_model_rejects_duplicate_deployment_ids() -> None:
@@ -107,6 +125,43 @@ def test_router_config_model_rejects_unsupported_deployment_kind() -> None:
 def test_router_config_model_rejects_unsupported_deployment_protocol() -> None:
     config = build_valid_config()
     config["deployments"][0]["protocol"] = "openai_audio"
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_shared_service_routing_on_direct_access() -> None:
+    config = build_valid_config()
+    config["shared_services"]["conversation_archive"]["routing_strategy"] = "single_endpoint"
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_provider_managed_tiered_failover_shared_service() -> None:
+    config = build_valid_config()
+    config["shared_services"]["conversation_archive"] = {
+        "transport": "http_json",
+        "access_mode": "router_proxy",
+        "provider_managed_availability": True,
+        "routing_strategy": "tiered_failover",
+        "limits": {
+            "max_concurrency": 10,
+            "request_rate_per_second": 5,
+        },
+        "upstreams": [
+            {
+                "id": "primary",
+                "provider": "internal_api",
+                "account": "platform",
+                "region": "westeurope",
+                "tier": 0,
+                "weight": 100,
+                "endpoint": "https://example.invalid/shared",
+                "auth": {"mode": "none"},
+            }
+        ],
+    }
 
     with pytest.raises(ValidationError):
         RouterConfigModel.model_validate(config)

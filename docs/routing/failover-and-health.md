@@ -22,6 +22,7 @@ The MVP health model includes:
 Current implementation status:
 
 - request-level failover across multiple upstreams is implemented
+- eligible shared services can also reuse tiered failover when they opt into that routing policy
 - retriable HTTP and transport failures can move traffic to another eligible upstream
 - healthy candidates are preferred over half-open recovery candidates within the same tier
 - expired circuit-open windows move into a half-open recovery phase instead of immediately returning to full healthy traffic
