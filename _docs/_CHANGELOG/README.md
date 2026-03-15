@@ -54,3 +54,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 21 | 2026-03-14 | Local one-command Azure-backed test runners | workflow/testing |
 | 22 | 2026-03-15 | E2E AKS live-model suite and platform reference docs | validation/e2e |
 | 23 | 2026-03-15 | MVP closure, runtime state activation, and contract hardening | feature/mvp-closure |
+| 24 | 2026-03-15 | Environment example and root README reconciliation | docs/root |

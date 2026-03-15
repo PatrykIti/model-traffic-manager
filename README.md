@@ -2,7 +2,7 @@
 
 `model-traffic-manager` is a policy-driven AI traffic router for Azure and AKS.
 
-The repository is being prepared to host a small, observable, explainable service that routes AI traffic across deployments, accounts, and regions without turning into a generic AI platform.
+The repository hosts a small, observable, explainable service that routes AI traffic across deployments, accounts, and regions without turning into a generic AI platform.
 
 This router is intended to run as an internal LLM traffic manager for the chatbot system backend. It is not the SaaS tenant orchestrator or the tenant control-plane router.
 
@@ -25,35 +25,62 @@ This router is intended to run as an internal LLM traffic manager for the chatbo
 
 ## Current status
 
-The repository has completed the bootstrap and configuration foundation phases, includes both Phase 2 proxy paths, supports Phase 3 Managed Identity outbound auth, and now includes Phase 5 health-state behavior plus deployment-level limiting.
+The repository currently implements the full application-side MVP contract described in `docs/` and `_docs/_MVP/`.
 
 What is already implemented:
 
 - the runnable FastAPI application shell and quality automation
-- startup-time YAML validation and a config-backed deployment registry
-- health endpoints and `GET /deployments`
+- startup-time YAML validation and config-backed registries for deployments and shared services
+- health endpoints plus `GET /deployments` and `GET /shared-services`
 - `POST /v1/chat/completions/{deployment_id}` with tiered multi-upstream failover
 - `POST /v1/embeddings/{deployment_id}` with tiered multi-upstream failover
+- strict MVP deployment-contract validation for chat and embeddings surfaces
 - outbound auth modes `none`, `api_key`, and `managed_identity`
 - weighted round robin inside the lowest available tier for request selection
-- in-memory health-state persistence, cooldown after `429`, and per-upstream circuit breaker transitions
-- a Redis-backed health-state adapter behind the repository port
+- cooldown after `429`, quota-aware failure classification, circuit opening, and half-open recovery probes
+- in-memory and Redis-backed runtime state for health and limiter coordination
 - deployment-level request-rate limiting and concurrency limiting
-- Redis-backed limiter adapters behind repository ports
+- rejected-candidate diagnostics and explicit failover reasons in runtime events
 - request correlation with `x-request-id`
 - structured runtime decision events and a Prometheus `/metrics` endpoint
 - trace foundation for inbound requests and outbound model attempts
-- opt-in `integration-azure` and `e2e-aks` workflows plus a repo-local Terraform wrapper for higher-level validation
+- opt-in `integration-azure`, `e2e-aks`, and `e2e-aks-live-model` validation flows
 - persistent outbound HTTP client tuning with explicit connection limits and timeout policy
 - `make release-check` as the current release gate for quality, workflow, and Terraform validation
 
-## Local bootstrap
+## Quick start
 
 ```text
 make bootstrap
 make check
 make run
 ```
+
+For local configuration and overrides:
+
+- copy or reference values from [`.env.example`](./.env.example)
+- keep the router YAML in [`configs/example.router.yaml`](./configs/example.router.yaml) or point `MODEL_TRAFFIC_MANAGER_CONFIG_PATH` to another file
+- use `MODEL_TRAFFIC_MANAGER_RUNTIME_STATE_BACKEND=redis` together with `MODEL_TRAFFIC_MANAGER_REDIS_URL` when you want shared runtime state locally
+
+Useful local endpoints after startup:
+
+- `GET /health/live`
+- `GET /health/ready`
+- `GET /deployments`
+- `GET /shared-services`
+- `POST /v1/chat/completions/{deployment_id}`
+- `POST /v1/embeddings/{deployment_id}`
+
+## Validation levels
+
+The repository keeps three practical validation tiers:
+
+- default local quality: `make check`
+- Azure-backed integration without AKS: `make integration-azure-local`
+- AKS end-to-end validation:
+  `make e2e-aks-local` for smoke coverage and `make e2e-aks-live-model-local` for real model-response validation
+
+The higher-level suites are intentionally opt-in because they provision temporary Azure resources and, in the live-model profile, consume real model quota.
 
 ## Quick navigation
 

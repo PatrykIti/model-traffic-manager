@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 43 work items
 - **In Progress:** 0 work items
-- **Done:** 137 work items
+- **Done:** 139 work items
 
 ---
 
@@ -207,3 +207,5 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-021-02 | Half-Open Circuit Recovery and Health-State Transition Hardening | High | Medium | Real half-open probe semantics and hardened recovery transitions implemented |
 | TASK-021-03 | Redis-Backed Runtime State Activation and Shared Coordination | High | Medium | Active runtime switch for Redis-backed health and limiter coordination implemented |
 | TASK-021-04 | Explainable Routing Rejection Diagnostics and Status Reconciliation | High | Medium | Rejected-candidate diagnostics and final docs/status reconciliation completed |
+| TASK-022 | Environment Example and Root README Reconciliation | High | Small | Root environment contract and repository README aligned to the active runtime |
+| TASK-022-01 | Structured `.env.example` and Root README Refresh | High | Small | Categorized environment reference and root README status refresh completed |
