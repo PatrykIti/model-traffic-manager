@@ -55,6 +55,8 @@ Current outbound auth support:
 
 Managed Identity remains an outbound router concern. It does not imply forwarding client bearer tokens to upstreams.
 
+For identity-selection examples and mixed auth-mode configurations, see [auth-and-identity.md](./auth-and-identity.md).
+
 Shared-service notes:
 
 - `direct_backend_access` services are metadata-only from the router perspective; execution through the router is rejected

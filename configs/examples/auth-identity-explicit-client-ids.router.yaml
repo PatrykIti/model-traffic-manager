@@ -1,0 +1,64 @@
+router:
+  instance_name: auth-identity-explicit-client-ids
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: assistant-chat
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 50
+      request_rate_per_second: 20
+    upstreams:
+      - id: aoai-weu-primary
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://aoai-prod-01.openai.azure.com/openai/v1/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+          client_id: 11111111-1111-1111-1111-111111111111
+      - id: aoai-neu-secondary
+        provider: azure_openai
+        account: aoai-dr-01
+        region: northeurope
+        tier: 1
+        weight: 100
+        endpoint: https://aoai-dr-01.openai.azure.com/openai/v1/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+          client_id: 11111111-1111-1111-1111-111111111111
+
+shared_services:
+  transcript_registry:
+    transport: http_json
+    access_mode: router_proxy
+    provider_managed_availability: false
+    routing_strategy: single_endpoint
+    limits:
+      max_concurrency: 20
+      request_rate_per_second: 10
+    upstreams:
+      - id: transcript-registry-primary
+        provider: internal_api
+        account: platform
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://platform.internal.example/transcript-registry
+        auth:
+          mode: managed_identity
+          scope: api://transcript-registry/.default
+          client_id: 22222222-2222-2222-2222-222222222222

@@ -59,3 +59,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 26 | 2026-03-15 | Shared services planning closure and task reconciliation | docs/planning |
 | 27 | 2026-03-15 | Shared-service example YAML catalog | docs/examples |
 | 28 | 2026-03-15 | Deployment example YAML catalog | docs/examples |
+| 29 | 2026-03-15 | Auth and identity example YAML catalog | docs/examples |

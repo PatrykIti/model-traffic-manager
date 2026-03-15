@@ -45,6 +45,18 @@ def test_yaml_loader_reads_deployment_example_catalog() -> None:
         assert config.deployments
 
 
+def test_yaml_loader_reads_auth_and_identity_example_catalog() -> None:
+    example_paths = (
+        Path("configs/examples/auth-identity-default-managed-identity.router.yaml"),
+        Path("configs/examples/auth-identity-explicit-client-ids.router.yaml"),
+        Path("configs/examples/auth-identity-mixed-modes.router.yaml"),
+    )
+
+    for path in example_paths:
+        config = load_router_config(path)
+        assert config.deployments
+
+
 def test_yaml_loader_rejects_invalid_yaml(tmp_path: Path) -> None:
     path = tmp_path / "broken.yaml"
     path.write_text("router: [", encoding="utf-8")
