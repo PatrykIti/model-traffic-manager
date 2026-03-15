@@ -48,8 +48,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 ## Statistics
 
 - **To Do:** 0 work items
-- **In Progress:** 2 work items
-- **Done:** 130 work items
+- **In Progress:** 0 work items
+- **Done:** 132 work items
 
 ---
 
@@ -63,8 +63,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-020 | E2E AKS Live-Model Suite | High | Medium | Separate AKS suite for real model responses is being implemented |
-| TASK-020-03 | Live-Model E2E Test Suite and Operator Docs | High | Small | Real model-response validation is scaffolded and awaiting the first live run |
 
 ---
 
@@ -199,3 +197,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-019-02-01 | GHCR Image Build and AKS Deploy Contract | High | Small | Local GHCR build/push and AKS deploy contract implemented |
 | TASK-019-02-02 | Trap-Based Cleanup and Diagnostics Collection | High | Small | Destroy and diagnostics collection implemented under shell traps |
 | TASK-019-03 | Documentation, Makefile, and Operator Contract | High | Small | Stable commands and operator guidance added for local higher-level runs |
+| TASK-020 | E2E AKS Live-Model Suite | High | Medium | Separate AKS suite validated end-to-end with real model responses and cleanup |
+| TASK-020-01 | Live-Model AKS Scope and Azure OpenAI Infrastructure | High | Medium | AKS, Azure OpenAI deployments, and RBAC scope implemented |
+| TASK-020-02 | Live-Model Runner and Router Configuration Generation | High | Small | Dedicated runner and Terraform-output-based runtime config implemented |
+| TASK-020-03 | Live-Model E2E Test Suite and Operator Docs | High | Small | Real model-response validation and operator guidance completed |

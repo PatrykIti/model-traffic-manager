@@ -44,3 +44,5 @@ Live-model notes:
 
 - `make e2e-aks-local` stays the cheaper AKS smoke path without a real model account
 - `make e2e-aks-live-model-local` provisions extra Azure OpenAI infrastructure and consumes real model quota
+- the current live-model profile targets `swedencentral` and validates `gpt-5` plus `gpt-5.1`
+- this suite is intentionally separate because model quota and regional model availability can change independently of the smoke AKS path

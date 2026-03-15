@@ -52,3 +52,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 19 | 2026-03-14 | Terraform scope model and tfvars alignment | infra/structure |
 | 20 | 2026-03-14 | Shared tfvars baseline and scope-aware naming | infra/structure |
 | 21 | 2026-03-14 | Local one-command Azure-backed test runners | workflow/testing |
+| 22 | 2026-03-15 | E2E AKS live-model suite and platform reference docs | validation/e2e |

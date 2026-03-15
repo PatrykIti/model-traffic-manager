@@ -7,7 +7,7 @@
 **Category:** Higher-Level Validation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-019
-**Status:** **In Progress** (2026-03-15)
+**Status:** **Done** (2026-03-15)
 
 ---
 
@@ -38,7 +38,7 @@ Add a dedicated local runner and generate runtime router config from Terraform o
 
 ### TASK-020-03: Live-model e2e test suite and operator docs
 
-**Status:** In Progress (2026-03-15)
+**Status:** Done (2026-03-15)
 
 Add the test suite, Makefile command, and documentation for the new live-model path.
 

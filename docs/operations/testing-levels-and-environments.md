@@ -130,6 +130,7 @@ Current repository activation:
 - local command: `make e2e-aks-live-model-local`
 - test suite: `tests/e2e_aks_live_model/`
 - infra scope: `infra/e2e-aks-live-model/`
+- current model profile: `gpt-5` and `gpt-5.1` in `swedencentral`
 
 Default rule:
 
