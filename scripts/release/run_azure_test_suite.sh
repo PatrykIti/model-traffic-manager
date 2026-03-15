@@ -55,6 +55,22 @@ case "$SUITE" in
       tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
     fi
     ;;
+  e2e-aks-live-model)
+    for cmd in docker gh kubectl; do
+      require_cmd "$cmd"
+    done
+    scope_dir="infra/e2e-aks-live-model"
+    tests_path="tests/e2e_aks_live_model"
+    tf_args=(
+      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
+      "-var-file=env/${ENVIRONMENT}.tfvars"
+      "-var=subscription_id=${subscription_id}"
+      "-var=run_id=${run_id}"
+    )
+    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
+      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
+    fi
+    ;;
   *)
     echo "Unsupported suite: $SUITE" >&2
     exit 1
@@ -71,7 +87,7 @@ federated_credential_created="0"
 e2e_image_pull_secret_name="${E2E_IMAGE_PULL_SECRET_NAME:-ghcr-pull}"
 
 print_e2e_diagnostics() {
-  if [[ "$SUITE" != "e2e-aks" || -z "$aks_cluster_name" ]]; then
+  if [[ "$SUITE" != e2e-aks && "$SUITE" != e2e-aks-live-model || -z "$aks_cluster_name" ]]; then
     return
   fi
 
@@ -112,7 +128,7 @@ cleanup() {
     kill "$port_forward_pid" >/dev/null 2>&1 || true
   fi
 
-  if [[ "$SUITE" == "e2e-aks" && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
+  if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" ) && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
     echo "Cleaning up: deleting federated credential router-e2e-${run_id}"
     az identity federated-credential delete \
       --resource-group "$resource_group" \
@@ -148,7 +164,7 @@ echo "Suite: ${SUITE}"
 echo "Environment: ${ENVIRONMENT}"
 echo "Run ID: ${run_id}"
 
-if [[ "$SUITE" == "e2e-aks" && -z "$e2e_image" ]]; then
+if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" ) && -z "$e2e_image" ]]; then
   require_cmd docker
   require_cmd gh
 
@@ -208,10 +224,19 @@ az identity federated-credential create \
 federated_credential_created="1"
 
 kubectl create namespace "$e2e_namespace" --dry-run=client -o yaml | kubectl apply -f -
-kubectl create configmap router-config \
-  --from-file=router.yaml=configs/example.router.yaml \
-  --namespace "$e2e_namespace" \
-  --dry-run=client -o yaml | kubectl apply -f -
+
+if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
+  python3 scripts/release/render_live_model_router_config.py "${tmp_dir}/terraform-outputs.json" > "${tmp_dir}/router-live-model.yaml"
+  kubectl create configmap router-config \
+    --from-file=router.yaml="${tmp_dir}/router-live-model.yaml" \
+    --namespace "$e2e_namespace" \
+    --dry-run=client -o yaml | kubectl apply -f -
+else
+  kubectl create configmap router-config \
+    --from-file=router.yaml=configs/example.router.yaml \
+    --namespace "$e2e_namespace" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
 
 export E2E_NAMESPACE="$e2e_namespace"
 export E2E_IMAGE="$e2e_image"
@@ -235,15 +260,20 @@ if [[ "$e2e_image" == ghcr.io/* ]]; then
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
-python3 scripts/release/render_template.py infra/e2e-aks/k8s/router-serviceaccount.yaml.tmpl | kubectl apply -f -
+manifest_root="infra/e2e-aks"
+if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
+  manifest_root="infra/e2e-aks-live-model"
+fi
+
+python3 scripts/release/render_template.py "${manifest_root}/k8s/router-serviceaccount.yaml.tmpl" | kubectl apply -f -
 if [[ "$e2e_image" == ghcr.io/* ]]; then
   kubectl patch serviceaccount/router-app \
     -n "$e2e_namespace" \
     --type merge \
     -p "{\"imagePullSecrets\":[{\"name\":\"${e2e_image_pull_secret_name}\"}]}"
 fi
-python3 scripts/release/render_template.py infra/e2e-aks/k8s/router-deployment.yaml.tmpl | kubectl apply -f -
-kubectl apply -n "$e2e_namespace" -f infra/e2e-aks/k8s/router-service.yaml
+python3 scripts/release/render_template.py "${manifest_root}/k8s/router-deployment.yaml.tmpl" | kubectl apply -f -
+kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-service.yaml"
 
 kubectl rollout status deployment/router-app -n "$e2e_namespace" --timeout=5m
 
@@ -259,5 +289,10 @@ sleep 10
 
 export RUN_E2E_AKS="1"
 export E2E_BASE_URL="http://127.0.0.1:18080"
+
+if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
+  export RUN_E2E_AKS_LIVE_MODEL="1"
+  export E2E_LIVE_MODEL_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
+fi
 
 uv run pytest "$tests_path" -ra

@@ -21,6 +21,7 @@ For this repository that means:
 
 - `infra/integration-azure/` for Azure-backed validation without AKS
 - `infra/e2e-aks/` for ephemeral AKS-backed runtime validation
+- `infra/e2e-aks-live-model/` for AKS validation plus a real Azure OpenAI request path
 
 Do not collapse both concerns into one shared root just because some resources overlap.
 
@@ -117,6 +118,14 @@ Owns:
 - user-assigned managed identity
 - AKS cluster
 - scope-local Kubernetes runtime manifests for the router smoke path
+
+### `e2e-aks-live-model`
+
+Owns:
+
+- AKS-backed runtime validation plus the extra Azure OpenAI infrastructure needed for a live model response
+- role assignment between the router identity and the Azure OpenAI account
+- scope-local runtime config generation for live model deployments
 
 ## Reserved Future Scopes
 

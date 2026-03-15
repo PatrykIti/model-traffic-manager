@@ -48,8 +48,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 ## Statistics
 
 - **To Do:** 0 work items
-- **In Progress:** 0 work items
-- **Done:** 128 work items
+- **In Progress:** 2 work items
+- **Done:** 130 work items
 
 ---
 
@@ -63,6 +63,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
+| TASK-020 | E2E AKS Live-Model Suite | High | Medium | Separate AKS suite for real model responses is being implemented |
+| TASK-020-03 | Live-Model E2E Test Suite and Operator Docs | High | Small | Real model-response validation is scaffolded and awaiting the first live run |
 
 ---
 

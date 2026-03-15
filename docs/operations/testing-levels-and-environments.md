@@ -72,7 +72,8 @@ Current repository activation:
 - workflow: `.github/workflows/integration-azure.yml`
 - test suite: `tests/integration_azure/`
 - infra scope: `infra/integration-azure/`
-- scope tfvars: `infra/integration-azure/env/dev1.tfvars` and `infra/integration-azure/env/prd1.tfvars`
+- shared tfvars baseline: `infra/_shared/env/dev1.tfvars` and `infra/_shared/env/prd1.tfvars`
+- local command: `make integration-azure-local`
 
 Default rule:
 
@@ -108,7 +109,31 @@ Current repository activation:
 - test suite: `tests/e2e_aks/`
 - Kubernetes runtime assets: `infra/e2e-aks/k8s/`
 - infra scope: `infra/e2e-aks/`
-- scope tfvars: `infra/e2e-aks/env/dev1.tfvars` and `infra/e2e-aks/env/prd1.tfvars`
+- shared tfvars baseline: `infra/_shared/env/dev1.tfvars` and `infra/_shared/env/prd1.tfvars`
+- scope-specific overrides: `infra/e2e-aks/env/dev1.tfvars` and `infra/e2e-aks/env/prd1.tfvars`
+- local command: `make e2e-aks-local`
+
+### 5. `e2e-aks-live-model`
+
+Purpose:
+
+- prove a real chat request through AKS, Workload Identity, router runtime config, and Azure OpenAI
+
+Environment:
+
+- AKS
+- Azure OpenAI / AI Foundry resource and deployment
+- workload identity and Azure RBAC
+
+Current repository activation:
+
+- local command: `make e2e-aks-live-model-local`
+- test suite: `tests/e2e_aks_live_model/`
+- infra scope: `infra/e2e-aks-live-model/`
+
+Default rule:
+
+- use this suite deliberately because it consumes real model quota and provisions broader temporary infrastructure
 
 Default rule:
 
