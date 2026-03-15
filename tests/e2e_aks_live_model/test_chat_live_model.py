@@ -20,6 +20,8 @@ def _require_live_model() -> tuple[str, dict[str, dict[str, str]]]:
 
     outputs = json.loads(Path(outputs_path).read_text(encoding="utf-8"))
     deployments = outputs["router_deployments"]["value"]
+    if not deployments:
+        pytest.skip("No live-model deployments are enabled in the Terraform outputs")
     return base_url, deployments
 
 
