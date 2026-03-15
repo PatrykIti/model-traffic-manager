@@ -1,0 +1,42 @@
+router:
+  instance_name: deployments-embeddings-regional-failover
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: knowledge-embeddings
+    kind: embeddings
+    protocol: openai_embeddings
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 100
+      request_rate_per_second: 50
+    upstreams:
+      - id: embeddings-weu-primary
+        provider: azure_openai
+        account: aoai-emb-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://aoai-emb-prod-01.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      - id: embeddings-neu-secondary
+        provider: azure_openai
+        account: aoai-emb-dr-01
+        region: northeurope
+        tier: 1
+        weight: 100
+        endpoint: https://aoai-emb-dr-01.openai.azure.com/openai/deployments/text-embedding-3-large/embeddings
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services: {}

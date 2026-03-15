@@ -61,3 +61,22 @@ Shared-service notes:
 - `single_endpoint` shared services are executed through one configured upstream without router-managed failover
 - `tiered_failover` shared services reuse the upstream health and failover model
 - provider-managed availability and router-managed tiered failover are intentionally distinct concerns
+
+## Full Example Files
+
+Ready-to-copy example router configs:
+
+- [deployments-chat-regional-failover.router.yaml](../../configs/examples/deployments-chat-regional-failover.router.yaml)
+- [deployments-chat-model-fallback.router.yaml](../../configs/examples/deployments-chat-model-fallback.router.yaml)
+- [deployments-embeddings-regional-failover.router.yaml](../../configs/examples/deployments-embeddings-regional-failover.router.yaml)
+
+These files show the full router config shape, not only the `deployments` fragment.
+
+What each example demonstrates:
+
+- `deployments-chat-regional-failover.router.yaml`
+  same chat capability across several Azure regions with explicit tiered regional failover
+- `deployments-chat-model-fallback.router.yaml`
+  one logical chat deployment that falls back across different model variants across tiers
+- `deployments-embeddings-regional-failover.router.yaml`
+  embeddings routing with the same tiered regional failover pattern used for chat traffic
