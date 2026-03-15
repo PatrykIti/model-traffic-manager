@@ -251,7 +251,7 @@ kubectl exec -n "$e2e_namespace" deployment/router-app -- sh -lc \
   'test -n "$AZURE_FEDERATED_TOKEN_FILE" && test -f "$AZURE_FEDERATED_TOKEN_FILE"'
 
 kubectl exec -n "$e2e_namespace" deployment/router-app -- sh -lc \
-  'python -c "from azure.identity import DefaultAzureCredential; token = DefaultAzureCredential().get_token(\"https://management.azure.com/.default\"); assert token.token; print(len(token.token))"'
+  '/app/.venv/bin/python -c "from azure.identity import DefaultAzureCredential; token = DefaultAzureCredential().get_token(\"https://management.azure.com/.default\"); assert token.token; print(len(token.token))"'
 
 kubectl port-forward -n "$e2e_namespace" svc/router-app 18080:8000 >"${tmp_dir}/port-forward.log" 2>&1 &
 port_forward_pid="$!"
