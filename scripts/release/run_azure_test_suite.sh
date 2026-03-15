@@ -67,6 +67,7 @@ resource_group=""
 aks_cluster_name=""
 e2e_namespace="${E2E_NAMESPACE:-e2e-router}"
 e2e_image="${E2E_IMAGE:-}"
+federated_credential_created="0"
 
 cleanup() {
   exit_code=$?
@@ -77,12 +78,13 @@ cleanup() {
     kill "$port_forward_pid" >/dev/null 2>&1 || true
   fi
 
-  if [[ "$SUITE" == "e2e-aks" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
+  if [[ "$SUITE" == "e2e-aks" && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
     echo "Cleaning up: deleting federated credential router-e2e-${run_id}"
     az identity federated-credential delete \
       --resource-group "$resource_group" \
       --identity-name "$UAI_NAME" \
-      --name "router-e2e-${run_id}" >/dev/null 2>&1 || true
+      --name "router-e2e-${run_id}" \
+      --yes >/dev/null 2>&1 || true
   fi
 
   if [[ "$apply_started" == "1" ]]; then
@@ -111,6 +113,25 @@ echo "Suite: ${SUITE}"
 echo "Environment: ${ENVIRONMENT}"
 echo "Run ID: ${run_id}"
 
+if [[ "$SUITE" == "e2e-aks" && -z "$e2e_image" ]]; then
+  require_cmd docker
+  require_cmd gh
+
+  if ! docker info >/dev/null 2>&1; then
+    echo "Docker daemon is not available. Start Docker or set E2E_IMAGE to a prebuilt image." >&2
+    exit 1
+  fi
+
+  ghcr_owner="${GHCR_OWNER:-$(gh api user -q .login)}"
+  ghcr_username="${GHCR_USERNAME:-$ghcr_owner}"
+  ghcr_token="${GHCR_TOKEN:-$(gh auth token)}"
+  e2e_image="ghcr.io/${ghcr_owner,,}/model-traffic-manager:e2e-local-${run_id}"
+
+  echo "$ghcr_token" | docker login ghcr.io -u "$ghcr_username" --password-stdin
+  docker build -f docker/Dockerfile -t "$e2e_image" .
+  docker push "$e2e_image"
+fi
+
 terraform -chdir="$scope_dir" init -backend=false
 apply_started="1"
 terraform -chdir="$scope_dir" apply -auto-approve -input=false "${tf_args[@]}"
@@ -130,17 +151,6 @@ aks_oidc_issuer_url="$(terraform -chdir="$scope_dir" output -raw aks_oidc_issuer
 UAI_NAME="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_name)"
 uai_client_id="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_client_id)"
 
-if [[ -z "$e2e_image" ]]; then
-  ghcr_owner="${GHCR_OWNER:-$(gh api user -q .login)}"
-  ghcr_username="${GHCR_USERNAME:-$ghcr_owner}"
-  ghcr_token="${GHCR_TOKEN:-$(gh auth token)}"
-  e2e_image="ghcr.io/${ghcr_owner,,}/model-traffic-manager:e2e-local-${run_id}"
-
-  echo "$ghcr_token" | docker login ghcr.io -u "$ghcr_username" --password-stdin
-  docker build -f docker/Dockerfile -t "$e2e_image" .
-  docker push "$e2e_image"
-fi
-
 az aks get-credentials --resource-group "$resource_group" --name "$aks_cluster_name" --overwrite-existing
 
 az identity federated-credential create \
@@ -150,6 +160,7 @@ az identity federated-credential create \
   --issuer "$aks_oidc_issuer_url" \
   --subject "system:serviceaccount:${e2e_namespace}:router-app" \
   --audiences "api://AzureADTokenExchange"
+federated_credential_created="1"
 
 kubectl create namespace "$e2e_namespace" --dry-run=client -o yaml | kubectl apply -f -
 kubectl create configmap router-config \
