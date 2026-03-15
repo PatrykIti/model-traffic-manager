@@ -47,7 +47,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 24 work items
+- **To Do:** 43 work items
 - **In Progress:** 0 work items
 - **Done:** 132 work items
 
@@ -81,6 +81,25 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-025-01 | Live-Model Scope and Config Reuse for Embeddings | High | Small | Reuse the current live-model shape for embeddings |
 | TASK-025-02 | AKS Embeddings Live Suite and Response Contract | High | Medium | Add real embeddings assertions through AKS |
 | TASK-025-03 | Docs and Task/Changelog Alignment | High | Small | Document the embeddings live suite and tracking updates |
+| TASK-026 | Router Performance Characterization and Load Baseline | High | Large | Add repeatable performance evidence for the router |
+| TASK-026-01 | Repeatable Load Profiles and Result Capture | High | Medium | Create the benchmark harness and result model |
+| TASK-026-01-01 | Latency, Throughput, Saturation Thresholds, and Reporting Format | High | Small | Define the benchmark output contract |
+| TASK-026-02 | Failure-Injected Performance and Degradation Scenarios | High | Medium | Measure degraded-path behavior under failure conditions |
+| TASK-026-02-01 | Timeout, `429`, and `5xx` Chaos Matrix and Assertions | High | Small | Define the minimum failure matrix for performance runs |
+| TASK-026-03 | Docs and Operator Benchmark Contract | High | Small | Document how router benchmarks are run and interpreted |
+| TASK-027 | Security Review and Secure-by-Default Hardening | High | Large | Run a router-focused security review and remediation pass |
+| TASK-027-01 | Threat Model and Trust-Boundary Review | High | Medium | Capture the router threat model and main boundaries |
+| TASK-027-01-01 | Inbound, Outbound, and Identity-Boundary Audit | High | Small | Audit identity separation across router flows |
+| TASK-027-02 | Secret, Config, Logging, and Telemetry Exposure Audit | High | Medium | Review runtime outputs for sensitive data exposure |
+| TASK-027-03 | Dependency, Container, and Supply-Chain Scanning Contract | High | Medium | Define the minimum scanning and artifact-review contract |
+| TASK-027-04 | Security Docs and Remediation Tracking | High | Small | Record findings and remediation outcomes |
+| TASK-028 | Release Maturity, Versioning, and Compatibility Contract | High | Medium | Define the release-candidate contract for the router |
+| TASK-028-01 | Stronger Coverage Gate and Flake-Resistance Contract | High | Small | Raise and stabilize the test-quality bar |
+| TASK-028-02 | Configuration Schema Versioning and Compatibility Policy | High | Medium | Define config evolution and compatibility rules |
+| TASK-028-03 | Release Checklist, Semantic Versioning, and Artifact Contract | High | Small | Define stable release expectations and artifact rules |
+| TASK-029 | Router `1.0` Readiness Review and Exit Criteria | High | Medium | Consolidate evidence into a future stable-release decision |
+| TASK-029-01 | Evidence Consolidation Across Validation, Performance, and Security | High | Small | Collect the evidence for a stable-release review |
+| TASK-029-02 | Go/No-Go Checklist and Remaining-Risk Register | High | Small | Capture the exit criteria and unresolved risks |
 ---
 
 ## In Progress
