@@ -53,6 +53,16 @@ def _build_payload(deployment: dict[str, str]) -> dict[str, object]:
     return payload
 
 
+def _metric_value(metrics_text: str, metric_name: str, labels: dict[str, str]) -> float:
+    for raw_line in metrics_text.splitlines():
+        line = raw_line.strip()
+        if not line.startswith(f"{metric_name}{{"):
+            continue
+        if all(f'{key}="{value}"' in line for key, value in labels.items()):
+            return float(line.rsplit(" ", 1)[1])
+    return 0.0
+
+
 def _message_content(body: dict[str, object]) -> str:
     choices = body.get("choices")
     if not isinstance(choices, list) or not choices:
@@ -97,3 +107,97 @@ def test_router_returns_live_model_response() -> None:
             body = response.json()
             assert body["choices"]
             assert _message_content(body).strip(), response.text
+
+
+def test_router_fails_over_after_rate_limit_and_then_skips_primary_during_cooldown() -> None:
+    base_url, deployments = _require_live_model()
+    router_deployment_id, deployment = next(iter(deployments.items()))
+    failover_id = f"{router_deployment_id}-failover-rate-limit"
+
+    with httpx.Client(base_url=base_url, timeout=60.0) as client:
+        before_metrics = client.get("/metrics").text
+        response = client.post(
+            f"/v1/chat/completions/{failover_id}",
+            json=_build_payload(deployment),
+        )
+        assert response.status_code == 200, response.text
+
+        after_first_metrics = client.get("/metrics").text
+        response_second = client.post(
+            f"/v1/chat/completions/{failover_id}",
+            json=_build_payload(deployment),
+        )
+        assert response_second.status_code == 200, response_second.text
+        after_second_metrics = client.get("/metrics").text
+
+    attempts_before = _metric_value(
+        before_metrics,
+        "router_route_attempts_total",
+        {"endpoint_kind": "chat_completions", "deployment_id": failover_id},
+    )
+    attempts_after_first = _metric_value(
+        after_first_metrics,
+        "router_route_attempts_total",
+        {"endpoint_kind": "chat_completions", "deployment_id": failover_id},
+    )
+    attempts_after_second = _metric_value(
+        after_second_metrics,
+        "router_route_attempts_total",
+        {"endpoint_kind": "chat_completions", "deployment_id": failover_id},
+    )
+    cooldown_updates = _metric_value(
+        after_second_metrics,
+        "router_health_state_updates_total",
+        {"deployment_id": failover_id, "status": "cooldown"},
+    )
+
+    assert attempts_after_first - attempts_before == 2
+    assert attempts_after_second - attempts_after_first == 1
+    assert cooldown_updates >= 1
+
+
+def test_router_fails_over_after_unhealthy_primary_and_then_skips_primary_via_circuit() -> None:
+    base_url, deployments = _require_live_model()
+    router_deployment_id, deployment = next(iter(deployments.items()))
+    failover_id = f"{router_deployment_id}-failover-unhealthy"
+
+    with httpx.Client(base_url=base_url, timeout=60.0) as client:
+        before_metrics = client.get("/metrics").text
+        response = client.post(
+            f"/v1/chat/completions/{failover_id}",
+            json=_build_payload(deployment),
+        )
+        assert response.status_code == 200, response.text
+
+        after_first_metrics = client.get("/metrics").text
+        response_second = client.post(
+            f"/v1/chat/completions/{failover_id}",
+            json=_build_payload(deployment),
+        )
+        assert response_second.status_code == 200, response_second.text
+        after_second_metrics = client.get("/metrics").text
+
+    attempts_before = _metric_value(
+        before_metrics,
+        "router_route_attempts_total",
+        {"endpoint_kind": "chat_completions", "deployment_id": failover_id},
+    )
+    attempts_after_first = _metric_value(
+        after_first_metrics,
+        "router_route_attempts_total",
+        {"endpoint_kind": "chat_completions", "deployment_id": failover_id},
+    )
+    attempts_after_second = _metric_value(
+        after_second_metrics,
+        "router_route_attempts_total",
+        {"endpoint_kind": "chat_completions", "deployment_id": failover_id},
+    )
+    circuit_updates = _metric_value(
+        after_second_metrics,
+        "router_health_state_updates_total",
+        {"deployment_id": failover_id, "status": "circuit_open"},
+    )
+
+    assert attempts_after_first - attempts_before == 2
+    assert attempts_after_second - attempts_after_first == 1
+    assert circuit_updates >= 1

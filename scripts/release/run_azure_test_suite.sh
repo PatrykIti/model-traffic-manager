@@ -298,6 +298,11 @@ if [[ "$e2e_image" == ghcr.io/* ]]; then
 fi
 python3 scripts/release/render_template.py "${manifest_root}/k8s/router-deployment.yaml.tmpl" | kubectl apply -f -
 kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-service.yaml"
+if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
+  python3 scripts/release/render_template.py "${manifest_root}/k8s/router-failover-mock-deployment.yaml.tmpl" | kubectl apply -f -
+  kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-failover-mock-service.yaml"
+  kubectl rollout status deployment/router-failover-mock -n "$e2e_namespace" --timeout=5m
+fi
 
 kubectl rollout status deployment/router-app -n "$e2e_namespace" --timeout=5m
 

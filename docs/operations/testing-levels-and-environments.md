@@ -145,6 +145,8 @@ Current live-model coverage:
 - real `POST /v1/chat/completions/{deployment_id}` requests through AKS
 - router config generated from Terraform outputs
 - live response validation with a non-empty assistant message
+- controlled failover from an in-cluster mock primary to a live Azure OpenAI secondary
+- live observation of `cooldown` and `circuit_open` transitions through router metrics
 
 Default rule:
 

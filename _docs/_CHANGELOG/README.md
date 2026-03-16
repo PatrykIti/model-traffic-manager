@@ -63,3 +63,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 30 | 2026-03-16 | Explicit cooldown state semantics and observability | feature/health |
 | 31 | 2026-03-16 | Live Azure validation expansion planning | docs/planning |
 | 32 | 2026-03-16 | E2E AKS live embeddings profile | validation/e2e |
+| 33 | 2026-03-16 | E2E AKS live chat failover scenarios | validation/e2e |
