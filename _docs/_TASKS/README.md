@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 43 work items
+- **To Do:** 49 work items
 - **In Progress:** 0 work items
-- **Done:** 165 work items
+- **Done:** 167 work items
 
 ---
 
@@ -57,6 +57,12 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
+| TASK-029-02 | `integration-azure` Outbound Provider Probes for Chat and Embeddings | High | Medium | Lower-level live probes for chat and embeddings provider paths |
+| TASK-029-03 | `e2e-aks-live-model` Embeddings Profile | High | Medium | Real embeddings path through router on AKS |
+| TASK-029-04 | `e2e-aks-live-model` Chat Failover and Health-State Scenarios | High | Medium | Live failover, cooldown, and circuit scenarios for chat |
+| TASK-029-05 | Live Shared-Services Validation on Azure and AKS | High | Medium | Live validation for router-proxy and direct-access shared services |
+| TASK-029-06 | Redis-Backed Multi-Replica AKS Validation | High | Medium | Live multi-replica coordination proof with Redis-backed state |
+| TASK-029-07 | Runner, Workflow, and Documentation Rollout for Expanded Live Suites | High | Medium | Local runners, CI, and docs alignment for the new live profiles |
 
 ---
 
@@ -228,3 +234,5 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-027-02 | Official Auth and Identity Documentation Page | High | Small | Dedicated docs page added for auth-mode and identity-selection behavior |
 | TASK-028 | Explicit Cooldown State Semantics and Observability | High | Small | Explicit cooldown state semantics implemented for clearer routing and diagnostics |
 | TASK-028-01 | Cooldown State Transitions, Routing Reasons, and Docs Alignment | High | Small | Cooldown transitions and cooldown-specific rejection reasons implemented and documented |
+| TASK-029 | Live Azure Validation Expansion for Router Surfaces | High | Large | Validation matrix and target live profiles defined for the next Azure-backed test expansion |
+| TASK-029-01 | Live Azure Validation Matrix and Profile Taxonomy | High | Small | Validation matrix split across integration-azure, e2e-aks, live-model, shared services, and Redis |
