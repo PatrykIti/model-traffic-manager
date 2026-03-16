@@ -17,6 +17,7 @@ What each command does:
 - `make integration-azure-local` runs `apply -> integration tests -> destroy` against Azure using the active Azure CLI context
 - `make e2e-aks-local` runs `apply -> deploy -> e2e smoke -> destroy` against AKS using the active Azure CLI context
 - `make e2e-aks-live-model-local` runs a wider AKS suite with Azure OpenAI infrastructure and a real model-response validation
+- `make e2e-aks-live-embeddings-local` runs a dedicated AKS suite for real embeddings responses through the router
 - `make run` starts the bootstrap FastAPI app
 
 Environment defaults are documented in [`.env.example`](../../.env.example), and the example runtime config lives in [`configs/example.router.yaml`](../../configs/example.router.yaml).
@@ -52,6 +53,8 @@ Live-model notes:
 
 - `make e2e-aks-local` stays the cheaper AKS smoke path without a real model account
 - `make e2e-aks-live-model-local` provisions extra Azure OpenAI infrastructure and consumes real model quota
+- `make e2e-aks-live-embeddings-local` provisions a dedicated Azure OpenAI embeddings deployment and validates live vectors through AKS
 - the current live-model profile targets `swedencentral` and validates `gpt-5` plus `gpt-5.1`
+- the current live embeddings profile targets `germanywestcentral` and validates `text-embedding-3-small`
 - this suite is intentionally separate because model quota and regional model availability can change independently of the smoke AKS path
-- the next meaningful higher-level additions are a Redis-backed AKS profile and a live-model embeddings path once the infra profile provisions an embeddings deployment
+- the next meaningful higher-level additions are a Redis-backed AKS profile, shared-services live validation, and richer live chat failover scenarios

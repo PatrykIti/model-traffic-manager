@@ -157,7 +157,36 @@ Default rule:
 Recommended next additions:
 
 - a Redis-backed AKS profile that proves shared health and limiter state in-cluster
-- a live-model embeddings profile once the dedicated infrastructure provisions an embeddings deployment
+- shared-services live validation on Azure and AKS
+
+### 6. `e2e-aks-live-embeddings`
+
+Purpose:
+
+- prove a real embeddings request through AKS, Workload Identity, router runtime config, and Azure OpenAI
+
+Environment:
+
+- AKS
+- Azure OpenAI embeddings deployment
+- workload identity and Azure RBAC
+
+Current repository activation:
+
+- local command: `make e2e-aks-live-embeddings-local`
+- test suite: `tests/e2e_aks_live_embeddings/`
+- infra scope: `infra/e2e-aks-live-embeddings/`
+- current model profile: `text-embedding-3-small` in `germanywestcentral`
+
+Current live embeddings coverage:
+
+- real `POST /v1/embeddings/{deployment_id}` requests through AKS
+- generated router config from Terraform outputs for embeddings deployments
+- live validation that a non-empty embedding vector is returned
+
+Default rule:
+
+- use this suite deliberately because it provisions real Azure OpenAI capacity and consumes live embeddings quota
 
 ## Phase mapping
 
