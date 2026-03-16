@@ -41,7 +41,7 @@ def test_record_rate_limited_failure_sets_cooldown() -> None:
         ),
     )
 
-    assert state.status is HealthStatus.RATE_LIMITED
+    assert state.status is HealthStatus.COOLDOWN
     assert state.cooldown_until == 145
     assert state.last_failure_reason is FailureReason.RATE_LIMITED
 
@@ -63,7 +63,7 @@ def test_record_unhealthy_failure_opens_circuit_at_threshold() -> None:
         FailureClassification(reason=FailureReason.NETWORK_ERROR, retriable=True),
     )
 
-    assert first.status is HealthStatus.UNHEALTHY
+    assert first.status is HealthStatus.COOLDOWN
     assert first.consecutive_failures == 1
     assert first.cooldown_until == 130
     assert second.status is HealthStatus.CIRCUIT_OPEN
@@ -100,6 +100,28 @@ def test_normalize_recovers_expired_states() -> None:
     assert rate_limited.consecutive_failures == 1
     assert circuit_open.status is HealthStatus.HALF_OPEN
     assert circuit_open.consecutive_failures == 2
+
+
+def test_normalize_migrates_legacy_rate_limited_state_into_cooldown() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=2,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 100,
+    )
+
+    normalized = policy.normalize(
+        HealthState(
+            status=HealthStatus.RATE_LIMITED,
+            consecutive_failures=0,
+            cooldown_until=130,
+            last_failure_reason=FailureReason.RATE_LIMITED,
+        )
+    )
+
+    assert normalized.status is HealthStatus.COOLDOWN
+    assert normalized.cooldown_until == 130
+    assert normalized.last_failure_reason is FailureReason.RATE_LIMITED
 
 
 def test_record_failure_reopens_circuit_from_half_open_probe() -> None:

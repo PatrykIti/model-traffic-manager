@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 43 work items
 - **In Progress:** 0 work items
-- **Done:** 156 work items
+- **Done:** 165 work items
 
 ---
 
@@ -223,3 +223,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-025-01 | Official Shared-Service Example Router Configs | High | Small | Full example router YAMLs added for direct, single-endpoint, and failover service modes |
 | TASK-026 | Deployment Example YAML Catalog | High | Small | Real deployment example router configs added for regional failover, model fallback, and embeddings |
 | TASK-026-01 | Official Deployment Example Router Configs | High | Small | Full example router YAMLs added for chat regional failover, model fallback, and embeddings failover |
+| TASK-027 | Auth and Identity Example YAML Catalog | High | Small | Real auth and identity example router configs added and linked from official docs |
+| TASK-027-01 | Official Auth and Identity Example Router Configs | High | Small | Full example router YAMLs added for default MI, explicit client IDs, and mixed auth modes |
+| TASK-027-02 | Official Auth and Identity Documentation Page | High | Small | Dedicated docs page added for auth-mode and identity-selection behavior |
+| TASK-028 | Explicit Cooldown State Semantics and Observability | High | Small | Explicit cooldown state semantics implemented for clearer routing and diagnostics |
+| TASK-028-01 | Cooldown State Transitions, Routing Reasons, and Docs Alignment | High | Small | Cooldown transitions and cooldown-specific rejection reasons implemented and documented |

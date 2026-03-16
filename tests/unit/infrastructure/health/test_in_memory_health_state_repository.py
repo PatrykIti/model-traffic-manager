@@ -13,7 +13,7 @@ def test_in_memory_health_state_repository_stores_and_loads_states() -> None:
         "deployment-a",
         "upstream-a",
         HealthState(
-            status=HealthStatus.RATE_LIMITED,
+            status=HealthStatus.COOLDOWN,
             cooldown_until=160,
             last_failure_reason=FailureReason.RATE_LIMITED,
         ),
@@ -23,7 +23,7 @@ def test_in_memory_health_state_repository_stores_and_loads_states() -> None:
 
     assert states == {
         "upstream-a": HealthState(
-            status=HealthStatus.RATE_LIMITED,
+            status=HealthStatus.COOLDOWN,
             cooldown_until=160,
             last_failure_reason=FailureReason.RATE_LIMITED,
         )

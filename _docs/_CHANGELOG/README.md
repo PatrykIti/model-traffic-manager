@@ -60,3 +60,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 27 | 2026-03-15 | Shared-service example YAML catalog | docs/examples |
 | 28 | 2026-03-15 | Deployment example YAML catalog | docs/examples |
 | 29 | 2026-03-15 | Auth and identity example YAML catalog | docs/examples |
+| 30 | 2026-03-16 | Explicit cooldown state semantics and observability | feature/health |

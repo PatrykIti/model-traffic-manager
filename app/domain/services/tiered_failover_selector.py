@@ -55,7 +55,7 @@ class TieredFailoverSelector:
                 continue
 
             rejected_candidates.append(
-                self._build_rejection(upstream, self._reason_for_state(state.status))
+                self._build_rejection(upstream, self._reason_for_state(state))
             )
 
         available = tuple(available_healthy)
@@ -197,16 +197,19 @@ class TieredFailoverSelector:
         return "lower_tier_mixed_rejections"
 
     @staticmethod
-    def _reason_for_state(status: HealthStatus) -> str:
+    def _reason_for_state(state: HealthState) -> str:
+        if state.status is HealthStatus.COOLDOWN:
+            if state.last_failure_reason is not None:
+                return f"cooldown_{state.last_failure_reason.value}"
+            return "cooldown"
         return {
             HealthStatus.RATE_LIMITED: "rate_limited",
             HealthStatus.QUOTA_EXHAUSTED: "quota_exhausted",
-            HealthStatus.COOLDOWN: "cooldown",
             HealthStatus.UNHEALTHY: "unhealthy",
             HealthStatus.CIRCUIT_OPEN: "circuit_open",
             HealthStatus.HALF_OPEN: "half_open",
             HealthStatus.HEALTHY: "healthy",
-        }[status]
+        }[state.status]
 
     @staticmethod
     def _build_rejection(upstream: Upstream, reason: str) -> RouteCandidateRejection:

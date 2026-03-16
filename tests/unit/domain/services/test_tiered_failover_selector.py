@@ -3,6 +3,7 @@ from __future__ import annotations
 from app.domain.entities.upstream import Upstream
 from app.domain.services.tiered_failover_selector import TieredFailoverSelector
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
+from app.domain.value_objects.failure_classification import FailureReason
 from app.domain.value_objects.health_state import HealthState, HealthStatus
 
 
@@ -106,6 +107,31 @@ def test_selector_skips_unavailable_primary_tier_states() -> None:
     assert selection.reason == "selected_failover_tier"
     assert selection.failover_reason == "lower_tier_circuit_open"
     assert selection.rejected_candidates[0].reason == "circuit_open"
+
+
+def test_selector_exposes_cooldown_reason_from_last_failure_reason() -> None:
+    selector = TieredFailoverSelector()
+    upstreams = (
+        build_upstream("primary-a", tier=0, weight=100),
+        build_upstream("secondary-a", tier=1, weight=100),
+    )
+
+    selection = selector.select(
+        "deployment-a",
+        upstreams,
+        states={
+            "primary-a": HealthState(
+                status=HealthStatus.COOLDOWN,
+                cooldown_until=200,
+                last_failure_reason=FailureReason.RATE_LIMITED,
+            )
+        },
+    )
+
+    assert selection is not None
+    assert selection.upstream.id == "secondary-a"
+    assert selection.failover_reason == "lower_tier_cooldown_rate_limited"
+    assert selection.rejected_candidates[0].reason == "cooldown_rate_limited"
 
 
 def test_selector_prefers_healthy_candidates_over_half_open_candidates() -> None:

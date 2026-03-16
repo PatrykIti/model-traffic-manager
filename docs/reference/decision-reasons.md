@@ -47,6 +47,9 @@ Key runtime event fields include:
 
 Common rejection reasons include:
 
+- `cooldown_rate_limited`
+- `cooldown_quota_exhausted`
+- `cooldown_unhealthy`
 - `rate_limited`
 - `quota_exhausted`
 - `unhealthy`

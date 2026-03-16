@@ -27,8 +27,27 @@ class HealthStatePolicy:
             in {
                 HealthStatus.RATE_LIMITED,
                 HealthStatus.QUOTA_EXHAUSTED,
-                HealthStatus.COOLDOWN,
                 HealthStatus.UNHEALTHY,
+            }
+            and state.cooldown_until is not None
+        ):
+            if state.cooldown_until <= now:
+                return HealthState(
+                    status=HealthStatus.HEALTHY,
+                    consecutive_failures=state.consecutive_failures,
+                    last_failure_reason=state.last_failure_reason,
+                )
+            return HealthState(
+                status=HealthStatus.COOLDOWN,
+                consecutive_failures=state.consecutive_failures,
+                cooldown_until=state.cooldown_until,
+                last_failure_reason=state.last_failure_reason,
+            )
+
+        if (
+            state.status
+            in {
+                HealthStatus.COOLDOWN,
             }
             and state.cooldown_until is not None
             and state.cooldown_until <= now
@@ -85,7 +104,7 @@ class HealthStatePolicy:
                 else self._cooldown_seconds
             )
             return HealthState(
-                status=HealthStatus.RATE_LIMITED,
+                status=HealthStatus.COOLDOWN,
                 consecutive_failures=normalized_state.consecutive_failures,
                 cooldown_until=cooldown_until,
                 last_failure_reason=failure.reason,
@@ -93,7 +112,7 @@ class HealthStatePolicy:
 
         if failure.reason is FailureReason.QUOTA_EXHAUSTED:
             return HealthState(
-                status=HealthStatus.QUOTA_EXHAUSTED,
+                status=HealthStatus.COOLDOWN,
                 consecutive_failures=normalized_state.consecutive_failures,
                 cooldown_until=now + self._cooldown_seconds,
                 last_failure_reason=failure.reason,
@@ -114,7 +133,7 @@ class HealthStatePolicy:
                 )
 
             return HealthState(
-                status=HealthStatus.UNHEALTHY,
+                status=HealthStatus.COOLDOWN,
                 consecutive_failures=consecutive_failures,
                 cooldown_until=now + self._cooldown_seconds,
                 last_failure_reason=failure.reason,

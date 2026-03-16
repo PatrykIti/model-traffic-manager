@@ -13,7 +13,7 @@ Current repository status:
 - chat and embeddings routes reject incompatible deployment contracts explicitly at request time
 - outbound auth supports `none`, `api_key`, and `managed_identity`
 - tiered multi-upstream selection and request-level failover are implemented
-- cooldown after `429`, quota classification, circuit-open behavior, and half-open recovery probes are implemented
+- explicit `cooldown` state semantics, quota classification, circuit-open behavior, and half-open recovery probes are implemented
 - in-memory and Redis-backed health-state persistence are both wired into the active runtime
 - deployment-level request-rate limiting and concurrency limiting are implemented
 - Redis-backed limiter adapters are available in the active runtime when `runtime_state_backend=redis`
