@@ -1,0 +1,277 @@
+# Full router reference config.
+#
+# Purpose:
+# - show the full currently supported contract in one place
+# - explain how the major areas fit together
+# - complement, not replace, configs/example.router.yaml
+#
+# Keep in mind:
+# - configs/example.router.yaml stays the minimal runnable baseline
+# - this file is the richer reference with comments and multiple scenarios
+
+router:
+  # Instance metadata used in logs and operational diagnostics.
+  instance_name: model-traffic-manager-reference
+
+  # End-to-end timeout budget for one routed request attempt.
+  timeout_ms: 30000
+
+  # Maximum attempts per request across eligible upstreams.
+  max_attempts: 3
+
+  # HTTP statuses that the router may retry and fail over on.
+  retryable_status_codes: [429, 500, 502, 503, 504]
+
+  health:
+    # Open the circuit after this many consecutive retriable health failures.
+    failure_threshold: 3
+
+    # Cooldown window applied after rate limiting and selected failures.
+    cooldown_seconds: 30
+
+    # When a circuit-open upstream is allowed one half-open recovery probe.
+    half_open_after_seconds: 60
+
+deployments:
+  # ----------------------------------------------------------------------------
+  # Chat deployment with active-active balancing in tier 0.
+  # ----------------------------------------------------------------------------
+  - id: assistant-chat-balanced
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 50
+      request_rate_per_second: 20
+    upstreams:
+      # Two equivalent primaries balanced 80/20.
+      - id: gpt41-weu-primary-a
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-primary-a
+        compatibility_group: gpt41-prod-primary
+        target_share_percent: 80
+        max_share_percent: 80
+        endpoint: https://aoai-prod-01.openai.azure.com/openai/deployments/gpt-4-1-primary-a/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      - id: gpt41-neu-primary-b
+        provider: azure_openai
+        account: aoai-prod-02
+        region: northeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-primary-b
+        compatibility_group: gpt41-prod-primary
+        target_share_percent: 20
+        max_share_percent: 20
+        endpoint: https://aoai-prod-02.openai.azure.com/openai/deployments/gpt-4-1-primary-b/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      # Drain keeps an upstream out of new traffic without marking it unhealthy.
+      - id: gpt41-seu-draining-copy
+        provider: azure_openai
+        account: aoai-prod-03
+        region: swedencentral
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-draining
+        compatibility_group: gpt41-prod-primary
+        drain: true
+        endpoint: https://aoai-prod-03.openai.azure.com/openai/deployments/gpt-4-1-draining/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+  # ----------------------------------------------------------------------------
+  # Chat deployment with active_standby in tier 0 and a model fallback tier.
+  # ----------------------------------------------------------------------------
+  - id: assistant-chat-controlled
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 50
+      request_rate_per_second: 20
+    upstreams:
+      - id: gpt41-primary-active
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-primary
+        compatibility_group: gpt41-controlled-primary
+        balancing_policy: active_standby
+        endpoint: https://aoai-prod-01.openai.azure.com/openai/deployments/gpt-4-1-primary/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      # warm_standby is healthy and ready, but should not take normal traffic
+      # while the active peer is still available.
+      - id: gpt41-primary-standby
+        provider: azure_openai
+        account: aoai-prod-02
+        region: northeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-standby
+        compatibility_group: gpt41-controlled-primary
+        balancing_policy: active_standby
+        warm_standby: true
+        endpoint: https://aoai-prod-02.openai.azure.com/openai/deployments/gpt-4-1-standby/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      # Tier 1 is an intentional model fallback, not part of the primary pool.
+      - id: gpt4o-fallback
+        provider: external_openai_compatible
+        account: fallback-vendor
+        region: eu
+        tier: 1
+        weight: 100
+        model_name: gpt-4o
+        model_version: "2024-08-06"
+        deployment_name: gpt-4o-fallback
+        compatibility_group: gpt4o-fallback
+        endpoint: https://fallback-vendor.example/api/chat/completions
+        auth:
+          mode: api_key
+          header_name: api-key
+          secret_ref: env://THIRD_PARTY_LLM_API_KEY
+
+  # ----------------------------------------------------------------------------
+  # Embeddings deployment with safe balancing inside one compatible pool.
+  # ----------------------------------------------------------------------------
+  - id: knowledge-embeddings-balanced
+    kind: embeddings
+    protocol: openai_embeddings
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 100
+      request_rate_per_second: 50
+    upstreams:
+      # For embeddings, balancing should happen only between the same model/version.
+      - id: embeddings-weu-primary-a
+        provider: azure_openai
+        account: aoai-emb-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        model_name: text-embedding-3-small
+        model_version: "1"
+        deployment_name: text-embedding-3-small-a
+        compatibility_group: text-embedding-3-small-prod
+        target_share_percent: 70
+        max_share_percent: 70
+        endpoint: https://aoai-emb-prod-01.openai.azure.com/openai/deployments/text-embedding-3-small-a/embeddings
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      - id: embeddings-neu-primary-b
+        provider: azure_openai
+        account: aoai-emb-prod-02
+        region: northeurope
+        tier: 0
+        weight: 100
+        model_name: text-embedding-3-small
+        model_version: "1"
+        deployment_name: text-embedding-3-small-b
+        compatibility_group: text-embedding-3-small-prod
+        target_share_percent: 30
+        max_share_percent: 30
+        endpoint: https://aoai-emb-prod-02.openai.azure.com/openai/deployments/text-embedding-3-small-b/embeddings
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services:
+  # ----------------------------------------------------------------------------
+  # Shared service consumed directly by the backend, not proxied through router.
+  # ----------------------------------------------------------------------------
+  conversation_archive:
+    transport: http_json
+    access_mode: direct_backend_access
+    provider_managed_availability: true
+    provider: azure_storage
+    account: conversation-archive
+    region: westeurope
+    endpoint: https://conversation-archive.blob.core.windows.net
+    auth:
+      mode: managed_identity
+      scope: https://storage.azure.com/.default
+
+  # ----------------------------------------------------------------------------
+  # Shared service proxied through router, but without router-side failover.
+  # ----------------------------------------------------------------------------
+  transcript_registry:
+    transport: http_json
+    access_mode: router_proxy
+    provider_managed_availability: true
+    routing_strategy: single_endpoint
+    limits:
+      max_concurrency: 20
+      request_rate_per_second: 10
+    upstreams:
+      - id: transcript-registry-primary
+        provider: internal_api
+        account: platform
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://platform.internal.example/transcript-registry
+        auth:
+          mode: none
+
+  # ----------------------------------------------------------------------------
+  # Shared service proxied through router with explicit failover.
+  # ----------------------------------------------------------------------------
+  transcript_search:
+    transport: http_json
+    access_mode: router_proxy
+    provider_managed_availability: false
+    routing_strategy: tiered_failover
+    limits:
+      max_concurrency: 20
+      request_rate_per_second: 10
+    upstreams:
+      - id: transcript-search-primary
+        provider: internal_api
+        account: search-prod
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://search-we.example.internal/transcript-search
+        auth:
+          mode: managed_identity
+          scope: api://transcript-search/.default
+          client_id: 22222222-2222-2222-2222-222222222222
+      - id: transcript-search-secondary
+        provider: internal_api
+        account: search-dr
+        region: northeurope
+        tier: 1
+        weight: 100
+        endpoint: https://search-ne.example.internal/transcript-search
+        auth:
+          mode: managed_identity
+          scope: api://transcript-search/.default
+          client_id: 22222222-2222-2222-2222-222222222222

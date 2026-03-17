@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 41 work items
 - **In Progress:** 0 work items
-- **Done:** 188 work items
+- **Done:** 191 work items
 
 ---
 
@@ -249,3 +249,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-030-05-05 | Live Validation Package for Advanced Balancing Behavior | High | Medium | Live AKS validation added for balancing behavior and operational controls |
 | TASK-030-06 | Commented Example YAML Catalog for Load-Balancing Scenarios | High | Medium | YAML catalog added for active-active, active-standby, and embeddings-safe pools |
 | TASK-030-07 | Live Azure Validation Package and Dedicated Runner for Load Balancing | High | Medium | Dedicated live infra scope, suite, and make runner added for load balancing |
+| TASK-031 | Full Router Reference Config | High | Small | Commented full reference config added next to the minimal bootstrap example |
+| TASK-031-01 | Full Capabilities Router YAML and Official Docs Alignment | High | Small | Full router reference config wired into docs and loader validation |
+| TASK-032 | Live Load-Balancing Rendered Config Scalar Typing Fix | High | Small | Rendered live load-balancing config hardened against YAML date coercion |

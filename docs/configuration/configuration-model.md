@@ -10,7 +10,12 @@ The main sections are:
 - `deployments`
 - `shared_services`
 
-The example bootstrap file is [`configs/example.router.yaml`](../../configs/example.router.yaml). It is intentionally small, but it already follows the semantic configuration model described in `_docs/_MVP/`.
+Available reference configs:
+
+- [`configs/example.router.yaml`](../../configs/example.router.yaml)
+  minimal runnable baseline for local startup
+- [`configs/full-capabilities.router.yaml`](../../configs/full-capabilities.router.yaml)
+  commented full reference that shows the currently supported router contract in one place
 
 Current runtime behavior:
 

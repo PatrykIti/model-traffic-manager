@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import contextlib
+import io
+import runpy
 from pathlib import Path
 
 import pytest
@@ -18,6 +21,13 @@ def test_yaml_loader_reads_example_config() -> None:
     repository = ConfigDeploymentRepository.from_router_config(config)
     assert repository.get_deployment("local-health-check") is not None
     assert repository.get_deployment("local-embeddings-check") is not None
+
+
+def test_yaml_loader_reads_full_capabilities_config() -> None:
+    config = load_router_config(Path("configs/full-capabilities.router.yaml"))
+
+    assert config.deployments
+    assert config.shared_services
 
 
 def test_yaml_loader_reads_shared_service_example_catalog() -> None:
@@ -67,6 +77,23 @@ def test_yaml_loader_reads_load_balancing_example_catalog() -> None:
     for path in example_paths:
         config = load_router_config(path)
         assert config.deployments
+
+
+def test_yaml_loader_reads_rendered_live_load_balancing_config(tmp_path: Path) -> None:
+    rendered_config = tmp_path / "router-live-load-balancing.yaml"
+    stdout = io.StringIO()
+
+    with contextlib.redirect_stdout(stdout):
+        runpy.run_path(
+            Path("scripts/release/render_live_load_balancing_router_config.py"),
+            run_name="__main__",
+        )
+
+    rendered_config.write_text(stdout.getvalue(), encoding="utf-8")
+    config = load_router_config(rendered_config)
+
+    assert config.deployments[0].upstreams[0].model_version == "2025-04-14"
+    assert config.deployments[3].upstreams[0].model_version == "1"
 
 
 def test_yaml_loader_rejects_invalid_yaml(tmp_path: Path) -> None:

@@ -21,7 +21,14 @@ What each command does:
 - `make e2e-aks-live-load-balancing-local` runs a dedicated AKS suite for model-aware load-balancing behavior
 - `make run` starts the bootstrap FastAPI app
 
-Environment defaults are documented in [`.env.example`](../../.env.example), and the example runtime config lives in [`configs/example.router.yaml`](../../configs/example.router.yaml).
+Environment defaults are documented in [`.env.example`](../../.env.example).
+
+Config references:
+
+- [`configs/example.router.yaml`](../../configs/example.router.yaml)
+  minimal bootstrap config for quick local startup
+- [`configs/full-capabilities.router.yaml`](../../configs/full-capabilities.router.yaml)
+  full commented reference for the complete currently supported config contract
 
 Useful first endpoints after startup:
 
