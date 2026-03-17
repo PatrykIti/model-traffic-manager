@@ -48,7 +48,7 @@ What is already implemented:
 - trace foundation for inbound requests and outbound model attempts
 - opt-in `integration-azure`, `e2e-aks`, and `e2e-aks-live-model` validation flows
 - persistent outbound HTTP client tuning with explicit connection limits and timeout policy
-- `make release-check` as the current release gate for quality, workflow, and Terraform validation
+- `make release-check` as the current release gate for quality, shell syntax, workflow, and Terraform validation
 
 ## Quick start
 

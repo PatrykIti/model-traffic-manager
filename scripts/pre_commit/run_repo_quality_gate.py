@@ -12,6 +12,17 @@ def run(command: list[str]) -> int:
     return completed.returncode
 
 
+def tracked_shell_scripts() -> list[str]:
+    completed = subprocess.run(
+        ["git", "ls-files", "*.sh"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return [line for line in completed.stdout.splitlines() if line]
+
+
 def main() -> int:
     pyproject = ROOT / "pyproject.toml"
     app_dir = ROOT / "app"
@@ -21,7 +32,9 @@ def main() -> int:
         print("Python quality gate skipped: pyproject.toml, app/, or tests/ is not available yet.")
         return 0
 
+    shell_scripts = tracked_shell_scripts()
     commands = [
+        ["bash", "-n", *shell_scripts],
         ["uv", "run", "ruff", "check", "."],
         ["uv", "run", "mypy", "app"],
         ["uv", "run", "pytest", "--cov=app", "--cov-report=term-missing", "--cov-fail-under=85"],

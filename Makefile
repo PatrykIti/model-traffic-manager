@@ -5,7 +5,7 @@ UV := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
 ENVIRONMENT ?= dev1
 PYTEST_FLAGS ?= -vv -rA
 
-.PHONY: bootstrap lock lint format typecheck test check validate-workflows validate-terraform release-check integration-azure-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local run docker-build smoke clean
+.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check integration-azure-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local run docker-build smoke clean
 
 bootstrap:
 	$(UV) sync --frozen --python "$(PYTHON_VERSION)"
@@ -22,10 +22,14 @@ format:
 typecheck:
 	$(UV) run mypy app
 
+validate-shell:
+	bash -n docker/entrypoint.sh
+	bash -n scripts/release/run_azure_test_suite.sh
+
 test:
 	$(UV) run pytest $(PYTEST_FLAGS) --cov=app --cov-report=term-missing --cov-fail-under=85
 
-check: lint typecheck test
+check: lint typecheck validate-shell test
 
 validate-workflows:
 	$(UV) run python scripts/release/validate_github_workflows.py

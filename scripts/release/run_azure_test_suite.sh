@@ -334,8 +334,18 @@ export E2E_IMAGE="$e2e_image"
 export E2E_UAI_CLIENT_ID="$uai_client_id"
 
 if [[ "$e2e_image" == ghcr.io/* ]]; then
-  ghcr_username="${GHCR_USERNAME:-${GHCR_OWNER:-$(gh api user -q .login 2>/dev/null || true)}}"
-  ghcr_token="${GHCR_TOKEN:-$(gh auth token 2>/dev/null || true)}"
+  ghcr_username="${GHCR_USERNAME:-}"
+  if [[ -z "$ghcr_username" ]]; then
+    ghcr_username="${GHCR_OWNER:-}"
+  fi
+  if [[ -z "$ghcr_username" ]]; then
+    ghcr_username="$(gh api user -q .login 2>/dev/null || true)"
+  fi
+
+  ghcr_token="${GHCR_TOKEN:-}"
+  if [[ -z "$ghcr_token" ]]; then
+    ghcr_token="$(gh auth token 2>/dev/null || true)"
+  fi
 
   if [[ -z "$ghcr_username" || -z "$ghcr_token" ]]; then
     echo "Private GHCR image pull requires GHCR_TOKEN and GHCR_USERNAME (or an authenticated gh cli session)." >&2

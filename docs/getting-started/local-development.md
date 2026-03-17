@@ -14,6 +14,7 @@ What each command does:
 
 - `make bootstrap` syncs the locked environment with `uv`
 - `make check` runs lint, type-check, and tests
+- `make release-check` runs the local quality gate plus shell, workflow, and Terraform validation
 - `make integration-azure-local` runs `apply -> integration tests -> destroy` against Azure using the active Azure CLI context
 - `make e2e-aks-local` runs `apply -> deploy -> e2e smoke -> destroy` against AKS using the active Azure CLI context
 - `make e2e-aks-live-model-local` runs a wider AKS suite with Azure OpenAI infrastructure and a real model-response validation
