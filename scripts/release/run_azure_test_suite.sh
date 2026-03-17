@@ -19,6 +19,15 @@ require_cmd() {
   fi
 }
 
+select_running_pod() {
+  local namespace="$1"
+  local label_selector="$2"
+
+  kubectl get pods -n "$namespace" -l "$label_selector" \
+    -o jsonpath='{range .items[?(@.status.phase=="Running")]}{.metadata.name}{"\n"}{end}' \
+    | head -n 1
+}
+
 for cmd in az terraform uv python3; do
   require_cmd "$cmd"
 done
@@ -328,18 +337,27 @@ if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-failover-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-failover-mock-service.yaml"
   kubectl rollout status deployment/router-failover-mock -n "$e2e_namespace" --timeout=5m
+  kubectl wait --for=condition=Ready pod -l app=router-failover-mock -n "$e2e_namespace" --timeout=5m
 elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-lb-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-lb-mock-service.yaml"
   kubectl rollout status deployment/router-lb-mock -n "$e2e_namespace" --timeout=5m
+  kubectl wait --for=condition=Ready pod -l app=router-lb-mock -n "$e2e_namespace" --timeout=5m
 fi
 
 kubectl rollout status deployment/router-app -n "$e2e_namespace" --timeout=5m
+kubectl wait --for=condition=Ready pod -l app=router-app -n "$e2e_namespace" --timeout=5m
 
-kubectl exec -n "$e2e_namespace" deployment/router-app -- sh -lc \
+router_pod_name="$(select_running_pod "$e2e_namespace" "app=router-app")"
+if [[ -z "$router_pod_name" ]]; then
+  echo "Could not resolve a running router-app pod after readiness wait." >&2
+  exit 1
+fi
+
+kubectl exec -n "$e2e_namespace" "pod/${router_pod_name}" -c router -- sh -lc \
   'test -n "$AZURE_FEDERATED_TOKEN_FILE" && test -f "$AZURE_FEDERATED_TOKEN_FILE"'
 
-kubectl exec -n "$e2e_namespace" deployment/router-app -- sh -lc \
+kubectl exec -n "$e2e_namespace" "pod/${router_pod_name}" -c router -- sh -lc \
   '/app/.venv/bin/python -c "from azure.identity import DefaultAzureCredential; token = DefaultAzureCredential().get_token(\"https://management.azure.com/.default\"); assert token.token; print(len(token.token))"'
 
 kubectl port-forward -n "$e2e_namespace" svc/router-app 18080:8000 >"${tmp_dir}/port-forward.log" 2>&1 &
