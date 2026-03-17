@@ -24,6 +24,8 @@ What each command does:
 
 All `make` targets that execute `pytest` now use verbose reporting, so the console shows each test name as it runs and prints a full final status summary.
 
+The live Azure OpenAI validation scopes generate randomized account and subdomain suffixes by default so repeated local runs do not collide with recently deleted Cognitive Services custom subdomains.
+
 Environment defaults are documented in [`.env.example`](../../.env.example).
 
 Config references:

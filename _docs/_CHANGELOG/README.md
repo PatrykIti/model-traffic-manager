@@ -72,3 +72,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 39 | 2026-03-17 | AKS runner pod readiness and exec target hardening | validation/e2e |
 | 40 | 2026-03-17 | Live port-forward and transport retry hardening | validation/e2e |
 | 41 | 2026-03-17 | Shell runner syntax validation in quality gates | workflow/testing |
+| 42 | 2026-03-17 | Randomized OpenAI account and subdomain suffixes for live scopes | validation/infra |

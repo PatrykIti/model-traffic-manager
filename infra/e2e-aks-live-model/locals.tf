@@ -10,12 +10,13 @@ locals {
   identity_name = substr("${local.base_name}-uai", 0, 64)
   aks_name      = substr("${local.base_name}-aks", 0, 63)
   dns_prefix    = substr(replace("${var.environment}${var.name_prefix}${var.run_id}", "-", ""), 0, 40)
-
-  openai_account_name = substr(
-    replace("${var.environment}${var.name_prefix}${var.run_id}oai", "-", ""),
+  openai_name_base = substr(
+    replace("${var.environment}${var.name_prefix}oai", "-", ""),
     0,
-    24,
+    18,
   )
+
+  openai_account_name   = "${local.openai_name_base}${random_string.openai_suffix.result}"
   openai_subdomain_name = coalesce(var.openai_custom_subdomain_name, local.openai_account_name)
 
   enabled_openai_chat_deployments = [
