@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from math import gcd
 
-from app.domain.entities.upstream import Upstream
+from app.domain.entities.upstream import BalancingPolicy, Upstream
 from app.domain.value_objects.health_state import HealthState, HealthStatus
 from app.domain.value_objects.route_candidate_rejection import RouteCandidateRejection
 
@@ -31,9 +31,10 @@ class TieredFailoverSelector:
         temporarily_blocked_upstream_ids: frozenset[str] = frozenset(),
     ) -> RouteSelection | None:
         states = states or {}
-        available_healthy: list[Upstream] = []
-        available_half_open: list[Upstream] = []
-        half_open_waiting: list[Upstream] = []
+        active_healthy: list[Upstream] = []
+        active_half_open: list[Upstream] = []
+        standby_healthy: list[Upstream] = []
+        standby_half_open: list[Upstream] = []
         rejected_candidates: list[RouteCandidateRejection] = []
 
         for upstream in upstreams:
@@ -46,25 +47,43 @@ class TieredFailoverSelector:
                     self._build_rejection(upstream, "half_open_probe_in_progress")
                 )
                 continue
+            if upstream.drain:
+                rejected_candidates.append(self._build_rejection(upstream, "drain"))
+                continue
             if state.status is HealthStatus.HEALTHY:
-                available_healthy.append(upstream)
+                if upstream.warm_standby:
+                    standby_healthy.append(upstream)
+                else:
+                    active_healthy.append(upstream)
                 continue
             if state.status is HealthStatus.HALF_OPEN:
-                available_half_open.append(upstream)
-                half_open_waiting.append(upstream)
+                if upstream.warm_standby:
+                    standby_half_open.append(upstream)
+                else:
+                    active_half_open.append(upstream)
                 continue
 
             rejected_candidates.append(
                 self._build_rejection(upstream, self._reason_for_state(state))
             )
 
-        available = tuple(available_healthy)
+        available = tuple(active_healthy)
         if not available:
-            available = tuple(available_half_open)
+            available = tuple(active_half_open)
+        if available:
+            rejected_candidates.extend(
+                self._build_rejection(upstream, "warm_standby_waiting")
+                for upstream in (*standby_healthy, *standby_half_open)
+            )
         else:
+            available = tuple(standby_healthy)
+            if not available:
+                available = tuple(standby_half_open)
+
+        if active_healthy or active_half_open:
             rejected_candidates.extend(
                 self._build_rejection(upstream, "half_open_waiting_probe")
-                for upstream in half_open_waiting
+                for upstream in (*active_half_open, *standby_half_open)
             )
 
         if not available:
@@ -74,12 +93,16 @@ class TieredFailoverSelector:
         tier_upstreams = tuple(
             upstream for upstream in available if upstream.tier == selected_tier
         )
-        selected_upstream = self._pick_weighted_round_robin(
-            deployment_id=deployment_id,
-            tier=selected_tier,
-            upstreams=tier_upstreams,
-            excluded_upstream_ids=excluded_upstream_ids,
-        )
+        policy = tier_upstreams[0].balancing_policy
+        if policy is BalancingPolicy.ACTIVE_STANDBY:
+            selected_upstream = self._pick_active_standby(tier_upstreams)
+        else:
+            selected_upstream = self._pick_weighted_round_robin(
+                deployment_id=deployment_id,
+                tier=selected_tier,
+                upstreams=tier_upstreams,
+                excluded_upstream_ids=excluded_upstream_ids,
+            )
         if selected_upstream is None:
             return None
 
@@ -131,7 +154,7 @@ class TieredFailoverSelector:
             return (upstreams[0].id,)
 
         normalized_weights = TieredFailoverSelector._normalize_weights(
-            tuple(upstream.weight for upstream in upstreams)
+            tuple(upstream.effective_weight for upstream in upstreams)
         )
         current_weights = [0] * len(upstreams)
         total_weight = sum(normalized_weights)
@@ -153,6 +176,15 @@ class TieredFailoverSelector:
         for weight in weights[1:]:
             common_divisor = gcd(common_divisor, weight)
         return tuple(weight // common_divisor for weight in weights)
+
+    @staticmethod
+    def _pick_active_standby(upstreams: tuple[Upstream, ...]) -> Upstream | None:
+        if not upstreams:
+            return None
+        active = [upstream for upstream in upstreams if not upstream.warm_standby]
+        if active:
+            return sorted(active, key=lambda upstream: upstream.id)[0]
+        return sorted(upstreams, key=lambda upstream: upstream.id)[0]
 
     @staticmethod
     def _build_reason(

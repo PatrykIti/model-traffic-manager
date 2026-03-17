@@ -11,7 +11,7 @@ from app.domain.entities.shared_service import (
     SharedServiceRoutingStrategy,
     SharedServiceTransport,
 )
-from app.domain.entities.upstream import Upstream
+from app.domain.entities.upstream import BalancingPolicy, Upstream
 from app.domain.errors import ConfigValidationError
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
 
@@ -83,6 +83,15 @@ class UpstreamConfigModel(BaseModel):
     weight: int = Field(gt=0)
     endpoint: AnyHttpUrl
     auth: AuthConfigModel
+    model_name: str | None = None
+    model_version: str | None = None
+    deployment_name: str | None = None
+    compatibility_group: str | None = None
+    balancing_policy: BalancingPolicy = BalancingPolicy.WEIGHTED_ROUND_ROBIN
+    warm_standby: bool = False
+    drain: bool = False
+    target_share_percent: int | None = Field(default=None, gt=0, le=100)
+    max_share_percent: int | None = Field(default=None, gt=0, le=100)
 
     def to_domain(self) -> Upstream:
         return Upstream(
@@ -94,6 +103,15 @@ class UpstreamConfigModel(BaseModel):
             weight=self.weight,
             endpoint=str(self.endpoint),
             auth=self.auth.to_domain(),
+            model_name=self.model_name,
+            model_version=self.model_version,
+            deployment_name=self.deployment_name,
+            compatibility_group=self.compatibility_group,
+            balancing_policy=self.balancing_policy,
+            warm_standby=self.warm_standby,
+            drain=self.drain,
+            target_share_percent=self.target_share_percent,
+            max_share_percent=self.max_share_percent,
         )
 
 
@@ -110,6 +128,111 @@ class DeploymentConfigModel(BaseModel):
         upstream_ids = [upstream.id for upstream in self.upstreams]
         if len(upstream_ids) != len(set(upstream_ids)):
             raise ValueError(f"deployment '{self.id}' contains duplicate upstream IDs")
+        tier_groups = {
+            tier: [upstream for upstream in self.upstreams if upstream.tier == tier]
+            for tier in {upstream.tier for upstream in self.upstreams}
+        }
+        for tier, upstreams in tier_groups.items():
+            if len(upstreams) <= 1:
+                continue
+            groups = {
+                upstream.compatibility_group
+                for upstream in upstreams
+                if upstream.compatibility_group is not None
+            }
+            if len(groups) > 1:
+                raise ValueError(
+                    f"deployment '{self.id}' tier '{tier}' must not mix multiple "
+                    "compatibility_group values"
+                )
+            policies = {upstream.balancing_policy for upstream in upstreams}
+            if len(policies) != 1:
+                raise ValueError(
+                    f"deployment '{self.id}' tier '{tier}' must use one balancing_policy"
+                )
+            if self.protocol is DeploymentProtocol.OPENAI_EMBEDDINGS:
+                model_names = {upstream.model_name for upstream in upstreams}
+                model_versions = {upstream.model_version for upstream in upstreams}
+                if (
+                    None in model_names
+                    or None in model_versions
+                    or len(model_names) != 1
+                    or len(model_versions) != 1
+                ):
+                    raise ValueError(
+                        f"deployment '{self.id}' tier '{tier}' must keep embeddings "
+                        "pools on one model_name/model_version"
+                    )
+            else:
+                model_names = {
+                    upstream.model_name
+                    for upstream in upstreams
+                    if upstream.model_name is not None
+                }
+                model_versions = {
+                    upstream.model_version
+                    for upstream in upstreams
+                    if upstream.model_version is not None
+                }
+                if len(model_names) > 1 or len(model_versions) > 1:
+                    raise ValueError(
+                        f"deployment '{self.id}' tier '{tier}' must not mix different "
+                        "model_name/model_version values"
+                    )
+            if next(iter(policies)) is BalancingPolicy.ACTIVE_STANDBY:
+                active_upstreams = [
+                    upstream
+                    for upstream in upstreams
+                    if not upstream.warm_standby and not upstream.drain
+                ]
+                if len(active_upstreams) > 1:
+                    raise ValueError(
+                        f"deployment '{self.id}' tier '{tier}' active_standby pool "
+                        "must have at most one active upstream"
+                    )
+            share_defined = [
+                upstream
+                for upstream in upstreams
+                if (
+                    not upstream.warm_standby
+                    and not upstream.drain
+                    and upstream.target_share_percent is not None
+                )
+            ]
+            active_non_drain = [
+                upstream
+                for upstream in upstreams
+                if not upstream.warm_standby and not upstream.drain
+            ]
+            if share_defined and len(share_defined) != len(active_non_drain):
+                raise ValueError(
+                    f"deployment '{self.id}' tier '{tier}' must define "
+                    "target_share_percent on every active upstream or on none"
+                )
+            if (
+                share_defined
+                and sum(upstream.target_share_percent or 0 for upstream in share_defined) != 100
+            ):
+                raise ValueError(
+                    f"deployment '{self.id}' tier '{tier}' target_share_percent "
+                    "values must sum to 100"
+                )
+            effective_share_denominator = sum(
+                upstream.target_share_percent or upstream.weight
+                for upstream in active_non_drain
+            )
+            for upstream in active_non_drain:
+                if upstream.max_share_percent is None:
+                    continue
+                effective_share_percent = (
+                    (upstream.target_share_percent or upstream.weight)
+                    / effective_share_denominator
+                ) * 100
+                if effective_share_percent > upstream.max_share_percent:
+                    raise ValueError(
+                        f"deployment '{self.id}' tier '{tier}' upstream '{upstream.id}' "
+                        "would exceed max_share_percent under the configured distribution"
+                    )
         return self
 
     def to_domain(self) -> Deployment:

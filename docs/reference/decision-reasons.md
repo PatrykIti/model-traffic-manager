@@ -50,6 +50,8 @@ Common rejection reasons include:
 - `cooldown_rate_limited`
 - `cooldown_quota_exhausted`
 - `cooldown_unhealthy`
+- `warm_standby_waiting`
+- `drain`
 - `rate_limited`
 - `quota_exhausted`
 - `unhealthy`

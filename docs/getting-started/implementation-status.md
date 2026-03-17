@@ -24,6 +24,7 @@ Current repository status:
 - opt-in `integration-azure` and `e2e-aks` workflows plus repo-local higher-level test artifacts are implemented
 - dedicated opt-in suites now exist for both live chat and live embeddings validation on AKS
 - the live chat suite now also covers router failover, cooldown, and circuit-open behavior against a controlled primary failure path
+- a dedicated live AKS suite now exists for model-aware load-balancing scenarios
 - outbound HTTP connection-pool tuning and explicit timeout policy are implemented
 - `make release-check` validates the current release gate locally
 - health endpoints, `GET /deployments`, `GET /shared-services`, `POST /v1/chat/completions/{deployment_id}`, `POST /v1/embeddings/{deployment_id}`, and `POST /v1/shared-services/{service_id}` are covered by tests

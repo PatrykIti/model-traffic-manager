@@ -7,7 +7,7 @@
 **Category:** Routing and Config Planning
 **Estimated Effort:** Large
 **Dependencies:** TASK-013, TASK-021, TASK-026
-**Status:** **To Do**
+**Status:** **Done** (2026-03-17)
 
 ---
 
@@ -39,43 +39,43 @@ Key rule:
 
 ### TASK-030-01: Upstream compatibility metadata and balancing policy contract
 
-**Status:** To Do
+**Status:** Done (2026-03-17)
 
 Define the minimum metadata needed to decide whether upstreams in the same tier may be balanced together.
 
 ### TASK-030-02: Selector behavior for compatible pools within a tier
 
-**Status:** To Do
+**Status:** Done (2026-03-17)
 
 Extend selection so weighted round robin works inside an explicit compatibility pool instead of blindly across all same-tier upstreams.
 
 ### TASK-030-03: Chat-specific active-active balancing patterns
 
-**Status:** To Do
+**Status:** Done (2026-03-17)
 
 Support safe balancing for equivalent chat models across regions, accounts, or deployment copies.
 
 ### TASK-030-04: Embeddings-specific safety rules
 
-**Status:** To Do
+**Status:** Done (2026-03-17)
 
 Prevent unsafe embeddings balancing across different embedding models or vector spaces unless explicitly allowed by a stronger compatibility contract.
 
 ### TASK-030-05: Advanced balancing controls, examples, and documentation
 
-**Status:** To Do
+**Status:** Done (2026-03-17)
 
 Evaluate whether additional controls beyond `weight` are needed and document recommended patterns with real examples.
 
 ### TASK-030-06: Commented example YAML catalog for load-balancing scenarios
 
-**Status:** To Do
+**Status:** Done (2026-03-17)
 
 Add clear, operator-focused example router configs with inline comments that explain active-active balancing, model fallback, and embeddings-safe balancing.
 
 ### TASK-030-07: Live Azure validation package and dedicated runner for load balancing
 
-**Status:** To Do
+**Status:** Done (2026-03-17)
 
 Add a dedicated live infra/test package plus a new `make` entry point that proves same-tier load balancing and compatibility-aware routing on real Azure-backed infrastructure.
 

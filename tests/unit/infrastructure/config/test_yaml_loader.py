@@ -57,6 +57,18 @@ def test_yaml_loader_reads_auth_and_identity_example_catalog() -> None:
         assert config.deployments
 
 
+def test_yaml_loader_reads_load_balancing_example_catalog() -> None:
+    example_paths = (
+        Path("configs/examples/load-balancing-chat-active-active.router.yaml"),
+        Path("configs/examples/load-balancing-chat-active-standby-with-fallback.router.yaml"),
+        Path("configs/examples/load-balancing-embeddings-compatible-pool.router.yaml"),
+    )
+
+    for path in example_paths:
+        config = load_router_config(path)
+        assert config.deployments
+
+
 def test_yaml_loader_rejects_invalid_yaml(tmp_path: Path) -> None:
     path = tmp_path / "broken.yaml"
     path.write_text("router: [", encoding="utf-8")

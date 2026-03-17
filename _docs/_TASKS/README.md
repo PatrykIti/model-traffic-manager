@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 60 work items
+- **To Do:** 41 work items
 - **In Progress:** 0 work items
-- **Done:** 169 work items
+- **Done:** 188 work items
 
 ---
 
@@ -61,19 +61,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-05 | Live Shared-Services Validation on Azure and AKS | High | Medium | Live validation for router-proxy and direct-access shared services |
 | TASK-029-06 | Redis-Backed Multi-Replica AKS Validation | High | Medium | Live multi-replica coordination proof with Redis-backed state |
 | TASK-029-07 | Runner, Workflow, and Documentation Rollout for Expanded Live Suites | High | Medium | Local runners, CI, and docs alignment for the new live profiles |
-| TASK-030 | Model-Aware Load Balancing Within Tier | High | Large | Safe, model-aware same-tier balancing instead of blind balancing across every upstream |
-| TASK-030-01 | Upstream Compatibility Metadata and Balancing Policy Contract | High | Medium | Metadata and config contract for safe same-tier balancing |
-| TASK-030-02 | Selector Behavior for Compatible Pools Within a Tier | High | Medium | Pool-aware same-tier balancing semantics |
-| TASK-030-03 | Chat-Specific Active-Active Balancing Patterns | High | Medium | Safe active-active balancing rules for equivalent chat models |
-| TASK-030-04 | Embeddings-Specific Safety Rules | High | Medium | Stricter compatibility rules for embeddings pools |
-| TASK-030-05 | Advanced Balancing Controls, Examples, and Documentation | High | Medium | Optional controls beyond weight, only if they remain explainable |
-| TASK-030-06 | Commented Example YAML Catalog for Load-Balancing Scenarios | High | Medium | Clear YAML examples with operator-facing comments for load-balancing patterns |
-| TASK-030-07 | Live Azure Validation Package and Dedicated Runner for Load Balancing | High | Medium | Dedicated live infra and make runner for proving load balancing behavior |
-| TASK-030-05-01 | Balancing Policy Contract and Selector Semantics | High | Medium | Explicit policy modes such as weighted round robin vs active-standby |
-| TASK-030-05-02 | Warm-Standby and Drain Semantics | High | Medium | Operator-controlled non-failure states for pool management |
-| TASK-030-05-03 | Share Caps and Target-Share Controls | High | Medium | Evaluate explicit share controls beyond simple weights |
-| TASK-030-05-04 | Commented YAML Examples and Official Docs | High | Medium | Inline-commented examples for advanced balancing controls |
-| TASK-030-05-05 | Live Validation Package for Advanced Balancing Behavior | High | Medium | Real infra validation path for future advanced balancing controls |
 
 ---
 
@@ -249,3 +236,16 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-01 | Live Azure Validation Matrix and Profile Taxonomy | High | Small | Validation matrix split across integration-azure, e2e-aks, live-model, shared services, and Redis |
 | TASK-029-03 | `e2e-aks-live-embeddings` Profile | High | Medium | Real embeddings path through router on AKS implemented as a dedicated live profile |
 | TASK-029-04 | `e2e-aks-live-model` Chat Failover and Health-State Scenarios | High | Medium | Live failover, cooldown, and circuit scenarios for chat implemented on the existing live-model suite |
+| TASK-030 | Model-Aware Load Balancing Within Tier | High | Large | Model-aware same-tier balancing implemented with examples, docs, and live validation |
+| TASK-030-01 | Upstream Compatibility Metadata and Balancing Policy Contract | High | Medium | Compatibility metadata and balancing contract added to upstreams |
+| TASK-030-02 | Selector Behavior for Compatible Pools Within a Tier | High | Medium | Same-tier selector behavior updated for compatibility-aware pools |
+| TASK-030-03 | Chat-Specific Active-Active Balancing Patterns | High | Medium | Active-active and active-standby chat balancing patterns implemented |
+| TASK-030-04 | Embeddings-Specific Safety Rules | High | Medium | Embeddings-safe balancing and config guards implemented |
+| TASK-030-05 | Advanced Balancing Controls, Examples, and Documentation | High | Medium | First-stage advanced controls, docs, and validation implemented |
+| TASK-030-05-01 | Balancing Policy Contract and Selector Semantics | High | Medium | `weighted_round_robin` and `active_standby` selector semantics implemented |
+| TASK-030-05-02 | Warm-Standby and Drain Semantics | High | Medium | `warm_standby` and `drain` controls implemented |
+| TASK-030-05-03 | Share Caps and Target-Share Controls | High | Medium | `target_share_percent` and `max_share_percent` guardrails implemented |
+| TASK-030-05-04 | Commented YAML Examples and Official Docs | High | Medium | Commented YAML examples and official docs added for load balancing |
+| TASK-030-05-05 | Live Validation Package for Advanced Balancing Behavior | High | Medium | Live AKS validation added for balancing behavior and operational controls |
+| TASK-030-06 | Commented Example YAML Catalog for Load-Balancing Scenarios | High | Medium | YAML catalog added for active-active, active-standby, and embeddings-safe pools |
+| TASK-030-07 | Live Azure Validation Package and Dedicated Runner for Load Balancing | High | Medium | Dedicated live infra scope, suite, and make runner added for load balancing |

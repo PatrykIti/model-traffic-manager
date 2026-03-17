@@ -286,6 +286,9 @@ deployments:
         tier: 0
         weight: 100
         endpoint: https://example.invalid/embeddings-primary-a
+        model_name: text-embedding-3-small
+        model_version: "1"
+        compatibility_group: embeddings-primary
         auth:
           mode: none
       - id: upstream-primary-b
@@ -295,6 +298,9 @@ deployments:
         tier: 0
         weight: 100
         endpoint: https://example.invalid/embeddings-primary-b
+        model_name: text-embedding-3-small
+        model_version: "1"
+        compatibility_group: embeddings-primary
         auth:
           mode: none
 

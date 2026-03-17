@@ -165,3 +165,164 @@ def test_router_config_model_rejects_provider_managed_tiered_failover_shared_ser
 
     with pytest.raises(ValidationError):
         RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_mixed_compatibility_groups_in_same_tier() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["upstreams"] = [
+        {
+            "id": "primary-a",
+            "provider": "azure_openai",
+            "account": "aoai-prod-01",
+            "region": "westeurope",
+            "tier": 0,
+            "weight": 100,
+            "endpoint": "https://example.invalid/chat-a",
+            "model_name": "gpt-4o",
+            "model_version": "2024-08-06",
+            "compatibility_group": "pool-a",
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+        {
+            "id": "primary-b",
+            "provider": "azure_openai",
+            "account": "aoai-prod-02",
+            "region": "northeurope",
+            "tier": 0,
+            "weight": 100,
+            "endpoint": "https://example.invalid/chat-b",
+            "model_name": "gpt-4o",
+            "model_version": "2024-08-06",
+            "compatibility_group": "pool-b",
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+    ]
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_embeddings_mixing_models_in_same_tier() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["kind"] = "embeddings"
+    config["deployments"][0]["protocol"] = "openai_embeddings"
+    config["deployments"][0]["upstreams"] = [
+        {
+            "id": "primary-a",
+            "provider": "azure_openai",
+            "account": "aoai-prod-01",
+            "region": "westeurope",
+            "tier": 0,
+            "weight": 100,
+            "endpoint": "https://example.invalid/emb-a",
+            "model_name": "text-embedding-3-small",
+            "model_version": "1",
+            "compatibility_group": "embeddings",
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+        {
+            "id": "primary-b",
+            "provider": "azure_openai",
+            "account": "aoai-prod-02",
+            "region": "northeurope",
+            "tier": 0,
+            "weight": 100,
+            "endpoint": "https://example.invalid/emb-b",
+            "model_name": "text-embedding-3-large",
+            "model_version": "1",
+            "compatibility_group": "embeddings",
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+    ]
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_multiple_active_upstreams_for_active_standby() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["upstreams"] = [
+        {
+            "id": "primary-a",
+            "provider": "azure_openai",
+            "account": "aoai-prod-01",
+            "region": "westeurope",
+            "tier": 0,
+            "weight": 100,
+            "endpoint": "https://example.invalid/chat-a",
+            "compatibility_group": "chat-primary",
+            "balancing_policy": "active_standby",
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+        {
+            "id": "primary-b",
+            "provider": "azure_openai",
+            "account": "aoai-prod-02",
+            "region": "northeurope",
+            "tier": 0,
+            "weight": 100,
+            "endpoint": "https://example.invalid/chat-b",
+            "compatibility_group": "chat-primary",
+            "balancing_policy": "active_standby",
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+    ]
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)
+
+
+def test_router_config_model_rejects_effective_share_above_max_share_percent() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["upstreams"] = [
+        {
+            "id": "primary-a",
+            "provider": "azure_openai",
+            "account": "aoai-prod-01",
+            "region": "westeurope",
+            "tier": 0,
+            "weight": 80,
+            "endpoint": "https://example.invalid/chat-a",
+            "compatibility_group": "chat-primary",
+            "max_share_percent": 50,
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+        {
+            "id": "primary-b",
+            "provider": "azure_openai",
+            "account": "aoai-prod-02",
+            "region": "northeurope",
+            "tier": 0,
+            "weight": 20,
+            "endpoint": "https://example.invalid/chat-b",
+            "compatibility_group": "chat-primary",
+            "auth": {
+                "mode": "managed_identity",
+                "scope": "https://cognitiveservices.azure.com/.default",
+            },
+        },
+    ]
+
+    with pytest.raises(ValidationError):
+        RouterConfigModel.model_validate(config)

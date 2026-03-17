@@ -23,6 +23,18 @@ Each upstream should expose:
 - `endpoint`
 - `auth`
 
+Optional load-balancing metadata for same-tier pools:
+
+- `model_name`
+- `model_version`
+- `deployment_name`
+- `compatibility_group`
+- `balancing_policy`
+- `warm_standby`
+- `drain`
+- `target_share_percent`
+- `max_share_percent`
+
 Current validation rules already enforced by the application:
 
 - deployment IDs must be unique
@@ -82,3 +94,5 @@ What each example demonstrates:
   one logical chat deployment that falls back across different model variants across tiers
 - `deployments-embeddings-regional-failover.router.yaml`
   embeddings routing with the same tiered regional failover pattern used for chat traffic
+
+For compatibility-aware same-tier balancing and commented active-active examples, see [load-balancing.md](./load-balancing.md).

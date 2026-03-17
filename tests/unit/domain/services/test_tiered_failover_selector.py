@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.domain.entities.upstream import Upstream
+from app.domain.entities.upstream import BalancingPolicy, Upstream
 from app.domain.services.tiered_failover_selector import TieredFailoverSelector
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
 from app.domain.value_objects.failure_classification import FailureReason
@@ -164,3 +164,134 @@ def test_selector_marks_temporarily_blocked_half_open_candidates() -> None:
     )
 
     assert selection is None
+
+
+def test_selector_prefers_active_candidate_over_warm_standby() -> None:
+    selector = TieredFailoverSelector()
+    upstreams = (
+        build_upstream("primary-active", tier=0, weight=100),
+        Upstream(
+            id="primary-standby",
+            provider="azure_openai",
+            account="aoai-prod-01",
+            region="westeurope",
+            tier=0,
+            weight=100,
+            endpoint="https://example.invalid/primary-standby",
+            auth=AuthPolicy(mode=AuthMode.NONE),
+            warm_standby=True,
+        ),
+    )
+
+    selection = selector.select("deployment-a", upstreams)
+
+    assert selection is not None
+    assert selection.upstream.id == "primary-active"
+    assert selection.rejected_candidates[0].reason == "warm_standby_waiting"
+
+
+def test_selector_excludes_draining_upstreams() -> None:
+    selector = TieredFailoverSelector()
+    upstreams = (
+        Upstream(
+            id="primary-drain",
+            provider="azure_openai",
+            account="aoai-prod-01",
+            region="westeurope",
+            tier=0,
+            weight=100,
+            endpoint="https://example.invalid/primary-drain",
+            auth=AuthPolicy(mode=AuthMode.NONE),
+            drain=True,
+        ),
+        build_upstream("secondary-active", tier=0, weight=100),
+    )
+
+    selection = selector.select("deployment-a", upstreams)
+
+    assert selection is not None
+    assert selection.upstream.id == "secondary-active"
+    assert selection.rejected_candidates[0].reason == "drain"
+
+
+def test_selector_uses_active_standby_policy() -> None:
+    selector = TieredFailoverSelector()
+    upstreams = (
+        Upstream(
+            id="primary-active",
+            provider="azure_openai",
+            account="aoai-prod-01",
+            region="westeurope",
+            tier=0,
+            weight=100,
+            endpoint="https://example.invalid/primary-active",
+            auth=AuthPolicy(mode=AuthMode.NONE),
+            compatibility_group="chat-primary",
+            balancing_policy=BalancingPolicy.ACTIVE_STANDBY,
+        ),
+        Upstream(
+            id="primary-standby",
+            provider="azure_openai",
+            account="aoai-prod-02",
+            region="northeurope",
+            tier=0,
+            weight=100,
+            endpoint="https://example.invalid/primary-standby",
+            auth=AuthPolicy(mode=AuthMode.NONE),
+            compatibility_group="chat-primary",
+            balancing_policy=BalancingPolicy.ACTIVE_STANDBY,
+            warm_standby=True,
+        ),
+    )
+
+    first = selector.select("deployment-a", upstreams)
+    second = selector.select(
+        "deployment-a",
+        upstreams,
+        states={"primary-active": HealthState(status=HealthStatus.CIRCUIT_OPEN)},
+    )
+
+    assert first is not None
+    assert second is not None
+    assert first.upstream.id == "primary-active"
+    assert second.upstream.id == "primary-standby"
+
+
+def test_selector_uses_target_share_percent_as_effective_weight() -> None:
+    selector = TieredFailoverSelector()
+    upstreams = (
+        Upstream(
+            id="primary-a",
+            provider="azure_openai",
+            account="aoai-prod-01",
+            region="westeurope",
+            tier=0,
+            weight=100,
+            endpoint="https://example.invalid/primary-a",
+            auth=AuthPolicy(mode=AuthMode.NONE),
+            compatibility_group="chat-primary",
+            target_share_percent=80,
+        ),
+        Upstream(
+            id="primary-b",
+            provider="azure_openai",
+            account="aoai-prod-02",
+            region="northeurope",
+            tier=0,
+            weight=100,
+            endpoint="https://example.invalid/primary-b",
+            auth=AuthPolicy(mode=AuthMode.NONE),
+            compatibility_group="chat-primary",
+            target_share_percent=20,
+        ),
+    )
+
+    selections = [selector.select("deployment-a", upstreams) for _ in range(5)]
+
+    assert [selection.upstream.id for selection in selections if selection is not None] == [
+        "primary-a",
+        "primary-a",
+        "primary-b",
+        "primary-a",
+        "primary-a",
+    ]

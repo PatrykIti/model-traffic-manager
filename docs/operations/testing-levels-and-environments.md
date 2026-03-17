@@ -190,6 +190,34 @@ Default rule:
 
 - use this suite deliberately because it provisions real Azure OpenAI capacity and consumes live embeddings quota
 
+### 7. `e2e-aks-live-load-balancing`
+
+Purpose:
+
+- prove model-aware same-tier balancing and active-standby behavior on live Azure-backed infra
+
+Environment:
+
+- AKS
+- router runtime config rendered for load-balancing scenarios
+- in-cluster mock downstreams used to make traffic distribution deterministic
+
+Current repository activation:
+
+- local command: `make e2e-aks-live-load-balancing-local`
+- test suite: `tests/e2e_aks_live_load_balancing/`
+- infra scope: `infra/e2e-aks-live-load-balancing/`
+
+Current live load-balancing coverage:
+
+- weighted same-tier distribution for chat pools
+- active-standby preference and standby failover behavior
+- weighted same-tier distribution for embeddings-safe pools
+
+Default rule:
+
+- use this suite deliberately because it provisions AKS infrastructure specifically to validate balancing semantics under real runtime conditions
+
 ## Phase mapping
 
 ### Phase 0

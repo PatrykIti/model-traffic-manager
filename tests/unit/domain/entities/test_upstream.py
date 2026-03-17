@@ -23,6 +23,38 @@ def test_upstream_accepts_valid_data() -> None:
     assert upstream.tier == 0
 
 
+def test_upstream_exposes_target_share_as_effective_weight() -> None:
+    upstream = Upstream(
+        id="primary",
+        provider="azure_openai",
+        account="aoai-prod-01",
+        region="westeurope",
+        tier=0,
+        weight=100,
+        endpoint="https://example.com/upstream",
+        auth=AuthPolicy(mode=AuthMode.NONE),
+        target_share_percent=40,
+    )
+
+    assert upstream.effective_weight == 40
+
+
+def test_upstream_rejects_invalid_share_targets() -> None:
+    with pytest.raises(DomainInvariantError):
+        Upstream(
+            id="primary",
+            provider="azure_openai",
+            account="aoai-prod-01",
+            region="westeurope",
+            tier=0,
+            weight=100,
+            endpoint="https://example.com/upstream",
+            auth=AuthPolicy(mode=AuthMode.NONE),
+            target_share_percent=60,
+            max_share_percent=50,
+        )
+
+
 @pytest.mark.parametrize(
     ("tier", "weight"),
     [
