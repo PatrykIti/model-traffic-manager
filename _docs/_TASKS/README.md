@@ -47,7 +47,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 47 work items
+- **To Do:** 60 work items
 - **In Progress:** 0 work items
 - **Done:** 169 work items
 
@@ -61,6 +61,19 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-05 | Live Shared-Services Validation on Azure and AKS | High | Medium | Live validation for router-proxy and direct-access shared services |
 | TASK-029-06 | Redis-Backed Multi-Replica AKS Validation | High | Medium | Live multi-replica coordination proof with Redis-backed state |
 | TASK-029-07 | Runner, Workflow, and Documentation Rollout for Expanded Live Suites | High | Medium | Local runners, CI, and docs alignment for the new live profiles |
+| TASK-030 | Model-Aware Load Balancing Within Tier | High | Large | Safe, model-aware same-tier balancing instead of blind balancing across every upstream |
+| TASK-030-01 | Upstream Compatibility Metadata and Balancing Policy Contract | High | Medium | Metadata and config contract for safe same-tier balancing |
+| TASK-030-02 | Selector Behavior for Compatible Pools Within a Tier | High | Medium | Pool-aware same-tier balancing semantics |
+| TASK-030-03 | Chat-Specific Active-Active Balancing Patterns | High | Medium | Safe active-active balancing rules for equivalent chat models |
+| TASK-030-04 | Embeddings-Specific Safety Rules | High | Medium | Stricter compatibility rules for embeddings pools |
+| TASK-030-05 | Advanced Balancing Controls, Examples, and Documentation | High | Medium | Optional controls beyond weight, only if they remain explainable |
+| TASK-030-06 | Commented Example YAML Catalog for Load-Balancing Scenarios | High | Medium | Clear YAML examples with operator-facing comments for load-balancing patterns |
+| TASK-030-07 | Live Azure Validation Package and Dedicated Runner for Load Balancing | High | Medium | Dedicated live infra and make runner for proving load balancing behavior |
+| TASK-030-05-01 | Balancing Policy Contract and Selector Semantics | High | Medium | Explicit policy modes such as weighted round robin vs active-standby |
+| TASK-030-05-02 | Warm-Standby and Drain Semantics | High | Medium | Operator-controlled non-failure states for pool management |
+| TASK-030-05-03 | Share Caps and Target-Share Controls | High | Medium | Evaluate explicit share controls beyond simple weights |
+| TASK-030-05-04 | Commented YAML Examples and Official Docs | High | Medium | Inline-commented examples for advanced balancing controls |
+| TASK-030-05-05 | Live Validation Package for Advanced Balancing Behavior | High | Medium | Real infra validation path for future advanced balancing controls |
 
 ---
 
