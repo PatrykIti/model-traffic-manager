@@ -64,3 +64,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 31 | 2026-03-16 | Live Azure validation expansion planning | docs/planning |
 | 32 | 2026-03-16 | E2E AKS live embeddings profile | validation/e2e |
 | 33 | 2026-03-16 | E2E AKS live chat failover scenarios | validation/e2e |
+| 34 | 2026-03-17 | Live chat failover mock image pull fix | validation/e2e |

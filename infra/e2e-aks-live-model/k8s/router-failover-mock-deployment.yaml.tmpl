@@ -13,6 +13,7 @@ spec:
       labels:
         app: router-failover-mock
     spec:
+      serviceAccountName: router-app
       containers:
         - name: mock
           image: ${E2E_IMAGE}
