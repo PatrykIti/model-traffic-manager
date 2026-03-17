@@ -28,6 +28,7 @@ tenant_id="$(az account show --query tenantId -o tsv)"
 account_name="$(az account show --query name -o tsv)"
 run_id="local-$(date -u +%Y%m%d%H%M%S)-$RANDOM"
 tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mtm-${SUITE}-XXXXXX")"
+pytest_flags=(-vv -rA)
 
 case "$SUITE" in
   integration-azure)
@@ -234,7 +235,8 @@ if [[ "$SUITE" == "integration-azure" ]]; then
   export RUN_INTEGRATION_AZURE="1"
   export INTEGRATION_AZURE_SCOPE="${INTEGRATION_AZURE_SCOPE:-https://management.azure.com/.default}"
 
-  uv run pytest "$tests_path" -ra
+  echo "Running pytest with flags: ${pytest_flags[*]}"
+  uv run pytest "$tests_path" "${pytest_flags[@]}"
   exit 0
 fi
 
@@ -357,4 +359,5 @@ elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
   export RUN_E2E_AKS_LIVE_LOAD_BALANCING="1"
 fi
 
-uv run pytest "$tests_path" -ra
+echo "Running pytest with flags: ${pytest_flags[*]}"
+uv run pytest "$tests_path" "${pytest_flags[@]}"

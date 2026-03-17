@@ -68,3 +68,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 35 | 2026-03-17 | Model-aware load balancing within tier | feature/routing |
 | 36 | 2026-03-17 | Full router reference config | docs/examples |
 | 37 | 2026-03-17 | Live load-balancing rendered config scalar typing fix | validation/e2e |
+| 38 | 2026-03-17 | Verbose pytest output for make-driven test runners | workflow/testing |

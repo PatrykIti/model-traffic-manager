@@ -21,6 +21,8 @@ What each command does:
 - `make e2e-aks-live-load-balancing-local` runs a dedicated AKS suite for model-aware load-balancing behavior
 - `make run` starts the bootstrap FastAPI app
 
+All `make` targets that execute `pytest` now use verbose reporting, so the console shows each test name as it runs and prints a full final status summary.
+
 Environment defaults are documented in [`.env.example`](../../.env.example).
 
 Config references:

@@ -3,6 +3,7 @@ PYTHON_VERSION := $(shell cat .python-version)
 UV_CACHE_DIR ?= /tmp/uv-cache
 UV := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
 ENVIRONMENT ?= dev1
+PYTEST_FLAGS ?= -vv -rA
 
 .PHONY: bootstrap lock lint format typecheck test check validate-workflows validate-terraform release-check integration-azure-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local run docker-build smoke clean
 
@@ -22,7 +23,7 @@ typecheck:
 	$(UV) run mypy app
 
 test:
-	$(UV) run pytest --cov=app --cov-report=term-missing --cov-fail-under=85
+	$(UV) run pytest $(PYTEST_FLAGS) --cov=app --cov-report=term-missing --cov-fail-under=85
 
 check: lint typecheck test
 
@@ -65,7 +66,7 @@ docker-build:
 	docker build -f docker/Dockerfile -t model-traffic-manager:dev .
 
 smoke:
-	$(UV) run pytest tests/unit/entrypoints/api/test_health.py tests/integration/api/test_startup.py
+	$(UV) run pytest $(PYTEST_FLAGS) tests/unit/entrypoints/api/test_health.py tests/integration/api/test_startup.py
 
 clean:
 	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov coverage.xml

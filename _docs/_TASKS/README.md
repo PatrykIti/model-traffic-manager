@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 41 work items
 - **In Progress:** 0 work items
-- **Done:** 191 work items
+- **Done:** 192 work items
 
 ---
 
@@ -252,3 +252,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-031 | Full Router Reference Config | High | Small | Commented full reference config added next to the minimal bootstrap example |
 | TASK-031-01 | Full Capabilities Router YAML and Official Docs Alignment | High | Small | Full router reference config wired into docs and loader validation |
 | TASK-032 | Live Load-Balancing Rendered Config Scalar Typing Fix | High | Small | Rendered live load-balancing config hardened against YAML date coercion |
+| TASK-033 | Verbose Pytest Output for Make-Driven Test Runners | Medium | Small | All current make-driven pytest flows now print per-test names and fuller summaries |
