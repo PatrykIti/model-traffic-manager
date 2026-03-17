@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 41 work items
 - **In Progress:** 0 work items
-- **Done:** 193 work items
+- **Done:** 194 work items
 
 ---
 
@@ -254,3 +254,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-032 | Live Load-Balancing Rendered Config Scalar Typing Fix | High | Small | Rendered live load-balancing config hardened against YAML date coercion |
 | TASK-033 | Verbose Pytest Output for Make-Driven Test Runners | Medium | Small | All current make-driven pytest flows now print per-test names and fuller summaries |
 | TASK-034 | AKS Runner Pod Readiness and Exec Target Hardening | High | Small | Azure/AKS runner waits for ready pods and execs against the resolved router container |
+| TASK-035 | Live Port-Forward and Transport Retry Hardening | High | Small | Dynamic local ports, forwarded-health wait, and live transport retries harden AKS live runs |

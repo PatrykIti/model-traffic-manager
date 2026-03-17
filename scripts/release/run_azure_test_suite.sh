@@ -28,6 +28,37 @@ select_running_pod() {
     | head -n 1
 }
 
+wait_for_http_endpoint() {
+  local url="$1"
+  local timeout_seconds="${2:-60}"
+  local elapsed=0
+
+  while (( elapsed < timeout_seconds )); do
+    if [[ -n "$port_forward_pid" ]] && ! kill -0 "$port_forward_pid" >/dev/null 2>&1; then
+      echo "Port-forward process exited before ${url} became reachable." >&2
+      if [[ -f "${tmp_dir}/port-forward.log" ]]; then
+        echo "----- port-forward log -----" >&2
+        cat "${tmp_dir}/port-forward.log" >&2 || true
+      fi
+      exit 1
+    fi
+
+    if python3 -c 'import sys, urllib.request; urllib.request.urlopen(sys.argv[1], timeout=2)' "$url" >/dev/null 2>&1; then
+      return 0
+    fi
+
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+
+  echo "Timed out waiting for ${url}." >&2
+  if [[ -f "${tmp_dir}/port-forward.log" ]]; then
+    echo "----- port-forward log -----" >&2
+    cat "${tmp_dir}/port-forward.log" >&2 || true
+  fi
+  exit 1
+}
+
 for cmd in az terraform uv python3; do
   require_cmd "$cmd"
 done
@@ -149,6 +180,11 @@ print_e2e_diagnostics() {
 
   echo "----- e2e-aks diagnostics: events -----" >&2
   kubectl get events -n "$e2e_namespace" --sort-by=.metadata.creationTimestamp >&2 || true
+
+  if [[ -f "${tmp_dir}/port-forward.log" ]]; then
+    echo "----- e2e-aks diagnostics: port-forward log -----" >&2
+    cat "${tmp_dir}/port-forward.log" >&2 || true
+  fi
 }
 
 on_error() {
@@ -360,12 +396,13 @@ kubectl exec -n "$e2e_namespace" "pod/${router_pod_name}" -c router -- sh -lc \
 kubectl exec -n "$e2e_namespace" "pod/${router_pod_name}" -c router -- sh -lc \
   '/app/.venv/bin/python -c "from azure.identity import DefaultAzureCredential; token = DefaultAzureCredential().get_token(\"https://management.azure.com/.default\"); assert token.token; print(len(token.token))"'
 
-kubectl port-forward -n "$e2e_namespace" svc/router-app 18080:8000 >"${tmp_dir}/port-forward.log" 2>&1 &
+local_port="${E2E_LOCAL_PORT:-$(python3 -c 'import socket; sock = socket.socket(); sock.bind(("127.0.0.1", 0)); print(sock.getsockname()[1]); sock.close()')}"
+kubectl port-forward -n "$e2e_namespace" svc/router-app "${local_port}:8000" >"${tmp_dir}/port-forward.log" 2>&1 &
 port_forward_pid="$!"
-sleep 10
+wait_for_http_endpoint "http://127.0.0.1:${local_port}/health/ready" 60
 
 export RUN_E2E_AKS="1"
-export E2E_BASE_URL="http://127.0.0.1:18080"
+export E2E_BASE_URL="http://127.0.0.1:${local_port}"
 
 if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
   export RUN_E2E_AKS_LIVE_MODEL="1"

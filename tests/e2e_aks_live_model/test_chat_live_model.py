@@ -80,6 +80,34 @@ def _message_content(body: dict[str, object]) -> str:
     return content if isinstance(content, str) else ""
 
 
+def _send_with_transport_retry(
+    client: httpx.Client,
+    method: str,
+    url: str,
+    *,
+    attempts: int = 6,
+    delay_seconds: int = 2,
+    **kwargs: object,
+) -> httpx.Response:
+    last_error: httpx.TransportError | None = None
+
+    for attempt in range(1, attempts + 1):
+        try:
+            return client.request(method, url, **kwargs)
+        except httpx.TransportError as exc:
+            last_error = exc
+            if attempt == attempts:
+                break
+            print(
+                f"Transport retry {attempt}/{attempts} for {method} {url}: "
+                f"{exc.__class__.__name__}: {exc}"
+            )
+            time.sleep(delay_seconds)
+
+    assert last_error is not None
+    raise last_error
+
+
 def test_router_returns_live_model_response() -> None:
     base_url, deployments = _require_live_model()
 
@@ -89,7 +117,12 @@ def test_router_returns_live_model_response() -> None:
 
             response = None
             for _attempt in range(1, 13):
-                response = client.post(f"/v1/chat/completions/{router_deployment_id}", json=payload)
+                response = _send_with_transport_retry(
+                    client,
+                    "POST",
+                    f"/v1/chat/completions/{router_deployment_id}",
+                    json=payload,
+                )
                 if response.status_code == 200:
                     body = response.json()
                     if _message_content(body).strip():
@@ -115,20 +148,24 @@ def test_router_fails_over_after_rate_limit_and_then_skips_primary_during_cooldo
     failover_id = f"{router_deployment_id}-failover-rate-limit"
 
     with httpx.Client(base_url=base_url, timeout=60.0) as client:
-        before_metrics = client.get("/metrics").text
-        response = client.post(
+        before_metrics = _send_with_transport_retry(client, "GET", "/metrics").text
+        response = _send_with_transport_retry(
+            client,
+            "POST",
             f"/v1/chat/completions/{failover_id}",
             json=_build_payload(deployment),
         )
         assert response.status_code == 200, response.text
 
-        after_first_metrics = client.get("/metrics").text
-        response_second = client.post(
+        after_first_metrics = _send_with_transport_retry(client, "GET", "/metrics").text
+        response_second = _send_with_transport_retry(
+            client,
+            "POST",
             f"/v1/chat/completions/{failover_id}",
             json=_build_payload(deployment),
         )
         assert response_second.status_code == 200, response_second.text
-        after_second_metrics = client.get("/metrics").text
+        after_second_metrics = _send_with_transport_retry(client, "GET", "/metrics").text
 
     attempts_before = _metric_value(
         before_metrics,
@@ -162,20 +199,24 @@ def test_router_fails_over_after_unhealthy_primary_and_then_skips_primary_via_ci
     failover_id = f"{router_deployment_id}-failover-unhealthy"
 
     with httpx.Client(base_url=base_url, timeout=60.0) as client:
-        before_metrics = client.get("/metrics").text
-        response = client.post(
+        before_metrics = _send_with_transport_retry(client, "GET", "/metrics").text
+        response = _send_with_transport_retry(
+            client,
+            "POST",
             f"/v1/chat/completions/{failover_id}",
             json=_build_payload(deployment),
         )
         assert response.status_code == 200, response.text
 
-        after_first_metrics = client.get("/metrics").text
-        response_second = client.post(
+        after_first_metrics = _send_with_transport_retry(client, "GET", "/metrics").text
+        response_second = _send_with_transport_retry(
+            client,
+            "POST",
             f"/v1/chat/completions/{failover_id}",
             json=_build_payload(deployment),
         )
         assert response_second.status_code == 200, response_second.text
-        after_second_metrics = client.get("/metrics").text
+        after_second_metrics = _send_with_transport_retry(client, "GET", "/metrics").text
 
     attempts_before = _metric_value(
         before_metrics,
