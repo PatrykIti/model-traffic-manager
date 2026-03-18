@@ -66,6 +66,7 @@ For higher-level local Azure-backed runs:
 - `destroy` is attempted under shell traps even when the selected higher-level suite fails
 - the default profile is `ENVIRONMENT=dev1`
 - `integration-azure-chat-local` and `integration-azure-embeddings-local` are intentionally separate so chat and embeddings provider probes can be exercised independently
+- the GitHub workflows now reuse the same suite names through `workflow_dispatch` inputs instead of maintaining separate runner logic per profile
 
 Live-model notes:
 
@@ -80,4 +81,4 @@ Live-model notes:
 - the current live embeddings profile targets `germanywestcentral` and validates `text-embedding-3-small`
 - the current live load-balancing profile validates same-tier chat and embeddings distribution plus active-standby behavior
 - this suite is intentionally separate because model quota and regional model availability can change independently of the smoke AKS path
-- the next meaningful higher-level addition is the final workflow rollout for the expanded live matrix
+- the current live validation matrix now includes separate profiles for smoke, chat, embeddings, load balancing, shared services, and Redis-backed shared state

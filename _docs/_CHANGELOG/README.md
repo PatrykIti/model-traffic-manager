@@ -77,3 +77,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 44 | 2026-03-18 | Integration-azure chat and embeddings provider probes | validation/integration |
 | 45 | 2026-03-18 | Live shared-services validation on Azure and AKS | validation/e2e |
 | 46 | 2026-03-18 | Redis-backed multi-replica AKS validation | validation/e2e |
+| 47 | 2026-03-18 | Expanded live validation workflow rollout | workflow/testing |

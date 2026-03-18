@@ -7,6 +7,10 @@ on:
         description: Scope tfvars profile to use
         required: true
         default: dev1
+      suite:
+        description: Validation profile to execute
+        required: true
+        default: e2e-aks
       kubernetes_version:
         description: Optional Kubernetes version override
         required: false
@@ -23,6 +27,10 @@ jobs:
     env:
       TF_IN_AUTOMATION: "true"
       E2E_NAMESPACE: e2e-router
+      GHCR_OWNER: ${{ github.repository_owner }}
+      GHCR_USERNAME: ${{ github.actor }}
+      GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      KUBERNETES_VERSION: ${{ inputs.kubernetes_version }}
 
     steps:
       - name: Check out repository
@@ -49,10 +57,6 @@ jobs:
       - name: Sync environment
         run: uv sync --frozen --python "$(cat .python-version)"
 
-      - name: Set image repository
-        shell: bash
-        run: echo "E2E_IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/model-traffic-manager:e2e-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
-
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -60,137 +64,5 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push e2e image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: true
-          tags: ${{ env.E2E_IMAGE }}
-
-      - name: Terraform init
-        working-directory: infra/e2e-aks
-        run: terraform init -input=false
-
-      - name: Terraform apply
-        working-directory: infra/e2e-aks
-        shell: bash
-        run: |
-          KUBERNETES_VERSION_ARG=()
-          if [ -n "${{ inputs.kubernetes_version }}" ]; then
-            KUBERNETES_VERSION_ARG=(-var="kubernetes_version=${{ inputs.kubernetes_version }}")
-          fi
-
-          terraform apply -auto-approve -input=false \
-            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
-            -var-file="env/${{ inputs.environment }}.tfvars" \
-            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="run_id=${{ github.run_id }}" \
-            "${KUBERNETES_VERSION_ARG[@]}"
-
-      - name: Capture Terraform outputs
-        working-directory: infra/e2e-aks
-        run: |
-          terraform output -json > "$RUNNER_TEMP/e2e-aks-outputs.json"
-          echo "RESOURCE_GROUP=$(terraform output -raw resource_group_name)" >> "$GITHUB_ENV"
-          echo "AKS_CLUSTER_NAME=$(terraform output -raw aks_cluster_name)" >> "$GITHUB_ENV"
-          echo "AKS_OIDC_ISSUER_URL=$(terraform output -raw aks_oidc_issuer_url)" >> "$GITHUB_ENV"
-          echo "UAI_NAME=$(terraform output -raw user_assigned_identity_name)" >> "$GITHUB_ENV"
-          echo "UAI_CLIENT_ID=$(terraform output -raw user_assigned_identity_client_id)" >> "$GITHUB_ENV"
-
-      - name: Get AKS credentials
-        run: az aks get-credentials --resource-group "$RESOURCE_GROUP" --name "$AKS_CLUSTER_NAME" --overwrite-existing
-
-      - name: Create federated credential for router service account
-        run: |
-          az identity federated-credential create \
-            --resource-group "$RESOURCE_GROUP" \
-            --identity-name "$UAI_NAME" \
-            --name "router-e2e-${{ github.run_id }}" \
-            --issuer "$AKS_OIDC_ISSUER_URL" \
-            --subject "system:serviceaccount:${E2E_NAMESPACE}:router-app" \
-            --audiences "api://AzureADTokenExchange"
-
-      - name: Prepare namespace and config
-        run: |
-          kubectl create namespace "$E2E_NAMESPACE"
-          kubectl create configmap router-config \
-            --from-file=router.yaml=configs/example.router.yaml \
-            --namespace "$E2E_NAMESPACE"
-
-      - name: Deploy router manifests
-        shell: bash
-        run: |
-          export E2E_NAMESPACE E2E_IMAGE
-          export E2E_UAI_CLIENT_ID="$UAI_CLIENT_ID"
-          envsubst < infra/e2e-aks/k8s/router-serviceaccount.yaml.tmpl | kubectl apply -f -
-          envsubst < infra/e2e-aks/k8s/router-deployment.yaml.tmpl | kubectl apply -f -
-          kubectl apply -n "$E2E_NAMESPACE" -f infra/e2e-aks/k8s/router-service.yaml
-
-      - name: Wait for rollout
-        run: kubectl rollout status deployment/router-app -n "$E2E_NAMESPACE" --timeout=5m
-
-      - name: Verify workload identity token injection
-        run: |
-          kubectl exec -n "$E2E_NAMESPACE" deployment/router-app -- sh -lc \
-            'test -n "$AZURE_FEDERATED_TOKEN_FILE" && test -f "$AZURE_FEDERATED_TOKEN_FILE"'
-
-      - name: Verify token acquisition inside the pod
-        run: |
-          kubectl exec -n "$E2E_NAMESPACE" deployment/router-app -- sh -lc \
-            'python -c "from azure.identity import DefaultAzureCredential; token = DefaultAzureCredential().get_token(\"https://management.azure.com/.default\"); assert token.token; print(len(token.token))"'
-
-      - name: Start port-forward
-        run: |
-          kubectl port-forward -n "$E2E_NAMESPACE" svc/router-app 18080:8000 >"$RUNNER_TEMP/port-forward.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/port-forward.pid"
-          sleep 10
-
-      - name: Run AKS e2e smoke tests
-        env:
-          RUN_E2E_AKS: "1"
-          E2E_BASE_URL: http://127.0.0.1:18080
-        run: uv run pytest tests/e2e_aks -ra
-
-      - name: Collect cluster diagnostics
-        if: always()
-        run: |
-          kubectl get all -n "$E2E_NAMESPACE" > "$RUNNER_TEMP/kubectl-get-all.txt" || true
-          kubectl get events -n "$E2E_NAMESPACE" --sort-by=.metadata.creationTimestamp > "$RUNNER_TEMP/kubectl-events.txt" || true
-          kubectl logs -n "$E2E_NAMESPACE" deployment/router-app > "$RUNNER_TEMP/router.log" || true
-
-      - name: Upload e2e artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-aks-artifacts-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/e2e-aks-outputs.json
-            ${{ runner.temp }}/port-forward.log
-            ${{ runner.temp }}/kubectl-get-all.txt
-            ${{ runner.temp }}/kubectl-events.txt
-            ${{ runner.temp }}/router.log
-
-      - name: Stop port-forward
-        if: always()
-        run: |
-          if [ -f "$RUNNER_TEMP/port-forward.pid" ]; then
-            kill "$(cat "$RUNNER_TEMP/port-forward.pid")" || true
-          fi
-
-      - name: Terraform destroy
-        if: always()
-        working-directory: infra/e2e-aks
-        shell: bash
-        run: |
-          KUBERNETES_VERSION_ARG=()
-          if [ -n "${{ inputs.kubernetes_version }}" ]; then
-            KUBERNETES_VERSION_ARG=(-var="kubernetes_version=${{ inputs.kubernetes_version }}")
-          fi
-
-          terraform destroy -auto-approve -input=false \
-            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
-            -var-file="env/${{ inputs.environment }}.tfvars" \
-            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="run_id=${{ github.run_id }}" \
-            "${KUBERNETES_VERSION_ARG[@]}"
+      - name: Run AKS validation profile
+        run: bash scripts/release/run_azure_test_suite.sh "${{ inputs.suite }}" "${{ inputs.environment }}"

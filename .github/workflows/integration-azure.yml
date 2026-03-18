@@ -7,6 +7,10 @@ on:
         description: Scope tfvars profile to use
         required: true
         default: dev1
+      suite:
+        description: Validation profile to execute
+        required: true
+        default: integration-azure
 
 permissions:
   id-token: write
@@ -43,41 +47,5 @@ jobs:
       - name: Sync environment
         run: uv sync --frozen --python "$(cat .python-version)"
 
-      - name: Terraform init
-        working-directory: infra/integration-azure
-        run: terraform init -input=false
-
-      - name: Terraform apply
-        working-directory: infra/integration-azure
-        run: |
-          terraform apply -auto-approve -input=false \
-            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
-            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="run_id=${{ github.run_id }}"
-
-      - name: Capture Terraform outputs
-        working-directory: infra/integration-azure
-        run: terraform output -json > "$RUNNER_TEMP/integration-azure-outputs.json"
-
-      - name: Run Azure-backed integration tests
-        env:
-          RUN_INTEGRATION_AZURE: "1"
-          INTEGRATION_AZURE_SCOPE: https://management.azure.com/.default
-        run: uv run pytest tests/integration_azure -ra
-
-      - name: Upload integration-azure artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-azure-artifacts-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/integration-azure-outputs.json
-
-      - name: Terraform destroy
-        if: always()
-        working-directory: infra/integration-azure
-        run: |
-          terraform destroy -auto-approve -input=false \
-            -var-file="../_shared/env/${{ inputs.environment }}.tfvars" \
-            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var="run_id=${{ github.run_id }}"
+      - name: Run integration-azure validation profile
+        run: bash scripts/release/run_azure_test_suite.sh "${{ inputs.suite }}" "${{ inputs.environment }}"

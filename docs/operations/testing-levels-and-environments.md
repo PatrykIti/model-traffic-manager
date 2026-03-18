@@ -69,7 +69,7 @@ Typical scope:
 
 Current repository activation:
 
-- workflow: `.github/workflows/integration-azure.yml`
+- workflow: `.github/workflows/integration-azure.yml` with `suite` input selecting `integration-azure`, `integration-azure-chat`, or `integration-azure-embeddings`
 - test suite: `tests/integration_azure/`
 - infra scope: `infra/integration-azure/`
 - shared tfvars baseline: `infra/_shared/env/dev1.tfvars` and `infra/_shared/env/prd1.tfvars`
@@ -120,7 +120,7 @@ Typical scope:
 
 Current repository activation:
 
-- workflow: `.github/workflows/e2e-aks.yml`
+- workflow: `.github/workflows/e2e-aks.yml` with `suite` input selecting `e2e-aks`, `e2e-aks-live-model`, `e2e-aks-live-embeddings`, `e2e-aks-live-load-balancing`, `e2e-aks-live-shared-services`, or `e2e-aks-redis`
 - janitor workflow: `.github/workflows/e2e-azure-janitor.yml`
 - test suite: `tests/e2e_aks/`
 - Kubernetes runtime assets: `infra/e2e-aks/k8s/`

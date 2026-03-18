@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 1 work item
+- **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 209 work items
+- **Done:** 213 work items
 
 ---
 
@@ -57,8 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-029-07 | Runner, Workflow, and Documentation Rollout for Expanded Live Suites | High | Medium | Local runners, CI, and docs alignment for the new live profiles |
-
 ---
 
 ## In Progress
@@ -245,6 +243,10 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-06-01 | Redis AKS Scope and Multi-Replica Router Profile | High | Medium | Dedicated AKS scope with two router replicas and in-cluster Redis implemented |
 | TASK-029-06-02 | Redis Suite Runner and Replica Targeting | High | Medium | Runner extended with replica-specific port-forwards and make target for the Redis suite |
 | TASK-029-06-03 | Redis Multi-Replica Live Suite and Docs Rollout | High | Medium | Live Redis suite and docs rollout implemented for shared-state validation |
+| TASK-029-07 | Runner, Workflow, and Documentation Rollout for Expanded Live Suites | High | Medium | GitHub workflows and docs now align with the full expanded live validation matrix |
+| TASK-029-07-01 | Workflow Suite-Input Rollout for Azure Profiles | High | Medium | Azure-backed workflows now select profiles through suite inputs and the shared runner |
+| TASK-029-07-02 | Testing Docs and Environment Contract Reconciliation | High | Small | Official testing docs and local guidance now reflect the final expanded matrix |
+| TASK-029-07-03 | Task Board and Changelog Reconciliation for Expanded Matrix | High | Small | Validation-expansion package closed cleanly in the task board and changelog |
 | TASK-030 | Model-Aware Load Balancing Within Tier | High | Large | Model-aware same-tier balancing implemented with examples, docs, and live validation |
 | TASK-030-01 | Upstream Compatibility Metadata and Balancing Policy Contract | High | Medium | Compatibility metadata and balancing contract added to upstreams |
 | TASK-030-02 | Selector Behavior for Compatible Pools Within a Tier | High | Medium | Same-tier selector behavior updated for compatibility-aware pools |
