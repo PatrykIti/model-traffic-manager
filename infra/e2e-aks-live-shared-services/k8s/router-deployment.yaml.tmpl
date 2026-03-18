@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: router-app
+  namespace: ${E2E_NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: router-app
+  template:
+    metadata:
+      labels:
+        app: router-app
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: router-app
+      containers:
+        - name: router
+          image: ${E2E_IMAGE}
+          imagePullPolicy: Always
+          env:
+            - name: MODEL_TRAFFIC_MANAGER_CONFIG_PATH
+              value: /app/runtime-config/router.yaml
+            - name: MODEL_TRAFFIC_MANAGER_ENVIRONMENT
+              value: e2e-aks-live-shared-services
+          ports:
+            - containerPort: 8000
+              name: http
+          volumeMounts:
+            - name: router-config
+              mountPath: /app/runtime-config
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: router-config
+          configMap:
+            name: router-config

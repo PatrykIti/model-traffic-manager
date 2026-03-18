@@ -36,25 +36,25 @@ Define the target validation matrix across `integration-azure`, `e2e-aks`, and `
 
 ### TASK-029-02: `integration-azure` outbound provider probes for chat and embeddings
 
-**Status:** To Do
+**Status:** Done (2026-03-18)
 
 Add lower-level Azure-backed checks that prove outbound auth and direct provider responses for both chat-related and embeddings-related dependencies.
 
 ### TASK-029-03: `e2e-aks-live-model` embeddings profile
 
-**Status:** To Do
+**Status:** Done (2026-03-16)
 
 Add a live embeddings path through the router on AKS with real Azure OpenAI embeddings infrastructure.
 
 ### TASK-029-04: `e2e-aks-live-model` chat failover and health-state scenarios
 
-**Status:** To Do
+**Status:** Done (2026-03-16)
 
 Add live cases that prove regional/account/model failover, cooldown, and circuit behavior for chat deployments.
 
 ### TASK-029-05: Live shared-services validation on Azure and AKS
 
-**Status:** To Do
+**Status:** Done (2026-03-18)
 
 Add live validation for `router_proxy + single_endpoint`, `router_proxy + tiered_failover`, and direct-access shared-service semantics.
 

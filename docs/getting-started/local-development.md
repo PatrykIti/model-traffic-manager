@@ -22,6 +22,7 @@ What each command does:
 - `make e2e-aks-live-model-local` runs a wider AKS suite with Azure OpenAI infrastructure and a real model-response validation
 - `make e2e-aks-live-embeddings-local` runs a dedicated AKS suite for real embeddings responses through the router
 - `make e2e-aks-live-load-balancing-local` runs a dedicated AKS suite for model-aware load-balancing behavior
+- `make e2e-aks-live-shared-services-local` runs a dedicated AKS suite for shared-service execution modes
 - `make run` starts the bootstrap FastAPI app
 
 All `make` targets that execute `pytest` now use verbose reporting, so the console shows each test name as it runs and prints a full final status summary.
@@ -71,9 +72,10 @@ Live-model notes:
 - `make e2e-aks-live-model-local` provisions extra Azure OpenAI infrastructure and consumes real model quota
 - `make e2e-aks-live-embeddings-local` provisions a dedicated Azure OpenAI embeddings deployment and validates live vectors through AKS
 - `make e2e-aks-live-load-balancing-local` provisions a dedicated AKS validation scope and verifies active-active / active-standby balancing against live in-cluster mocks
+- `make e2e-aks-live-shared-services-local` provisions a dedicated AKS validation scope and verifies direct-access plus router-proxy shared-service behavior
 - the current live-model profile targets `swedencentral` and validates `gpt-5` plus `gpt-5.1`
 - the current live-model suite also exercises router failover against an in-cluster mock primary for rate-limit and unhealthy scenarios
 - the current live embeddings profile targets `germanywestcentral` and validates `text-embedding-3-small`
 - the current live load-balancing profile validates same-tier chat and embeddings distribution plus active-standby behavior
 - this suite is intentionally separate because model quota and regional model availability can change independently of the smoke AKS path
-- the next meaningful higher-level additions are a Redis-backed AKS profile, shared-services live validation, and richer live chat failover scenarios
+- the next meaningful higher-level additions are a Redis-backed AKS profile and final workflow rollout for the expanded live matrix

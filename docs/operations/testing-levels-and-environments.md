@@ -175,7 +175,6 @@ Default rule:
 Recommended next additions:
 
 - a Redis-backed AKS profile that proves shared health and limiter state in-cluster
-- shared-services live validation on Azure and AKS
 
 ### 6. `e2e-aks-live-embeddings`
 
@@ -233,6 +232,36 @@ Current live load-balancing coverage:
 Default rule:
 
 - use this suite deliberately because it provisions AKS infrastructure specifically to validate balancing semantics under real runtime conditions
+
+### 8. `e2e-aks-live-shared-services`
+
+Purpose:
+
+- prove the shared-service execution model on live Azure and AKS infrastructure
+
+Environment:
+
+- AKS
+- router runtime config rendered for shared-service scenarios
+- in-cluster mock downstreams for router-proxy shared services
+- real Azure Storage account metadata for direct-backend-access shared services
+
+Current repository activation:
+
+- local command: `make e2e-aks-live-shared-services-local`
+- test suite: `tests/e2e_aks_live_shared_services/`
+- infra scope: `infra/e2e-aks-live-shared-services/`
+
+Current live shared-services coverage:
+
+- `GET /shared-services` exposes router-proxy and direct-backend-access services from the live registry
+- `POST /v1/shared-services/{service_id}` rejects direct-backend-access services with a fail-closed response
+- `router_proxy + single_endpoint` executes against an in-cluster live mock
+- `router_proxy + tiered_failover` fails over from a primary mock to a secondary mock and skips the primary on the next request via shared health state
+
+Default rule:
+
+- use this suite deliberately because it provisions AKS infrastructure plus a real Azure storage dependency for the direct-access contract
 
 ## Phase mapping
 
