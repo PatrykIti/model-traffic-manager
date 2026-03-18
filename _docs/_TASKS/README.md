@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 2 work items
+- **To Do:** 1 work item
 - **In Progress:** 0 work items
-- **Done:** 205 work items
+- **Done:** 209 work items
 
 ---
 
@@ -57,7 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-029-06 | Redis-Backed Multi-Replica AKS Validation | High | Medium | Live multi-replica coordination proof with Redis-backed state |
 | TASK-029-07 | Runner, Workflow, and Documentation Rollout for Expanded Live Suites | High | Medium | Local runners, CI, and docs alignment for the new live profiles |
 
 ---
@@ -242,6 +241,10 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-05-01 | Live Shared-Services AKS Scope and Azure Direct-Access Fixture | High | Medium | Dedicated AKS scope and real Azure Storage direct-access fixture implemented |
 | TASK-029-05-02 | Live Shared-Services Router Config and Mock Downstreams | High | Medium | Dedicated shared-services config renderer and in-cluster mock downstreams implemented |
 | TASK-029-05-03 | Live Shared-Services Suite, Runner, and Docs Rollout | High | Medium | Live shared-services suite, make target, env contract, and docs rollout implemented |
+| TASK-029-06 | Redis-Backed Multi-Replica AKS Validation | High | Medium | Dedicated Redis-backed AKS profile added for shared cooldown, circuit, and limiter behavior across replicas |
+| TASK-029-06-01 | Redis AKS Scope and Multi-Replica Router Profile | High | Medium | Dedicated AKS scope with two router replicas and in-cluster Redis implemented |
+| TASK-029-06-02 | Redis Suite Runner and Replica Targeting | High | Medium | Runner extended with replica-specific port-forwards and make target for the Redis suite |
+| TASK-029-06-03 | Redis Multi-Replica Live Suite and Docs Rollout | High | Medium | Live Redis suite and docs rollout implemented for shared-state validation |
 | TASK-030 | Model-Aware Load Balancing Within Tier | High | Large | Model-aware same-tier balancing implemented with examples, docs, and live validation |
 | TASK-030-01 | Upstream Compatibility Metadata and Balancing Policy Contract | High | Medium | Compatibility metadata and balancing contract added to upstreams |
 | TASK-030-02 | Selector Behavior for Compatible Pools Within a Tier | High | Medium | Same-tier selector behavior updated for compatibility-aware pools |

@@ -5,7 +5,7 @@ SUITE="${1:-}"
 ENVIRONMENT="${2:-dev1}"
 
 if [[ -z "$SUITE" ]]; then
-  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|integration-azure-chat|integration-azure-embeddings|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing|e2e-aks-live-shared-services> [environment]" >&2
+  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|integration-azure-chat|integration-azure-embeddings|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing|e2e-aks-live-shared-services|e2e-aks-redis> [environment]" >&2
   exit 1
 fi
 
@@ -28,17 +28,39 @@ select_running_pod() {
     | head -n 1
 }
 
+select_running_pods() {
+  local namespace="$1"
+  local label_selector="$2"
+  local count="${3:-0}"
+
+  if [[ "$count" == "0" ]]; then
+    kubectl get pods -n "$namespace" -l "$label_selector" \
+      -o jsonpath='{range .items[?(@.status.phase=="Running")]}{.metadata.name}{"\n"}{end}'
+    return
+  fi
+
+  kubectl get pods -n "$namespace" -l "$label_selector" \
+    -o jsonpath='{range .items[?(@.status.phase=="Running")]}{.metadata.name}{"\n"}{end}' \
+    | head -n "$count"
+}
+
+allocate_local_port() {
+  python3 -c 'import socket; sock = socket.socket(); sock.bind(("127.0.0.1", 0)); print(sock.getsockname()[1]); sock.close()'
+}
+
 wait_for_http_endpoint() {
   local url="$1"
   local timeout_seconds="${2:-60}"
+  local watched_pid="${3:-}"
+  local log_path="${4:-}"
   local elapsed=0
 
   while (( elapsed < timeout_seconds )); do
-    if [[ -n "$port_forward_pid" ]] && ! kill -0 "$port_forward_pid" >/dev/null 2>&1; then
+    if [[ -n "$watched_pid" ]] && ! kill -0 "$watched_pid" >/dev/null 2>&1; then
       echo "Port-forward process exited before ${url} became reachable." >&2
-      if [[ -f "${tmp_dir}/port-forward.log" ]]; then
+      if [[ -n "$log_path" && -f "$log_path" ]]; then
         echo "----- port-forward log -----" >&2
-        cat "${tmp_dir}/port-forward.log" >&2 || true
+        cat "$log_path" >&2 || true
       fi
       exit 1
     fi
@@ -52,9 +74,9 @@ wait_for_http_endpoint() {
   done
 
   echo "Timed out waiting for ${url}." >&2
-  if [[ -f "${tmp_dir}/port-forward.log" ]]; then
+  if [[ -n "$log_path" && -f "$log_path" ]]; then
     echo "----- port-forward log -----" >&2
-    cat "${tmp_dir}/port-forward.log" >&2 || true
+    cat "$log_path" >&2 || true
   fi
   exit 1
 }
@@ -180,6 +202,22 @@ case "$SUITE" in
       tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
     fi
     ;;
+  e2e-aks-redis)
+    for cmd in docker gh kubectl; do
+      require_cmd "$cmd"
+    done
+    scope_dir="infra/e2e-aks-redis"
+    tests_path="tests/e2e_aks_redis"
+    tf_args=(
+      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
+      "-var-file=env/${ENVIRONMENT}.tfvars"
+      "-var=subscription_id=${subscription_id}"
+      "-var=run_id=${run_id}"
+    )
+    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
+      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
+    fi
+    ;;
   *)
     echo "Unsupported suite: $SUITE" >&2
     exit 1
@@ -187,7 +225,7 @@ case "$SUITE" in
 esac
 
 apply_started="0"
-port_forward_pid=""
+port_forward_pids=()
 resource_group=""
 aks_cluster_name=""
 e2e_namespace="${E2E_NAMESPACE:-e2e-router}"
@@ -196,7 +234,7 @@ federated_credential_created="0"
 e2e_image_pull_secret_name="${E2E_IMAGE_PULL_SECRET_NAME:-ghcr-pull}"
 
 print_e2e_diagnostics() {
-  if [[ "$SUITE" != e2e-aks && "$SUITE" != e2e-aks-live-model && "$SUITE" != e2e-aks-live-embeddings && "$SUITE" != e2e-aks-live-load-balancing && "$SUITE" != e2e-aks-live-shared-services || -z "$aks_cluster_name" ]]; then
+  if [[ "$SUITE" != e2e-aks && "$SUITE" != e2e-aks-live-model && "$SUITE" != e2e-aks-live-embeddings && "$SUITE" != e2e-aks-live-load-balancing && "$SUITE" != e2e-aks-live-shared-services && "$SUITE" != e2e-aks-redis || -z "$aks_cluster_name" ]]; then
     return
   fi
 
@@ -217,10 +255,11 @@ print_e2e_diagnostics() {
   echo "----- e2e-aks diagnostics: events -----" >&2
   kubectl get events -n "$e2e_namespace" --sort-by=.metadata.creationTimestamp >&2 || true
 
-  if [[ -f "${tmp_dir}/port-forward.log" ]]; then
-    echo "----- e2e-aks diagnostics: port-forward log -----" >&2
-    cat "${tmp_dir}/port-forward.log" >&2 || true
-  fi
+  for pf_log in "${tmp_dir}"/port-forward*.log; do
+    [[ -e "$pf_log" ]] || continue
+    echo "----- e2e-aks diagnostics: $(basename "$pf_log") -----" >&2
+    cat "$pf_log" >&2 || true
+  done
 }
 
 on_error() {
@@ -237,12 +276,14 @@ cleanup() {
   exit_code=$?
   destroy_exit_code=0
 
-  if [[ -n "$port_forward_pid" ]]; then
-    echo "Cleaning up: stopping port-forward process ${port_forward_pid}"
-    kill "$port_forward_pid" >/dev/null 2>&1 || true
+  if (( ${#port_forward_pids[@]} > 0 )); then
+    for pf_pid in "${port_forward_pids[@]}"; do
+      echo "Cleaning up: stopping port-forward process ${pf_pid}"
+      kill "$pf_pid" >/dev/null 2>&1 || true
+    done
   fi
 
-  if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" || "$SUITE" == "e2e-aks-live-embeddings" || "$SUITE" == "e2e-aks-live-load-balancing" || "$SUITE" == "e2e-aks-live-shared-services" ) && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
+  if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" || "$SUITE" == "e2e-aks-live-embeddings" || "$SUITE" == "e2e-aks-live-load-balancing" || "$SUITE" == "e2e-aks-live-shared-services" || "$SUITE" == "e2e-aks-redis" ) && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
     echo "Cleaning up: deleting federated credential router-e2e-${run_id}"
     az identity federated-credential delete \
       --resource-group "$resource_group" \
@@ -278,7 +319,7 @@ echo "Suite: ${SUITE}"
 echo "Environment: ${ENVIRONMENT}"
 echo "Run ID: ${run_id}"
 
-if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" || "$SUITE" == "e2e-aks-live-embeddings" || "$SUITE" == "e2e-aks-live-load-balancing" || "$SUITE" == "e2e-aks-live-shared-services" ) && -z "$e2e_image" ]]; then
+if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" || "$SUITE" == "e2e-aks-live-embeddings" || "$SUITE" == "e2e-aks-live-load-balancing" || "$SUITE" == "e2e-aks-live-shared-services" || "$SUITE" == "e2e-aks-redis" ) && -z "$e2e_image" ]]; then
   require_cmd docker
   require_cmd gh
 
@@ -371,6 +412,12 @@ elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
     --from-file=router.yaml="${tmp_dir}/router-live-shared-services.yaml" \
     --namespace "$e2e_namespace" \
     --dry-run=client -o yaml | kubectl apply -f -
+elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
+  python3 scripts/release/render_live_redis_router_config.py "${tmp_dir}/terraform-outputs.json" > "${tmp_dir}/router-live-redis.yaml"
+  kubectl create configmap router-config \
+    --from-file=router.yaml="${tmp_dir}/router-live-redis.yaml" \
+    --namespace "$e2e_namespace" \
+    --dry-run=client -o yaml | kubectl apply -f -
 else
   kubectl create configmap router-config \
     --from-file=router.yaml=configs/example.router.yaml \
@@ -419,6 +466,8 @@ elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
   manifest_root="infra/e2e-aks-live-load-balancing"
 elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
   manifest_root="infra/e2e-aks-live-shared-services"
+elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
+  manifest_root="infra/e2e-aks-redis"
 fi
 
 python3 scripts/release/render_template.py "${manifest_root}/k8s/router-serviceaccount.yaml.tmpl" | kubectl apply -f -
@@ -445,6 +494,15 @@ elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-shared-service-mock-service.yaml"
   kubectl rollout status deployment/router-shared-service-mock -n "$e2e_namespace" --timeout=5m
   kubectl wait --for=condition=Ready pod -l app=router-shared-service-mock -n "$e2e_namespace" --timeout=5m
+elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
+  kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-deployment.yaml"
+  kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-service.yaml"
+  kubectl rollout status deployment/router-redis -n "$e2e_namespace" --timeout=5m
+  kubectl wait --for=condition=Ready pod -l app=router-redis -n "$e2e_namespace" --timeout=5m
+  python3 scripts/release/render_template.py "${manifest_root}/k8s/router-redis-mock-deployment.yaml.tmpl" | kubectl apply -f -
+  kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-mock-service.yaml"
+  kubectl rollout status deployment/router-redis-mock -n "$e2e_namespace" --timeout=5m
+  kubectl wait --for=condition=Ready pod -l app=router-redis-mock -n "$e2e_namespace" --timeout=5m
 fi
 
 kubectl rollout status deployment/router-app -n "$e2e_namespace" --timeout=5m
@@ -462,13 +520,41 @@ kubectl exec -n "$e2e_namespace" "pod/${router_pod_name}" -c router -- sh -lc \
 kubectl exec -n "$e2e_namespace" "pod/${router_pod_name}" -c router -- sh -lc \
   '/app/.venv/bin/python -c "from azure.identity import DefaultAzureCredential; token = DefaultAzureCredential().get_token(\"https://management.azure.com/.default\"); assert token.token; print(len(token.token))"'
 
-local_port="${E2E_LOCAL_PORT:-$(python3 -c 'import socket; sock = socket.socket(); sock.bind(("127.0.0.1", 0)); print(sock.getsockname()[1]); sock.close()')}"
-kubectl port-forward -n "$e2e_namespace" svc/router-app "${local_port}:8000" >"${tmp_dir}/port-forward.log" 2>&1 &
-port_forward_pid="$!"
-wait_for_http_endpoint "http://127.0.0.1:${local_port}/health/ready" 60
-
 export RUN_E2E_AKS="1"
-export E2E_BASE_URL="http://127.0.0.1:${local_port}"
+
+if [[ "$SUITE" == "e2e-aks-redis" ]]; then
+  mapfile -t router_pod_names < <(select_running_pods "$e2e_namespace" "app=router-app" 2)
+  if (( ${#router_pod_names[@]} < 2 )); then
+    echo "Expected two running router-app pods for e2e-aks-redis." >&2
+    exit 1
+  fi
+
+  replica_a_port="$(allocate_local_port)"
+  replica_a_log="${tmp_dir}/port-forward-replica-a.log"
+  kubectl port-forward -n "$e2e_namespace" "pod/${router_pod_names[0]}" "${replica_a_port}:8000" >"${replica_a_log}" 2>&1 &
+  replica_a_pid=$!
+  port_forward_pids+=("$replica_a_pid")
+  wait_for_http_endpoint "http://127.0.0.1:${replica_a_port}/health/ready" 60 "$replica_a_pid" "$replica_a_log"
+
+  replica_b_port="$(allocate_local_port)"
+  replica_b_log="${tmp_dir}/port-forward-replica-b.log"
+  kubectl port-forward -n "$e2e_namespace" "pod/${router_pod_names[1]}" "${replica_b_port}:8000" >"${replica_b_log}" 2>&1 &
+  replica_b_pid=$!
+  port_forward_pids+=("$replica_b_pid")
+  wait_for_http_endpoint "http://127.0.0.1:${replica_b_port}/health/ready" 60 "$replica_b_pid" "$replica_b_log"
+
+  export E2E_BASE_URL_REPLICA_A="http://127.0.0.1:${replica_a_port}"
+  export E2E_BASE_URL_REPLICA_B="http://127.0.0.1:${replica_b_port}"
+  export E2E_BASE_URL="$E2E_BASE_URL_REPLICA_A"
+else
+  local_port="${E2E_LOCAL_PORT:-$(allocate_local_port)}"
+  port_forward_log="${tmp_dir}/port-forward.log"
+  kubectl port-forward -n "$e2e_namespace" svc/router-app "${local_port}:8000" >"${port_forward_log}" 2>&1 &
+  port_forward_pid=$!
+  port_forward_pids+=("$port_forward_pid")
+  wait_for_http_endpoint "http://127.0.0.1:${local_port}/health/ready" 60 "$port_forward_pid" "$port_forward_log"
+  export E2E_BASE_URL="http://127.0.0.1:${local_port}"
+fi
 
 if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
   export RUN_E2E_AKS_LIVE_MODEL="1"
@@ -481,6 +567,8 @@ elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
 elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
   export RUN_E2E_AKS_LIVE_SHARED_SERVICES="1"
   export E2E_LIVE_SHARED_SERVICES_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
+elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
+  export RUN_E2E_AKS_REDIS="1"
 fi
 
 echo "Running pytest with flags: ${pytest_flags[*]}"

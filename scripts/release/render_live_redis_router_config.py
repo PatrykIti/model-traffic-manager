@@ -1,0 +1,131 @@
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+
+def main() -> None:
+    if len(sys.argv) != 2:
+        raise SystemExit("Usage: render_live_redis_router_config.py <terraform-outputs-json>")
+
+    _outputs_path = Path(sys.argv[1])
+    timeout_ms = int(os.getenv("E2E_ROUTER_TIMEOUT_MS", "30000"))
+    max_attempts = int(os.getenv("E2E_ROUTER_MAX_ATTEMPTS", "3"))
+    namespace = os.getenv("E2E_NAMESPACE", "e2e-router")
+    mock_base_url = f"http://router-redis-mock.{namespace}.svc.cluster.local:8080"
+
+    lines = [
+        "router:",
+        "  instance_name: e2e-aks-redis",
+        f"  timeout_ms: {timeout_ms}",
+        f"  max_attempts: {max_attempts}",
+        "  retryable_status_codes: [429, 500, 502, 503, 504]",
+        "  health:",
+        "    failure_threshold: 1",
+        "    cooldown_seconds: 30",
+        "    half_open_after_seconds: 60",
+        "",
+        "deployments:",
+        "  - id: chat-shared-request-rate",
+        "    kind: llm",
+        "    protocol: openai_chat",
+        "    routing:",
+        "      strategy: tiered_failover",
+        "    limits:",
+        "      max_concurrency: 10",
+        "      request_rate_per_second: 1",
+        "    upstreams:",
+        "      - id: primary",
+        "        provider: internal_mock",
+        "        account: redis-test",
+        "        region: local",
+        "        tier: 0",
+        "        weight: 100",
+        f"        endpoint: {mock_base_url}/ok",
+        "        auth:",
+        "          mode: none",
+        "",
+        "  - id: chat-shared-concurrency",
+        "    kind: llm",
+        "    protocol: openai_chat",
+        "    routing:",
+        "      strategy: tiered_failover",
+        "    limits:",
+        "      max_concurrency: 1",
+        "      request_rate_per_second: 10",
+        "    upstreams:",
+        "      - id: primary",
+        "        provider: internal_mock",
+        "        account: redis-test",
+        "        region: local",
+        "        tier: 0",
+        "        weight: 100",
+        f"        endpoint: {mock_base_url}/slow",
+        "        auth:",
+        "          mode: none",
+        "",
+        "  - id: chat-failover-rate-limit",
+        "    kind: llm",
+        "    protocol: openai_chat",
+        "    routing:",
+        "      strategy: tiered_failover",
+        "    limits:",
+        "      max_concurrency: 10",
+        "      request_rate_per_second: 10",
+        "    upstreams:",
+        "      - id: primary",
+        "        provider: internal_mock",
+        "        account: redis-test",
+        "        region: local",
+        "        tier: 0",
+        "        weight: 100",
+        f"        endpoint: {mock_base_url}/rate-limit",
+        "        auth:",
+        "          mode: none",
+        "      - id: secondary",
+        "        provider: internal_mock",
+        "        account: redis-test",
+        "        region: local-secondary",
+        "        tier: 1",
+        "        weight: 100",
+        f"        endpoint: {mock_base_url}/secondary",
+        "        auth:",
+        "          mode: none",
+        "",
+        "  - id: chat-failover-unhealthy",
+        "    kind: llm",
+        "    protocol: openai_chat",
+        "    routing:",
+        "      strategy: tiered_failover",
+        "    limits:",
+        "      max_concurrency: 10",
+        "      request_rate_per_second: 10",
+        "    upstreams:",
+        "      - id: primary",
+        "        provider: internal_mock",
+        "        account: redis-test",
+        "        region: local",
+        "        tier: 0",
+        "        weight: 100",
+        f"        endpoint: {mock_base_url}/unhealthy",
+        "        auth:",
+        "          mode: none",
+        "      - id: secondary",
+        "        provider: internal_mock",
+        "        account: redis-test",
+        "        region: local-secondary",
+        "        tier: 1",
+        "        weight: 100",
+        f"        endpoint: {mock_base_url}/secondary",
+        "        auth:",
+        "          mode: none",
+        "",
+        "shared_services: {}",
+    ]
+
+    sys.stdout.write("\n".join(lines))
+
+
+if __name__ == "__main__":
+    main()

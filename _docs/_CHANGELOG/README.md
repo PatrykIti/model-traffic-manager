@@ -76,3 +76,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 43 | 2026-03-18 | Live load-balancing transport flake hardening | validation/e2e |
 | 44 | 2026-03-18 | Integration-azure chat and embeddings provider probes | validation/integration |
 | 45 | 2026-03-18 | Live shared-services validation on Azure and AKS | validation/e2e |
+| 46 | 2026-03-18 | Redis-backed multi-replica AKS validation | validation/e2e |

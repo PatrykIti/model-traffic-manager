@@ -60,7 +60,7 @@ Add live validation for `router_proxy + single_endpoint`, `router_proxy + tiered
 
 ### TASK-029-06: Redis-backed multi-replica AKS validation
 
-**Status:** To Do
+**Status:** Done (2026-03-18)
 
 Add live validation that proves health, cooldown, and limiter coordination across replicas with Redis-backed runtime state.
 

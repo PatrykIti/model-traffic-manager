@@ -174,8 +174,6 @@ Default rule:
 
 Recommended next additions:
 
-- a Redis-backed AKS profile that proves shared health and limiter state in-cluster
-
 ### 6. `e2e-aks-live-embeddings`
 
 Purpose:
@@ -262,6 +260,36 @@ Current live shared-services coverage:
 Default rule:
 
 - use this suite deliberately because it provisions AKS infrastructure plus a real Azure storage dependency for the direct-access contract
+
+### 9. `e2e-aks-redis`
+
+Purpose:
+
+- prove that Redis-backed runtime state is shared correctly across multiple router replicas on AKS
+
+Environment:
+
+- AKS
+- two router replicas
+- in-cluster Redis
+- in-cluster mock upstreams for deterministic rate-limit, circuit, and limiter scenarios
+
+Current repository activation:
+
+- local command: `make e2e-aks-redis-local`
+- test suite: `tests/e2e_aks_redis/`
+- infra scope: `infra/e2e-aks-redis/`
+
+Current Redis-backed coverage:
+
+- request-rate limiting shared across replicas
+- concurrency limiting shared across replicas
+- cooldown visibility shared across replicas
+- circuit-open visibility shared across replicas
+
+Default rule:
+
+- use this suite deliberately because it provisions a dedicated multi-replica AKS profile specifically to validate Redis-backed shared state behavior
 
 ## Phase mapping
 

@@ -5,7 +5,7 @@ UV := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
 ENVIRONMENT ?= dev1
 PYTEST_FLAGS ?= -vv -rA
 
-.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local run docker-build smoke clean
+.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-redis-local run docker-build smoke clean
 
 bootstrap:
 	$(UV) sync --frozen --python "$(PYTHON_VERSION)"
@@ -51,6 +51,8 @@ validate-terraform:
 	terraform -chdir=infra/e2e-aks-live-load-balancing validate
 	terraform -chdir=infra/e2e-aks-live-shared-services init -backend=false
 	terraform -chdir=infra/e2e-aks-live-shared-services validate
+	terraform -chdir=infra/e2e-aks-redis init -backend=false
+	terraform -chdir=infra/e2e-aks-redis validate
 
 release-check: check validate-workflows validate-terraform
 
@@ -77,6 +79,9 @@ e2e-aks-live-load-balancing-local:
 
 e2e-aks-live-shared-services-local:
 	bash scripts/release/run_azure_test_suite.sh e2e-aks-live-shared-services "$(ENVIRONMENT)"
+
+e2e-aks-redis-local:
+	bash scripts/release/run_azure_test_suite.sh e2e-aks-redis "$(ENVIRONMENT)"
 
 run:
 	$(UV) run uvicorn app.entrypoints.api.main:app --host 0.0.0.0 --port 8000
