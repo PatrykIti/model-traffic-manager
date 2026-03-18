@@ -30,7 +30,7 @@ variable "kubernetes_version" {
 
 variable "aks_node_vm_size" {
   type    = string
-  default = "Standard_D4ds_v5"
+  default = "Standard_D2s_v4"
 }
 
 variable "storage_account_replication_type" {

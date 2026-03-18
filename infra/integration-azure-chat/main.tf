@@ -62,6 +62,5 @@ module "executor_openai_role_assignment" {
   scope                = module.openai_account.id
   role_definition_name = "Cognitive Services OpenAI User"
   principal_id         = var.executor_principal_id
-  principal_type       = "ServicePrincipal"
   description          = "Allow the current integration-azure chat executor to invoke Azure OpenAI."
 }
