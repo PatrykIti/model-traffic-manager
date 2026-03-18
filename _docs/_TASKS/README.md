@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 41 work items
 - **In Progress:** 0 work items
-- **Done:** 196 work items
+- **Done:** 197 work items
 
 ---
 
@@ -257,3 +257,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-035 | Live Port-Forward and Transport Retry Hardening | High | Small | Dynamic local ports, forwarded-health wait, and live transport retries harden AKS live runs |
 | TASK-036 | Shell Runner Syntax Validation in Quality Gates | High | Small | Shell syntax is now checked in make and pre-commit quality gates before Azure/AKS runs |
 | TASK-037 | Randomized OpenAI Account and Subdomain Suffixes for Live Scopes | High | Small | Live Azure OpenAI scopes now use random suffixes to avoid soft-delete naming collisions |
+| TASK-038 | Live Load-Balancing Transport Flake Hardening | High | Small | Live load-balancing suite now retries transient transport failures and restarts dirty distribution windows |
