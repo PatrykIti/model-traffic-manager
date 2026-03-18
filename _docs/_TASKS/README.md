@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 213 work items
+- **Done:** 214 work items
 
 ---
 
@@ -247,6 +247,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-07-01 | Workflow Suite-Input Rollout for Azure Profiles | High | Medium | Azure-backed workflows now select profiles through suite inputs and the shared runner |
 | TASK-029-07-02 | Testing Docs and Environment Contract Reconciliation | High | Small | Official testing docs and local guidance now reflect the final expanded matrix |
 | TASK-029-07-03 | Task Board and Changelog Reconciliation for Expanded Matrix | High | Small | Validation-expansion package closed cleanly in the task board and changelog |
+| TASK-039 | Live Validation Stability Fixes for Auth, Context, and Quota Constraints | High | Medium | Auth roles, AKS context isolation, quota-aware VM sizing, and fixture compatibility were hardened after first live runs |
 | TASK-030 | Model-Aware Load Balancing Within Tier | High | Large | Model-aware same-tier balancing implemented with examples, docs, and live validation |
 | TASK-030-01 | Upstream Compatibility Metadata and Balancing Policy Contract | High | Medium | Compatibility metadata and balancing contract added to upstreams |
 | TASK-030-02 | Selector Behavior for Compatible Pools Within a Tier | High | Medium | Same-tier selector behavior updated for compatibility-aware pools |

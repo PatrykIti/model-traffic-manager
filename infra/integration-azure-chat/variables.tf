@@ -45,6 +45,11 @@ variable "openai_custom_subdomain_name" {
   default = null
 }
 
+variable "executor_principal_id" {
+  type    = string
+  default = null
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

@@ -72,7 +72,7 @@ module "archive_storage_account" {
   tags                     = local.common_tags
 
   security_settings = {
-    shared_access_key_enabled     = false
+    shared_access_key_enabled     = true
     public_network_access_enabled = true
   }
 

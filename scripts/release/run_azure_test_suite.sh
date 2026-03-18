@@ -48,6 +48,22 @@ allocate_local_port() {
   python3 -c 'import socket; sock = socket.socket(); sock.bind(("127.0.0.1", 0)); print(sock.getsockname()[1]); sock.close()'
 }
 
+resolve_executor_principal_id() {
+  local access_token
+  access_token="$(az account get-access-token --resource-type arm --query accessToken -o tsv)"
+  python3 -c '
+import base64
+import json
+import sys
+
+token = sys.stdin.read().strip()
+payload = token.split(".")[1]
+payload += "=" * (-len(payload) % 4)
+claims = json.loads(base64.urlsafe_b64decode(payload))
+print(claims.get("oid", ""))
+' <<<"$access_token"
+}
+
 wait_for_http_endpoint() {
   local url="$1"
   local timeout_seconds="${2:-60}"
@@ -91,6 +107,7 @@ account_name="$(az account show --query name -o tsv)"
 run_id="local-$(date -u +%Y%m%d%H%M%S)-$RANDOM"
 tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mtm-${SUITE}-XXXXXX")"
 pytest_flags=(-vv -rA)
+executor_principal_id=""
 
 case "$SUITE" in
   integration-azure)
@@ -223,6 +240,13 @@ case "$SUITE" in
     exit 1
     ;;
 esac
+
+if [[ "$SUITE" == "integration-azure-chat" || "$SUITE" == "integration-azure-embeddings" ]]; then
+  executor_principal_id="$(resolve_executor_principal_id)"
+  if [[ -n "$executor_principal_id" ]]; then
+    tf_args+=("-var=executor_principal_id=${executor_principal_id}")
+  fi
+fi
 
 apply_started="0"
 port_forward_pids=()
@@ -375,8 +399,13 @@ aks_oidc_issuer_url="$(terraform -chdir="$scope_dir" output -raw aks_oidc_issuer
 UAI_NAME="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_name)"
 uai_client_id="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_client_id)"
 
-az aks get-credentials --resource-group "$resource_group" --name "$aks_cluster_name" --overwrite-existing
-
+kubeconfig_path="${tmp_dir}/kubeconfig"
+az aks get-credentials \
+  --resource-group "$resource_group" \
+  --name "$aks_cluster_name" \
+  --file "$kubeconfig_path" \
+  --overwrite-existing
+export KUBECONFIG="$kubeconfig_path"
 az identity federated-credential create \
   --resource-group "$resource_group" \
   --identity-name "$UAI_NAME" \

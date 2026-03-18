@@ -78,3 +78,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 45 | 2026-03-18 | Live shared-services validation on Azure and AKS | validation/e2e |
 | 46 | 2026-03-18 | Redis-backed multi-replica AKS validation | validation/e2e |
 | 47 | 2026-03-18 | Expanded live validation workflow rollout | workflow/testing |
+| 48 | 2026-03-18 | Live validation stability fixes for auth, context, and quota constraints | validation/stability |

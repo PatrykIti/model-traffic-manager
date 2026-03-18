@@ -30,7 +30,7 @@ variable "kubernetes_version" {
 
 variable "aks_node_vm_size" {
   type    = string
-  default = "Standard_B2s"
+  default = "Standard_D4ds_v5"
 }
 
 variable "tags" {

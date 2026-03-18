@@ -54,3 +54,14 @@ module "openai_role_assignment" {
   principal_type       = "ServicePrincipal"
   description          = "Allow the router user-assigned identity to invoke Azure OpenAI embeddings."
 }
+
+module "executor_openai_role_assignment" {
+  count  = var.executor_principal_id == null ? 0 : 1
+  source = "git::https://github.com/PatrykIti/azurerm-terraform-modules//modules/azurerm_role_assignment?ref=RAv1.0.0"
+
+  scope                = module.openai_account.id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = var.executor_principal_id
+  principal_type       = "ServicePrincipal"
+  description          = "Allow the current integration-azure embeddings executor to invoke Azure OpenAI."
+}
