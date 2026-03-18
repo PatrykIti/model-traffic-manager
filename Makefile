@@ -5,7 +5,7 @@ UV := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
 ENVIRONMENT ?= dev1
 PYTEST_FLAGS ?= -vv -rA
 
-.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check integration-azure-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local run docker-build smoke clean
+.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local run docker-build smoke clean
 
 bootstrap:
 	$(UV) sync --frozen --python "$(PYTHON_VERSION)"
@@ -37,6 +37,10 @@ validate-workflows:
 validate-terraform:
 	terraform -chdir=infra/integration-azure init -backend=false
 	terraform -chdir=infra/integration-azure validate
+	terraform -chdir=infra/integration-azure-chat init -backend=false
+	terraform -chdir=infra/integration-azure-chat validate
+	terraform -chdir=infra/integration-azure-embeddings init -backend=false
+	terraform -chdir=infra/integration-azure-embeddings validate
 	terraform -chdir=infra/e2e-aks init -backend=false
 	terraform -chdir=infra/e2e-aks validate
 	terraform -chdir=infra/e2e-aks-live-model init -backend=false
@@ -50,6 +54,12 @@ release-check: check validate-workflows validate-terraform
 
 integration-azure-local:
 	bash scripts/release/run_azure_test_suite.sh integration-azure "$(ENVIRONMENT)"
+
+integration-azure-chat-local:
+	bash scripts/release/run_azure_test_suite.sh integration-azure-chat "$(ENVIRONMENT)"
+
+integration-azure-embeddings-local:
+	bash scripts/release/run_azure_test_suite.sh integration-azure-embeddings "$(ENVIRONMENT)"
 
 e2e-aks-local:
 	bash scripts/release/run_azure_test_suite.sh e2e-aks "$(ENVIRONMENT)"

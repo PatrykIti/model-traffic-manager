@@ -16,6 +16,8 @@ What each command does:
 - `make check` runs lint, type-check, and tests
 - `make release-check` runs the local quality gate plus shell, workflow, and Terraform validation
 - `make integration-azure-local` runs `apply -> integration tests -> destroy` against Azure using the active Azure CLI context
+- `make integration-azure-chat-local` runs `apply -> direct chat provider probe -> destroy` against Azure OpenAI using repository auth and outbound adapters
+- `make integration-azure-embeddings-local` runs `apply -> direct embeddings provider probe -> destroy` against Azure OpenAI using repository auth and outbound adapters
 - `make e2e-aks-local` runs `apply -> deploy -> e2e smoke -> destroy` against AKS using the active Azure CLI context
 - `make e2e-aks-live-model-local` runs a wider AKS suite with Azure OpenAI infrastructure and a real model-response validation
 - `make e2e-aks-live-embeddings-local` runs a dedicated AKS suite for real embeddings responses through the router
@@ -61,6 +63,7 @@ For higher-level local Azure-backed runs:
 - Terraform inputs come from the shared baseline under `infra/_shared/env/`
 - `destroy` is attempted under shell traps even when the selected higher-level suite fails
 - the default profile is `ENVIRONMENT=dev1`
+- `integration-azure-chat-local` and `integration-azure-embeddings-local` are intentionally separate so chat and embeddings provider probes can be exercised independently
 
 Live-model notes:
 

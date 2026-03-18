@@ -5,7 +5,7 @@ SUITE="${1:-}"
 ENVIRONMENT="${2:-dev1}"
 
 if [[ -z "$SUITE" ]]; then
-  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing> [environment]" >&2
+  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|integration-azure-chat|integration-azure-embeddings|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing> [environment]" >&2
   exit 1
 fi
 
@@ -76,6 +76,26 @@ case "$SUITE" in
     tests_path="tests/integration_azure"
     tf_args=(
       "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
+      "-var=subscription_id=${subscription_id}"
+      "-var=run_id=${run_id}"
+    )
+    ;;
+  integration-azure-chat)
+    scope_dir="infra/integration-azure-chat"
+    tests_path="tests/integration_azure_chat"
+    tf_args=(
+      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
+      "-var-file=env/${ENVIRONMENT}.tfvars"
+      "-var=subscription_id=${subscription_id}"
+      "-var=run_id=${run_id}"
+    )
+    ;;
+  integration-azure-embeddings)
+    scope_dir="infra/integration-azure-embeddings"
+    tests_path="tests/integration_azure_embeddings"
+    tf_args=(
+      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
+      "-var-file=env/${ENVIRONMENT}.tfvars"
       "-var=subscription_id=${subscription_id}"
       "-var=run_id=${run_id}"
     )
@@ -276,9 +296,16 @@ apply_started="1"
 terraform -chdir="$scope_dir" apply -auto-approve -input=false "${tf_args[@]}"
 terraform -chdir="$scope_dir" output -json > "${tmp_dir}/terraform-outputs.json"
 
-if [[ "$SUITE" == "integration-azure" ]]; then
+if [[ "$SUITE" == "integration-azure" || "$SUITE" == "integration-azure-chat" || "$SUITE" == "integration-azure-embeddings" ]]; then
   export RUN_INTEGRATION_AZURE="1"
   export INTEGRATION_AZURE_SCOPE="${INTEGRATION_AZURE_SCOPE:-https://management.azure.com/.default}"
+  if [[ "$SUITE" == "integration-azure-chat" ]]; then
+    export RUN_INTEGRATION_AZURE_CHAT="1"
+    export INTEGRATION_AZURE_CHAT_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
+  elif [[ "$SUITE" == "integration-azure-embeddings" ]]; then
+    export RUN_INTEGRATION_AZURE_EMBEDDINGS="1"
+    export INTEGRATION_AZURE_EMBEDDINGS_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
+  fi
 
   echo "Running pytest with flags: ${pytest_flags[*]}"
   uv run pytest "$tests_path" "${pytest_flags[@]}"

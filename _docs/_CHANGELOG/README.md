@@ -74,3 +74,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 41 | 2026-03-17 | Shell runner syntax validation in quality gates | workflow/testing |
 | 42 | 2026-03-17 | Randomized OpenAI account and subdomain suffixes for live scopes | validation/infra |
 | 43 | 2026-03-18 | Live load-balancing transport flake hardening | validation/e2e |
+| 44 | 2026-03-18 | Integration-azure chat and embeddings provider probes | validation/integration |

@@ -75,6 +75,22 @@ Current repository activation:
 - shared tfvars baseline: `infra/_shared/env/dev1.tfvars` and `infra/_shared/env/prd1.tfvars`
 - local command: `make integration-azure-local`
 
+Current integration-azure profiles:
+
+- `make integration-azure-local`
+  Managed Identity token and auth-header smoke against real Azure auth
+- `make integration-azure-chat-local`
+  direct Azure OpenAI chat provider probe through repository auth and outbound adapters
+- `make integration-azure-embeddings-local`
+  direct Azure OpenAI embeddings provider probe through repository auth and outbound adapters
+
+Dedicated provider-probe activation:
+
+- chat suite: `tests/integration_azure_chat/`
+- chat infra scope: `infra/integration-azure-chat/`
+- embeddings suite: `tests/integration_azure_embeddings/`
+- embeddings infra scope: `infra/integration-azure-embeddings/`
+
 Default rule:
 
 - this level remains opt-in and is not part of the default PR quality workflow
