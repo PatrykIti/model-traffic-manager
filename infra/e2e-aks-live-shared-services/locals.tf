@@ -16,11 +16,17 @@ locals {
     18,
   )
   storage_account_name = "${local.storage_name_base}${random_string.storage_suffix.result}"
+  created_on           = timestamp()
+  expires_on           = timeadd(timestamp(), "${var.ttl_hours}h")
 
   common_tags = merge(var.tags, {
     "codex-repo"        = "model-traffic-manager"
     "codex-scope"       = local.scope_key
     "codex-environment" = var.environment
     "codex-run-id"      = var.run_id
+    "codex-suite"       = local.scope_key
+    "codex-temporary"   = "true"
+    "created_on"        = local.created_on
+    "expires_on"        = local.expires_on
   })
 }

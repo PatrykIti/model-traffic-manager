@@ -10,6 +10,8 @@ The shared Azure/AKS runner applies bounded retries for transient external-opera
 
 The shared runner also emits a standardized artifact bundle per suite under `${RUNNER_TEMP:-/tmp}/mtm-artifacts/<suite>-<run-id>/`, including a `manifest.json`.
 
+Azure-backed temporary scopes now carry stronger ownership tags, and the artifact bundle also includes a `cleanup-report.json`.
+
 ## Testing levels
 
 ### 1. `unit`

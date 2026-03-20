@@ -18,6 +18,8 @@ locals {
 
   openai_account_name   = "${local.openai_name_base}${random_string.openai_suffix.result}"
   openai_subdomain_name = coalesce(var.openai_custom_subdomain_name, local.openai_account_name)
+  created_on            = timestamp()
+  expires_on            = timeadd(timestamp(), "${var.ttl_hours}h")
 
   enabled_openai_embedding_deployments = [
     for deployment in var.openai_embedding_deployments : deployment
@@ -29,5 +31,9 @@ locals {
     "codex-scope"       = local.scope_key
     "codex-environment" = var.environment
     "codex-run-id"      = var.run_id
+    "codex-suite"       = local.scope_key
+    "codex-temporary"   = "true"
+    "created_on"        = local.created_on
+    "expires_on"        = local.expires_on
   })
 }

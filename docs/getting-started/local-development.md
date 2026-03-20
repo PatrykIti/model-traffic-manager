@@ -36,6 +36,8 @@ The shared Azure/AKS runner now uses bounded retries for transient GHCR, Azure c
 
 Validation artifacts are written to `${RUNNER_TEMP:-/tmp}/mtm-artifacts/<suite>-<run-id>/` and include a `manifest.json` plus suite-specific diagnostics.
 
+The same artifact bundle now also contains a `cleanup-report.json` that records namespace, federated credential, image-pull secret, and port-forward cleanup status.
+
 Environment defaults are documented in [`.env.example`](../../.env.example).
 
 Config references:

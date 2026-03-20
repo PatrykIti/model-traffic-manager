@@ -27,7 +27,7 @@ jobs:
           NOW_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
           az group list \
-            --tag codex-repo=model-traffic-manager \
+            --tag codex-repo=model-traffic-manager codex-temporary=true \
             --query "[].{name:name, expires_on:tags.expires_on}" \
             --output tsv |
           while IFS=$'\t' read -r RESOURCE_GROUP EXPIRES_ON; do

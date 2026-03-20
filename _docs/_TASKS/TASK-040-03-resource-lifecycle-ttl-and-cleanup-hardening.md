@@ -7,7 +7,7 @@
 **Category:** Infrastructure Reliability
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040
-**Status:** **To Do**
+**Status:** **Done** (2026-03-20)
 
 ---
 
@@ -45,6 +45,26 @@ Candidate tags:
 - `created_on`
 - `expires_on`
 - `suite`
+
+## Sub-Tasks
+
+### TASK-040-03-01: Unified ownership tags and TTL metadata
+
+**Status:** Done (2026-03-20)
+
+Bring all Azure-backed scope tags to one consistent ownership and TTL contract.
+
+### TASK-040-03-02: Runner cleanup report and resource markers
+
+**Status:** Done (2026-03-20)
+
+Add an explicit cleanup report for the resources the runner creates and tears down.
+
+### TASK-040-03-03: Janitor filter tightening and ops docs alignment
+
+**Status:** Done (2026-03-20)
+
+Tighten janitor selection and document the cleanup and ownership contract.
 
 ---
 
@@ -98,3 +118,6 @@ on_exit:
 - `.github/workflows/e2e-azure-janitor.yml`
 - `docs/operations/`
 - `_docs/_TASKS/TASK-040-03-resource-lifecycle-ttl-and-cleanup-hardening.md`
+- `_docs/_TASKS/TASK-040-03-01-unified-ownership-tags-and-ttl-metadata.md`
+- `_docs/_TASKS/TASK-040-03-02-runner-cleanup-report-and-resource-markers.md`
+- `_docs/_TASKS/TASK-040-03-03-janitor-filter-tightening-and-ops-docs-alignment.md`

@@ -199,6 +199,12 @@ federated_credential_created="0"
 e2e_image_pull_secret_name="${E2E_IMAGE_PULL_SECRET_NAME:-ghcr-pull}"
 cleanup_status="not_started"
 rendered_router_config=""
+namespace_create_status="not_created"
+namespace_delete_status="not_created"
+federated_credential_create_status="not_created"
+federated_credential_delete_status="not_created"
+image_pull_secret_create_status="not_created"
+port_forward_teardown_status="not_created"
 
 write_run_metadata() {
   cat >"${artifacts_dir}/run-metadata.json" <<EOF
@@ -214,6 +220,21 @@ EOF
 }
 
 write_run_metadata
+
+write_cleanup_report() {
+  cat >"${artifacts_dir}/cleanup-report.json" <<EOF
+{
+  "suite": "${SUITE}",
+  "cleanup_status": "${cleanup_status}",
+  "namespace_create_status": "${namespace_create_status}",
+  "namespace_delete_status": "${namespace_delete_status}",
+  "federated_credential_create_status": "${federated_credential_create_status}",
+  "federated_credential_delete_status": "${federated_credential_delete_status}",
+  "image_pull_secret_create_status": "${image_pull_secret_create_status}",
+  "port_forward_teardown_status": "${port_forward_teardown_status}"
+}
+EOF
+}
 
 print_e2e_diagnostics() {
   if [[ "$suite_kind" != "aks" || -z "$aks_cluster_name" ]]; then
@@ -288,21 +309,58 @@ cleanup() {
   destroy_exit_code=0
 
   if (( ${#port_forward_pids[@]} > 0 )); then
+    port_forward_teardown_status="deleted"
     for pf_pid in "${port_forward_pids[@]}"; do
       echo "Cleaning up: stopping port-forward process ${pf_pid}"
-      kill "$pf_pid" >/dev/null 2>&1 || true
+      if kill -0 "$pf_pid" >/dev/null 2>&1; then
+        if ! kill "$pf_pid" >/dev/null 2>&1; then
+          port_forward_teardown_status="cleanup_failed"
+        fi
+      elif [[ "$port_forward_teardown_status" != "cleanup_failed" ]]; then
+        port_forward_teardown_status="already_gone"
+      fi
     done
+  else
+    port_forward_teardown_status="not_created"
   fi
 
   collect_suite_artifacts
 
   if [[ "$suite_kind" == "aks" && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
     echo "Cleaning up: deleting federated credential router-e2e-${run_id}"
-    az identity federated-credential delete \
+    if az identity federated-credential show \
       --resource-group "$resource_group" \
       --identity-name "$UAI_NAME" \
-      --name "router-e2e-${run_id}" \
-      --yes >/dev/null 2>&1 || true
+      --name "router-e2e-${run_id}" >/dev/null 2>&1; then
+      if az identity federated-credential delete \
+        --resource-group "$resource_group" \
+        --identity-name "$UAI_NAME" \
+        --name "router-e2e-${run_id}" \
+        --yes >/dev/null 2>&1; then
+        federated_credential_delete_status="deleted"
+      else
+        federated_credential_delete_status="cleanup_failed"
+      fi
+    else
+      federated_credential_delete_status="already_gone"
+    fi
+  elif [[ "$suite_kind" == "aks" ]]; then
+    federated_credential_delete_status="not_created"
+  else
+    federated_credential_delete_status="not_created"
+  fi
+
+  if [[ "$suite_kind" == "aks" ]]; then
+    echo "Cleaning up: deleting namespace ${e2e_namespace}"
+    if kubectl get namespace "$e2e_namespace" >/dev/null 2>&1; then
+      if kubectl delete namespace "$e2e_namespace" --wait=false >/dev/null 2>&1; then
+        namespace_delete_status="deleted"
+      else
+        namespace_delete_status="cleanup_failed"
+      fi
+    else
+      namespace_delete_status="already_gone"
+    fi
   fi
 
   if [[ "$apply_started" == "1" ]]; then
@@ -320,6 +378,8 @@ cleanup() {
   else
     cleanup_status="suite_failed_but_cleanup_succeeded"
   fi
+
+  write_cleanup_report
 
   python3 scripts/release/write_validation_artifact_manifest.py \
     "$artifacts_dir" \
@@ -449,7 +509,13 @@ retry_command_with_policy \
   --subject "system:serviceaccount:${e2e_namespace}:router-app" \
   --audiences "api://AzureADTokenExchange"
 federated_credential_created="1"
+federated_credential_create_status="created"
 
+if kubectl get namespace "$e2e_namespace" >/dev/null 2>&1; then
+  namespace_create_status="already_exists"
+else
+  namespace_create_status="created"
+fi
 kubectl create namespace "$e2e_namespace" --dry-run=client -o yaml | kubectl apply -f -
 
 if [[ -n "$suite_render_script" ]]; then
@@ -495,6 +561,11 @@ if [[ "$e2e_image" == ghcr.io/* ]]; then
   fi
 
   echo "Configuring image pull secret ${e2e_image_pull_secret_name} for ${e2e_namespace}"
+  if kubectl get secret "$e2e_image_pull_secret_name" -n "$e2e_namespace" >/dev/null 2>&1; then
+    image_pull_secret_create_status="already_exists"
+  else
+    image_pull_secret_create_status="created"
+  fi
   kubectl create secret docker-registry "$e2e_image_pull_secret_name" \
     --docker-server=ghcr.io \
     --docker-username="$ghcr_username" \

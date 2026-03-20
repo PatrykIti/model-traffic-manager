@@ -11,6 +11,8 @@ locals {
     "codex-scope"       = local.scope_key
     "codex-environment" = var.environment
     "codex-run-id"      = var.run_id
+    "codex-suite"       = local.scope_key
+    "codex-temporary"   = "true"
     "created_on"        = local.created_on
     "expires_on"        = local.expires_on
   })
