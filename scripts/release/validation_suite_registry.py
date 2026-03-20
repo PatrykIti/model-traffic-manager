@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shlex
 import sys
 from dataclasses import dataclass
@@ -21,6 +22,8 @@ class ValidationSuite:
     outputs_env: str | None = None
     mock_profile: str = "none"
     port_forward_mode: str = "service"
+    nightly_enabled: bool = False
+    release_enabled: bool = True
 
 
 SUITES: dict[str, ValidationSuite] = {
@@ -32,6 +35,7 @@ SUITES: dict[str, ValidationSuite] = {
         has_scope_env_tfvars=False,
         requires_image=False,
         supports_kubernetes_version=False,
+        release_enabled=False,
     ),
     "integration-azure-chat": ValidationSuite(
         suite_id="integration-azure-chat",
@@ -43,6 +47,7 @@ SUITES: dict[str, ValidationSuite] = {
         supports_kubernetes_version=False,
         activation_env="RUN_INTEGRATION_AZURE_CHAT",
         outputs_env="INTEGRATION_AZURE_CHAT_OUTPUTS_JSON",
+        nightly_enabled=True,
     ),
     "integration-azure-embeddings": ValidationSuite(
         suite_id="integration-azure-embeddings",
@@ -54,6 +59,7 @@ SUITES: dict[str, ValidationSuite] = {
         supports_kubernetes_version=False,
         activation_env="RUN_INTEGRATION_AZURE_EMBEDDINGS",
         outputs_env="INTEGRATION_AZURE_EMBEDDINGS_OUTPUTS_JSON",
+        nightly_enabled=True,
     ),
     "e2e-aks": ValidationSuite(
         suite_id="e2e-aks",
@@ -64,6 +70,7 @@ SUITES: dict[str, ValidationSuite] = {
         requires_image=True,
         supports_kubernetes_version=True,
         manifest_root="infra/e2e-aks",
+        nightly_enabled=True,
     ),
     "e2e-aks-live-model": ValidationSuite(
         suite_id="e2e-aks-live-model",
@@ -79,6 +86,7 @@ SUITES: dict[str, ValidationSuite] = {
         activation_env="RUN_E2E_AKS_LIVE_MODEL",
         outputs_env="E2E_LIVE_MODEL_OUTPUTS_JSON",
         mock_profile="failover",
+        nightly_enabled=True,
     ),
     "e2e-aks-live-embeddings": ValidationSuite(
         suite_id="e2e-aks-live-embeddings",
@@ -93,6 +101,7 @@ SUITES: dict[str, ValidationSuite] = {
         render_requires_outputs=True,
         activation_env="RUN_E2E_AKS_LIVE_EMBEDDINGS",
         outputs_env="E2E_LIVE_EMBEDDINGS_OUTPUTS_JSON",
+        nightly_enabled=True,
     ),
     "e2e-aks-live-load-balancing": ValidationSuite(
         suite_id="e2e-aks-live-load-balancing",
@@ -161,7 +170,9 @@ def _suite_or_die(suite_id: str) -> ValidationSuite:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        raise SystemExit("Usage: validation_suite_registry.py <list|list-scope-dirs|shell> [suite]")
+        raise SystemExit(
+            "Usage: validation_suite_registry.py <list|list-scope-dirs|list-by-flag|matrix|shell> [arg]"
+        )
 
     command = sys.argv[1]
 
@@ -173,6 +184,42 @@ def main() -> None:
     if command == "list-scope-dirs":
         for scope_dir in sorted({suite.scope_dir for suite in SUITES.values()}):
             print(scope_dir)
+        return
+
+    if command == "list-by-flag":
+        if len(sys.argv) != 3:
+            raise SystemExit("Usage: validation_suite_registry.py list-by-flag <nightly|release>")
+        flag_name = sys.argv[2]
+        if flag_name == "nightly":
+            selected = [suite.suite_id for suite in SUITES.values() if suite.nightly_enabled]
+        elif flag_name == "release":
+            selected = [suite.suite_id for suite in SUITES.values() if suite.release_enabled]
+        else:
+            raise SystemExit(f"Unknown flag '{flag_name}'.")
+        for suite_id in sorted(selected):
+            print(suite_id)
+        return
+
+    if command == "matrix":
+        if len(sys.argv) != 3:
+            raise SystemExit("Usage: validation_suite_registry.py matrix <nightly|release>")
+        flag_name = sys.argv[2]
+        if flag_name == "nightly":
+            selected = [suite for suite in SUITES.values() if suite.nightly_enabled]
+        elif flag_name == "release":
+            selected = [suite for suite in SUITES.values() if suite.release_enabled]
+        else:
+            raise SystemExit(f"Unknown flag '{flag_name}'.")
+        payload = {
+            "include": [
+                {
+                    "suite": suite.suite_id,
+                    "requires_image": suite.requires_image,
+                }
+                for suite in sorted(selected, key=lambda item: item.suite_id)
+            ]
+        }
+        sys.stdout.write(json.dumps(payload))
         return
 
     if command == "shell":
@@ -196,6 +243,8 @@ def main() -> None:
             _shell_line("suite_outputs_env", suite.outputs_env),
             _shell_line("suite_mock_profile", suite.mock_profile),
             _shell_line("suite_port_forward_mode", suite.port_forward_mode),
+            _bool_line("suite_nightly_enabled", suite.nightly_enabled),
+            _bool_line("suite_release_enabled", suite.release_enabled),
         ]
         sys.stdout.write("\n".join(lines))
         return

@@ -75,6 +75,7 @@ For higher-level local Azure-backed runs:
 - the default profile is `ENVIRONMENT=dev1`
 - `integration-azure-chat-local` and `integration-azure-embeddings-local` are intentionally separate so chat and embeddings provider probes can be exercised independently
 - the GitHub workflows now reuse the same suite names through `workflow_dispatch` inputs instead of maintaining separate runner logic per profile
+- PR automation stays limited to the `quality` workflow; nightly and release validation are separate workflow paths derived from the suite registry
 
 Live-model notes:
 

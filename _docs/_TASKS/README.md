@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 2 work items
+- **To Do:** 1 work item
 - **In Progress:** 0 work items
-- **Done:** 233 work items
+- **Done:** 237 work items
 
 ---
 
@@ -58,7 +58,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
 | TASK-040-01 | Aggregate Validation Orchestration and Unified Result Summary | High | Medium | One aggregate runner and one normalized final report across the full validation matrix |
-| TASK-040-06 | CI Trigger Matrix, Cost Gating, and Scheduling Policy | High | Medium | Formal trigger and scheduling policy for expensive live validation profiles |
 | TASK-040-08 | Operator Runbooks and Failure Triage Guides | High | Medium | Runbooks for the real failure signatures seen in live validation |
 ---
 
@@ -264,6 +263,10 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-040-03-01 | Unified Ownership Tags and TTL Metadata | High | Medium | Azure-backed scopes now share a stronger ownership and TTL tag contract |
 | TASK-040-03-02 | Runner Cleanup Report and Resource Markers | High | Medium | The shared runner now emits cleanup state for namespaces, federated credentials, secrets, and port-forwards |
 | TASK-040-03-03 | Janitor Filter Tightening and Ops Docs Alignment | High | Small | The janitor now targets repository-owned temporary scopes and docs explain the cleanup contract |
+| TASK-040-06 | CI Trigger Matrix, Cost Gating, and Scheduling Policy | High | Medium | Trigger and scheduling policy is now encoded through suite-registry flags plus nightly/release workflows |
+| TASK-040-06-01 | Suite Trigger Policy in Registry and Workflows | High | Medium | Nightly and release eligibility is now encoded in the canonical suite registry |
+| TASK-040-06-02 | Nightly and Release Validation Workflows | High | Medium | Curated nightly and release-validation workflows now execute suite matrices from the registry |
+| TASK-040-06-03 | CI Trigger Matrix Docs and Policy Reconciliation | High | Small | Docs now explain the PR, manual, nightly, and release validation policy |
 | TASK-040-05 | Quota-Aware Infrastructure Profile Selection and VM-Family Strategy | High | Medium | Per-suite AKS quota-aware placement is now encoded in env tfvars and documented for operators |
 | TASK-040-05-01 | Environment-Specific AKS Validation Profile Matrix | High | Medium | The current suite-to-region and suite-to-VM-family matrix is encoded in per-scope env tfvars |
 | TASK-040-05-02 | Operator Guidance for Quota-Aware Suite Placement | High | Small | Official docs now describe the active quota-aware placement matrix and override rules |

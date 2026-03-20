@@ -7,7 +7,7 @@
 **Category:** CI Policy
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040, TASK-040-07
-**Status:** **To Do**
+**Status:** **Done** (2026-03-20)
 
 ---
 
@@ -65,6 +65,26 @@ if release_candidate:
     run aggregate matrix
 ```
 
+## Sub-Tasks
+
+### TASK-040-06-01: Suite trigger policy in registry and workflows
+
+**Status:** Done (2026-03-20)
+
+Define nightly and release eligibility in the canonical suite registry and expose that policy to workflows.
+
+### TASK-040-06-02: Nightly and release validation workflows
+
+**Status:** Done (2026-03-20)
+
+Add a curated nightly workflow and a release-validation workflow driven by the suite registry.
+
+### TASK-040-06-03: CI trigger matrix docs and policy reconciliation
+
+**Status:** Done (2026-03-20)
+
+Document the final trigger matrix across PR, manual, nightly, and release validation paths.
+
 ---
 
 ## Risks
@@ -86,3 +106,6 @@ if release_candidate:
 - `.github/workflows/`
 - `docs/operations/testing-levels-and-environments.md`
 - `_docs/_TASKS/TASK-040-06-ci-trigger-matrix-cost-gating-and-scheduling-policy.md`
+- `_docs/_TASKS/TASK-040-06-01-suite-trigger-policy-in-registry-and-workflows.md`
+- `_docs/_TASKS/TASK-040-06-02-nightly-and-release-validation-workflows.md`
+- `_docs/_TASKS/TASK-040-06-03-ci-trigger-matrix-docs-and-policy-reconciliation.md`
