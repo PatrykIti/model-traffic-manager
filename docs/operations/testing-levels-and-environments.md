@@ -12,6 +12,8 @@ The shared runner also emits a standardized artifact bundle per suite under `${R
 
 Azure-backed temporary scopes now carry stronger ownership tags, and the artifact bundle also includes a `cleanup-report.json`.
 
+Operator runbooks for common live validation failures live under [runbooks/README.md](./runbooks/README.md).
+
 ## Testing levels
 
 ### 1. `unit`

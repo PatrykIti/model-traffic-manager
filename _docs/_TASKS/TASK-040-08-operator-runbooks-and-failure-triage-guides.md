@@ -7,7 +7,7 @@
 **Category:** Operational Documentation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040, TASK-040-02, TASK-040-03, TASK-040-04, TASK-040-05
-**Status:** **To Do**
+**Status:** **Done** (2026-03-20)
 
 ---
 
@@ -57,6 +57,26 @@ Fix:
   rerun suite after role assignment propagation or apply role-assignment fix
 ```
 
+## Sub-Tasks
+
+### TASK-040-08-01: Auth and RBAC runbooks for live validation
+
+**Status:** Done (2026-03-20)
+
+Document Azure OpenAI permission and RBAC propagation failures.
+
+### TASK-040-08-02: AKS runtime and GHCR runbooks
+
+**Status:** Done (2026-03-20)
+
+Document rollout, pod-readiness, port-forward, and GHCR/image-pull failures.
+
+### TASK-040-08-03: Quota, storage, and cleanup runbooks
+
+**Status:** Done (2026-03-20)
+
+Document quota, storage fixture, cleanup failures, and the runbook index.
+
 ---
 
 ## Risks
@@ -77,3 +97,6 @@ Fix:
 
 - `docs/operations/`
 - `_docs/_TASKS/TASK-040-08-operator-runbooks-and-failure-triage-guides.md`
+- `_docs/_TASKS/TASK-040-08-01-auth-and-rbac-runbooks-for-live-validation.md`
+- `_docs/_TASKS/TASK-040-08-02-aks-runtime-and-ghcr-runbooks.md`
+- `_docs/_TASKS/TASK-040-08-03-quota-storage-and-cleanup-runbooks.md`
