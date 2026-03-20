@@ -48,6 +48,10 @@ allocate_local_port() {
   python3 -c 'import socket; sock = socket.socket(); sock.bind(("127.0.0.1", 0)); print(sock.getsockname()[1]); sock.close()'
 }
 
+slugify_label() {
+  printf '%s' "$1" | tr -cs '[:alnum:]._-' '-'
+}
+
 resolve_executor_principal_id() {
   local access_token
   access_token="$(az account get-access-token --resource-type arm --query accessToken -o tsv)"
@@ -64,6 +68,48 @@ print(claims.get("oid", ""))
 ' <<<"$access_token"
 }
 
+retry_command_with_policy() {
+  local policy="$1"
+  local label="$2"
+  local attempts="$3"
+  local base_delay_seconds="$4"
+  shift 4
+
+  local attempt exit_code delay_seconds log_file label_slug
+  label_slug="$(slugify_label "$label")"
+
+  for ((attempt = 1; attempt <= attempts; attempt++)); do
+    log_file="${tmp_dir}/retry-${label_slug}-${attempt}.log"
+    echo "Running ${label} (attempt ${attempt}/${attempts})"
+    if "$@" > >(tee "$log_file") 2> >(tee -a "$log_file" >&2); then
+      return 0
+    fi
+    exit_code=$?
+    if (( attempt == attempts )); then
+      return "$exit_code"
+    fi
+    if ! python3 scripts/release/retry_policy.py should-retry "$policy" "$log_file"; then
+      return "$exit_code"
+    fi
+    delay_seconds=$((base_delay_seconds * attempt))
+    echo "Retrying ${label} in ${delay_seconds}s because retry policy '${policy}' matched." >&2
+    sleep "$delay_seconds"
+  done
+
+  return 1
+}
+
+retry_shell_with_policy() {
+  local policy="$1"
+  local label="$2"
+  local attempts="$3"
+  local base_delay_seconds="$4"
+  local command_string="$5"
+
+  retry_command_with_policy "$policy" "$label" "$attempts" "$base_delay_seconds" \
+    bash -lc "$command_string"
+}
+
 wait_for_http_endpoint() {
   local url="$1"
   local timeout_seconds="${2:-60}"
@@ -78,7 +124,7 @@ wait_for_http_endpoint() {
         echo "----- port-forward log -----" >&2
         cat "$log_path" >&2 || true
       fi
-      exit 1
+      return 1
     fi
 
     if python3 -c 'import sys, urllib.request; urllib.request.urlopen(sys.argv[1], timeout=2)' "$url" >/dev/null 2>&1; then
@@ -94,7 +140,7 @@ wait_for_http_endpoint() {
     echo "----- port-forward log -----" >&2
     cat "$log_path" >&2 || true
   fi
-  exit 1
+  return 1
 }
 
 for cmd in az terraform uv python3; do
@@ -255,18 +301,35 @@ if [[ "$suite_requires_image" == "1" && -z "$e2e_image" ]]; then
   e2e_image="ghcr.io/${ghcr_owner,,}/model-traffic-manager:e2e-local-${run_id}"
   e2e_image_platform="${E2E_IMAGE_PLATFORM:-linux/amd64}"
 
-  echo "$ghcr_token" | docker login ghcr.io -u "$ghcr_username" --password-stdin
-  docker buildx build \
-    --platform "$e2e_image_platform" \
-    -f docker/Dockerfile \
-    -t "$e2e_image" \
-    --push \
-    .
+  export GHCR_LOGIN_USERNAME="$ghcr_username"
+  export GHCR_LOGIN_TOKEN="$ghcr_token"
+  retry_shell_with_policy \
+    "ghcr_auth" \
+    "docker login ghcr.io" \
+    3 \
+    2 \
+    'printf "%s" "$GHCR_LOGIN_TOKEN" | docker login ghcr.io -u "$GHCR_LOGIN_USERNAME" --password-stdin'
+  retry_command_with_policy \
+    "ghcr_build_push" \
+    "docker buildx build --push" \
+    3 \
+    5 \
+    docker buildx build \
+      --platform "$e2e_image_platform" \
+      -f docker/Dockerfile \
+      -t "$e2e_image" \
+      --push \
+      .
 fi
 
 terraform -chdir="$scope_dir" init -backend=false
 apply_started="1"
-terraform -chdir="$scope_dir" apply -auto-approve -input=false "${tf_args[@]}"
+retry_command_with_policy \
+  "terraform_apply" \
+  "terraform apply for ${SUITE}" \
+  2 \
+  10 \
+  terraform -chdir="$scope_dir" apply -auto-approve -input=false "${tf_args[@]}"
 terraform -chdir="$scope_dir" output -json > "${tmp_dir}/terraform-outputs.json"
 
 if [[ "$suite_kind" == "integration" ]]; then
@@ -291,13 +354,23 @@ UAI_NAME="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_nam
 uai_client_id="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_client_id)"
 
 kubeconfig_path="${tmp_dir}/kubeconfig"
-az aks get-credentials \
+retry_command_with_policy \
+  "azure_control_plane" \
+  "az aks get-credentials for ${SUITE}" \
+  3 \
+  3 \
+  az aks get-credentials \
   --resource-group "$resource_group" \
   --name "$aks_cluster_name" \
   --file "$kubeconfig_path" \
   --overwrite-existing
 export KUBECONFIG="$kubeconfig_path"
-az identity federated-credential create \
+retry_command_with_policy \
+  "azure_control_plane" \
+  "az identity federated-credential create" \
+  3 \
+  3 \
+  az identity federated-credential create \
   --resource-group "$resource_group" \
   --identity-name "$UAI_NAME" \
   --name "router-e2e-${run_id}" \
@@ -372,31 +445,43 @@ kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-service.yaml"
 if [[ "$suite_mock_profile" == "failover" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-failover-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-failover-mock-service.yaml"
-  kubectl rollout status deployment/router-failover-mock -n "$e2e_namespace" --timeout=5m
-  kubectl wait --for=condition=Ready pod -l app=router-failover-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-failover-mock rollout" 3 2 \
+    kubectl rollout status deployment/router-failover-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-failover-mock pod wait" 3 2 \
+    kubectl wait --for=condition=Ready pod -l app=router-failover-mock -n "$e2e_namespace" --timeout=5m
 elif [[ "$suite_mock_profile" == "load_balancing" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-lb-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-lb-mock-service.yaml"
-  kubectl rollout status deployment/router-lb-mock -n "$e2e_namespace" --timeout=5m
-  kubectl wait --for=condition=Ready pod -l app=router-lb-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-lb-mock rollout" 3 2 \
+    kubectl rollout status deployment/router-lb-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-lb-mock pod wait" 3 2 \
+    kubectl wait --for=condition=Ready pod -l app=router-lb-mock -n "$e2e_namespace" --timeout=5m
 elif [[ "$suite_mock_profile" == "shared_services" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-shared-service-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-shared-service-mock-service.yaml"
-  kubectl rollout status deployment/router-shared-service-mock -n "$e2e_namespace" --timeout=5m
-  kubectl wait --for=condition=Ready pod -l app=router-shared-service-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-shared-service-mock rollout" 3 2 \
+    kubectl rollout status deployment/router-shared-service-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-shared-service-mock pod wait" 3 2 \
+    kubectl wait --for=condition=Ready pod -l app=router-shared-service-mock -n "$e2e_namespace" --timeout=5m
 elif [[ "$suite_mock_profile" == "redis" ]]; then
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-deployment.yaml"
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-service.yaml"
-  kubectl rollout status deployment/router-redis -n "$e2e_namespace" --timeout=5m
-  kubectl wait --for=condition=Ready pod -l app=router-redis -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-redis rollout" 3 2 \
+    kubectl rollout status deployment/router-redis -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-redis pod wait" 3 2 \
+    kubectl wait --for=condition=Ready pod -l app=router-redis -n "$e2e_namespace" --timeout=5m
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-redis-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-mock-service.yaml"
-  kubectl rollout status deployment/router-redis-mock -n "$e2e_namespace" --timeout=5m
-  kubectl wait --for=condition=Ready pod -l app=router-redis-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-redis-mock rollout" 3 2 \
+    kubectl rollout status deployment/router-redis-mock -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-redis-mock pod wait" 3 2 \
+    kubectl wait --for=condition=Ready pod -l app=router-redis-mock -n "$e2e_namespace" --timeout=5m
 fi
 
-kubectl rollout status deployment/router-app -n "$e2e_namespace" --timeout=5m
-kubectl wait --for=condition=Ready pod -l app=router-app -n "$e2e_namespace" --timeout=5m
+retry_command_with_policy "kubernetes_watch" "router-app rollout" 3 2 \
+  kubectl rollout status deployment/router-app -n "$e2e_namespace" --timeout=5m
+retry_command_with_policy "kubernetes_watch" "router-app pod wait" 3 2 \
+  kubectl wait --for=condition=Ready pod -l app=router-app -n "$e2e_namespace" --timeout=5m
 
 router_pod_name="$(select_running_pod "$e2e_namespace" "app=router-app")"
 if [[ -z "$router_pod_name" ]]; then
@@ -421,17 +506,43 @@ if [[ "$suite_port_forward_mode" == "replicas" ]]; then
 
   replica_a_port="$(allocate_local_port)"
   replica_a_log="${tmp_dir}/port-forward-replica-a.log"
-  kubectl port-forward -n "$e2e_namespace" "pod/${router_pod_names[0]}" "${replica_a_port}:8000" >"${replica_a_log}" 2>&1 &
-  replica_a_pid=$!
-  port_forward_pids+=("$replica_a_pid")
-  wait_for_http_endpoint "http://127.0.0.1:${replica_a_port}/health/ready" 60 "$replica_a_pid" "$replica_a_log"
+  for attempt in 1 2 3; do
+    kubectl port-forward -n "$e2e_namespace" "pod/${router_pod_names[0]}" "${replica_a_port}:8000" >"${replica_a_log}" 2>&1 &
+    replica_a_pid=$!
+    if wait_for_http_endpoint "http://127.0.0.1:${replica_a_port}/health/ready" 60 "$replica_a_pid" "$replica_a_log"; then
+      port_forward_pids+=("$replica_a_pid")
+      break
+    fi
+    kill "$replica_a_pid" >/dev/null 2>&1 || true
+    if ! python3 scripts/release/retry_policy.py should-retry "port_forward_start" "$replica_a_log"; then
+      exit 1
+    fi
+    sleep $((2 * attempt))
+  done
+  if ! kill -0 "$replica_a_pid" >/dev/null 2>&1; then
+    echo "Failed to establish port-forward for replica A." >&2
+    exit 1
+  fi
 
   replica_b_port="$(allocate_local_port)"
   replica_b_log="${tmp_dir}/port-forward-replica-b.log"
-  kubectl port-forward -n "$e2e_namespace" "pod/${router_pod_names[1]}" "${replica_b_port}:8000" >"${replica_b_log}" 2>&1 &
-  replica_b_pid=$!
-  port_forward_pids+=("$replica_b_pid")
-  wait_for_http_endpoint "http://127.0.0.1:${replica_b_port}/health/ready" 60 "$replica_b_pid" "$replica_b_log"
+  for attempt in 1 2 3; do
+    kubectl port-forward -n "$e2e_namespace" "pod/${router_pod_names[1]}" "${replica_b_port}:8000" >"${replica_b_log}" 2>&1 &
+    replica_b_pid=$!
+    if wait_for_http_endpoint "http://127.0.0.1:${replica_b_port}/health/ready" 60 "$replica_b_pid" "$replica_b_log"; then
+      port_forward_pids+=("$replica_b_pid")
+      break
+    fi
+    kill "$replica_b_pid" >/dev/null 2>&1 || true
+    if ! python3 scripts/release/retry_policy.py should-retry "port_forward_start" "$replica_b_log"; then
+      exit 1
+    fi
+    sleep $((2 * attempt))
+  done
+  if ! kill -0 "$replica_b_pid" >/dev/null 2>&1; then
+    echo "Failed to establish port-forward for replica B." >&2
+    exit 1
+  fi
 
   export E2E_BASE_URL_REPLICA_A="http://127.0.0.1:${replica_a_port}"
   export E2E_BASE_URL_REPLICA_B="http://127.0.0.1:${replica_b_port}"
@@ -439,10 +550,23 @@ if [[ "$suite_port_forward_mode" == "replicas" ]]; then
 else
   local_port="${E2E_LOCAL_PORT:-$(allocate_local_port)}"
   port_forward_log="${tmp_dir}/port-forward.log"
-  kubectl port-forward -n "$e2e_namespace" svc/router-app "${local_port}:8000" >"${port_forward_log}" 2>&1 &
-  port_forward_pid=$!
-  port_forward_pids+=("$port_forward_pid")
-  wait_for_http_endpoint "http://127.0.0.1:${local_port}/health/ready" 60 "$port_forward_pid" "$port_forward_log"
+  for attempt in 1 2 3; do
+    kubectl port-forward -n "$e2e_namespace" svc/router-app "${local_port}:8000" >"${port_forward_log}" 2>&1 &
+    port_forward_pid=$!
+    if wait_for_http_endpoint "http://127.0.0.1:${local_port}/health/ready" 60 "$port_forward_pid" "$port_forward_log"; then
+      port_forward_pids+=("$port_forward_pid")
+      break
+    fi
+    kill "$port_forward_pid" >/dev/null 2>&1 || true
+    if ! python3 scripts/release/retry_policy.py should-retry "port_forward_start" "$port_forward_log"; then
+      exit 1
+    fi
+    sleep $((2 * attempt))
+  done
+  if ! kill -0 "$port_forward_pid" >/dev/null 2>&1; then
+    echo "Failed to establish router service port-forward." >&2
+    exit 1
+  fi
   export E2E_BASE_URL="http://127.0.0.1:${local_port}"
 fi
 

@@ -32,6 +32,8 @@ The live Azure OpenAI validation scopes generate randomized account and subdomai
 
 The canonical suite registry for the Azure-backed and AKS-backed validation matrix lives in [`scripts/release/validation_suite_registry.py`](../../scripts/release/validation_suite_registry.py).
 
+The shared Azure/AKS runner now uses bounded retries for transient GHCR, Azure control-plane, Kubernetes watch, Terraform apply, and port-forward startup failures.
+
 Environment defaults are documented in [`.env.example`](../../.env.example).
 
 Config references:

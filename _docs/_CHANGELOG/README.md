@@ -82,3 +82,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 49 | 2026-03-18 | Post-MVP operational hardening and CI reliability program | docs/planning |
 | 50 | 2026-03-19 | Quota-aware AKS suite placement matrix | infra/planning |
 | 51 | 2026-03-20 | Suite registry normalization for runners and workflows | workflow/architecture |
+| 52 | 2026-03-20 | Bounded retry policy for live validation runners | runner/reliability |

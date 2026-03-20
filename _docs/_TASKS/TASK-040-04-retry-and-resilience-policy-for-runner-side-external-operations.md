@@ -7,7 +7,7 @@
 **Category:** Runner Reliability
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040, TASK-040-07
-**Status:** **To Do**
+**Status:** **Done** (2026-03-20)
 
 ---
 
@@ -75,6 +75,26 @@ for attempt in 1..N:
     fail
 ```
 
+## Sub-Tasks
+
+### TASK-040-04-01: Retry policy catalog and matchers
+
+**Status:** Done (2026-03-20)
+
+Define retry policy classes and the transient-error matcher used by the runner.
+
+### TASK-040-04-02: Runner integration for bounded retries
+
+**Status:** Done (2026-03-20)
+
+Integrate bounded retries into the shared runner for GHCR, Azure control-plane, Kubernetes watch, Terraform apply, and port-forward startup.
+
+### TASK-040-04-03: Docs and validation alignment for runner retries
+
+**Status:** Done (2026-03-20)
+
+Document the new retry behavior and validate the updated runner helpers.
+
 ---
 
 ## Risks
@@ -96,3 +116,6 @@ for attempt in 1..N:
 - `scripts/release/run_azure_test_suite.sh`
 - `docs/operations/`
 - `_docs/_TASKS/TASK-040-04-retry-and-resilience-policy-for-runner-side-external-operations.md`
+- `_docs/_TASKS/TASK-040-04-01-retry-policy-catalog-and-matchers.md`
+- `_docs/_TASKS/TASK-040-04-02-runner-integration-for-bounded-retries.md`
+- `_docs/_TASKS/TASK-040-04-03-docs-and-validation-alignment-for-runner-retries.md`

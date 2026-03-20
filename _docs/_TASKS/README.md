@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 5 work items
+- **To Do:** 4 work items
 - **In Progress:** 0 work items
-- **Done:** 221 work items
+- **Done:** 225 work items
 
 ---
 
@@ -60,7 +60,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-040-01 | Aggregate Validation Orchestration and Unified Result Summary | High | Medium | One aggregate runner and one normalized final report across the full validation matrix |
 | TASK-040-02 | Structured Artifact Bundle and Diagnostics Manifest | High | Medium | Standard artifact manifest and richer diagnostics for Azure-backed and AKS-backed suites |
 | TASK-040-03 | Resource Lifecycle, TTL, and Cleanup Hardening | High | Medium | Stronger ownership tracking, cleanup reporting, and janitor safety |
-| TASK-040-04 | Retry and Resilience Policy for Runner-Side External Operations | High | Medium | Explicit retry/backoff policy for Azure, Kubernetes, GHCR, and Terraform integration points |
 | TASK-040-06 | CI Trigger Matrix, Cost Gating, and Scheduling Policy | High | Medium | Formal trigger and scheduling policy for expensive live validation profiles |
 | TASK-040-08 | Operator Runbooks and Failure Triage Guides | High | Medium | Runbooks for the real failure signatures seen in live validation |
 ---
@@ -255,6 +254,10 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-07-03 | Task Board and Changelog Reconciliation for Expanded Matrix | High | Small | Validation-expansion package closed cleanly in the task board and changelog |
 | TASK-039 | Live Validation Stability Fixes for Auth, Context, and Quota Constraints | High | Medium | Auth roles, AKS context isolation, quota-aware VM sizing, and fixture compatibility were hardened after first live runs |
 | TASK-040 | Post-MVP Operational Hardening and CI Reliability Program | High | Large | Post-MVP ops and CI hardening backlog defined with concrete subtask plans and pseudocode |
+| TASK-040-04 | Retry and Resilience Policy for Runner-Side External Operations | High | Medium | Bounded retry and transient-failure matching are now implemented for runner-side external operations |
+| TASK-040-04-01 | Retry Policy Catalog and Matchers | High | Medium | A central transient-failure matcher now classifies retry policies for runner-side operations |
+| TASK-040-04-02 | Runner Integration for Bounded Retries | High | Medium | The shared Azure/AKS runner now applies bounded retries to selected transient operations |
+| TASK-040-04-03 | Docs and Validation Alignment for Runner Retries | High | Small | Docs and validation now reflect the new bounded runner retry behavior |
 | TASK-040-05 | Quota-Aware Infrastructure Profile Selection and VM-Family Strategy | High | Medium | Per-suite AKS quota-aware placement is now encoded in env tfvars and documented for operators |
 | TASK-040-05-01 | Environment-Specific AKS Validation Profile Matrix | High | Medium | The current suite-to-region and suite-to-VM-family matrix is encoded in per-scope env tfvars |
 | TASK-040-05-02 | Operator Guidance for Quota-Aware Suite Placement | High | Small | Official docs now describe the active quota-aware placement matrix and override rules |
