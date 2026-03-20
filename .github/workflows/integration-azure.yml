@@ -52,3 +52,10 @@ jobs:
 
       - name: Run integration-azure validation profile
         run: bash scripts/release/run_azure_test_suite.sh "${{ inputs.suite }}" "${{ inputs.environment }}"
+
+      - name: Upload integration-azure artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-azure-artifacts-${{ inputs.suite }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/mtm-artifacts

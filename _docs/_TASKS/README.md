@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 4 work items
+- **To Do:** 3 work items
 - **In Progress:** 0 work items
-- **Done:** 225 work items
+- **Done:** 229 work items
 
 ---
 
@@ -58,7 +58,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
 | TASK-040-01 | Aggregate Validation Orchestration and Unified Result Summary | High | Medium | One aggregate runner and one normalized final report across the full validation matrix |
-| TASK-040-02 | Structured Artifact Bundle and Diagnostics Manifest | High | Medium | Standard artifact manifest and richer diagnostics for Azure-backed and AKS-backed suites |
 | TASK-040-03 | Resource Lifecycle, TTL, and Cleanup Hardening | High | Medium | Stronger ownership tracking, cleanup reporting, and janitor safety |
 | TASK-040-06 | CI Trigger Matrix, Cost Gating, and Scheduling Policy | High | Medium | Formal trigger and scheduling policy for expensive live validation profiles |
 | TASK-040-08 | Operator Runbooks and Failure Triage Guides | High | Medium | Runbooks for the real failure signatures seen in live validation |
@@ -258,6 +257,10 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-040-04-01 | Retry Policy Catalog and Matchers | High | Medium | A central transient-failure matcher now classifies retry policies for runner-side operations |
 | TASK-040-04-02 | Runner Integration for Bounded Retries | High | Medium | The shared Azure/AKS runner now applies bounded retries to selected transient operations |
 | TASK-040-04-03 | Docs and Validation Alignment for Runner Retries | High | Small | Docs and validation now reflect the new bounded runner retry behavior |
+| TASK-040-02 | Structured Artifact Bundle and Diagnostics Manifest | High | Medium | Standardized artifact bundles and manifests are now emitted for Azure-backed and AKS-backed suites |
+| TASK-040-02-01 | Stable Artifact Directory and Manifest Generator | High | Medium | The runner now writes artifacts into a stable per-suite directory and emits a manifest |
+| TASK-040-02-02 | Runner Artifact Capture for Integration and AKS Suites | High | Medium | The runner now captures Terraform outputs, rendered configs, kubectl diagnostics, logs, and port-forward traces |
+| TASK-040-02-03 | Workflow Upload and Docs Alignment for Artifact Bundles | High | Small | Workflows upload the standardized artifact root and docs describe the bundle contract |
 | TASK-040-05 | Quota-Aware Infrastructure Profile Selection and VM-Family Strategy | High | Medium | Per-suite AKS quota-aware placement is now encoded in env tfvars and documented for operators |
 | TASK-040-05-01 | Environment-Specific AKS Validation Profile Matrix | High | Medium | The current suite-to-region and suite-to-VM-family matrix is encoded in per-scope env tfvars |
 | TASK-040-05-02 | Operator Guidance for Quota-Aware Suite Placement | High | Small | Official docs now describe the active quota-aware placement matrix and override rules |

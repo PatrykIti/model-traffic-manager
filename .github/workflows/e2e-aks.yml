@@ -69,3 +69,10 @@ jobs:
 
       - name: Run AKS validation profile
         run: bash scripts/release/run_azure_test_suite.sh "${{ inputs.suite }}" "${{ inputs.environment }}"
+
+      - name: Upload AKS validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-aks-artifacts-${{ inputs.suite }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/mtm-artifacts

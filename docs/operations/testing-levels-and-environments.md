@@ -8,6 +8,8 @@ The canonical suite registry for the Azure-backed and AKS-backed validation matr
 
 The shared Azure/AKS runner applies bounded retries for transient external-operation failures instead of blindly retrying every non-zero exit.
 
+The shared runner also emits a standardized artifact bundle per suite under `${RUNNER_TEMP:-/tmp}/mtm-artifacts/<suite>-<run-id>/`, including a `manifest.json`.
+
 ## Testing levels
 
 ### 1. `unit`

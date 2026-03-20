@@ -7,7 +7,7 @@
 **Category:** Diagnostics and Observability
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040, TASK-040-07
-**Status:** **To Do**
+**Status:** **Done** (2026-03-20)
 
 ---
 
@@ -56,6 +56,26 @@ Suggested manifest content:
 }
 ```
 
+## Sub-Tasks
+
+### TASK-040-02-01: Stable artifact directory and manifest generator
+
+**Status:** Done (2026-03-20)
+
+Introduce a stable artifact directory contract and a manifest generator.
+
+### TASK-040-02-02: Runner artifact capture for integration and AKS suites
+
+**Status:** Done (2026-03-20)
+
+Capture a standardized artifact bundle for integration and AKS suites.
+
+### TASK-040-02-03: Workflow upload and docs alignment for artifact bundles
+
+**Status:** Done (2026-03-20)
+
+Align GitHub workflow uploads and operator docs to the standardized artifact bundle.
+
 ---
 
 ## Pseudocode
@@ -102,6 +122,10 @@ write_json(manifest.json, manifest)
 ## Documentation Updates Required
 
 - `scripts/release/run_azure_test_suite.sh`
+- `scripts/release/write_validation_artifact_manifest.py`
 - `.github/workflows/`
 - `docs/operations/`
 - `_docs/_TASKS/TASK-040-02-structured-artifact-bundle-and-diagnostics-manifest.md`
+- `_docs/_TASKS/TASK-040-02-01-stable-artifact-directory-and-manifest-generator.md`
+- `_docs/_TASKS/TASK-040-02-02-runner-artifact-capture-for-integration-and-aks-suites.md`
+- `_docs/_TASKS/TASK-040-02-03-workflow-upload-and-docs-alignment-for-artifact-bundles.md`

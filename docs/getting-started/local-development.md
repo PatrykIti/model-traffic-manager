@@ -34,6 +34,8 @@ The canonical suite registry for the Azure-backed and AKS-backed validation matr
 
 The shared Azure/AKS runner now uses bounded retries for transient GHCR, Azure control-plane, Kubernetes watch, Terraform apply, and port-forward startup failures.
 
+Validation artifacts are written to `${RUNNER_TEMP:-/tmp}/mtm-artifacts/<suite>-<run-id>/` and include a `manifest.json` plus suite-specific diagnostics.
+
 Environment defaults are documented in [`.env.example`](../../.env.example).
 
 Config references:

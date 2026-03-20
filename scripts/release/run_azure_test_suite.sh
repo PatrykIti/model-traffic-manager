@@ -79,7 +79,7 @@ retry_command_with_policy() {
   label_slug="$(slugify_label "$label")"
 
   for ((attempt = 1; attempt <= attempts; attempt++)); do
-    log_file="${tmp_dir}/retry-${label_slug}-${attempt}.log"
+    log_file="${artifacts_dir}/retry-${label_slug}-${attempt}.log"
     echo "Running ${label} (attempt ${attempt}/${attempts})"
     if "$@" > >(tee "$log_file") 2> >(tee -a "$log_file" >&2); then
       return 0
@@ -152,6 +152,9 @@ tenant_id="$(az account show --query tenantId -o tsv)"
 account_name="$(az account show --query name -o tsv)"
 run_id="local-$(date -u +%Y%m%d%H%M%S)-$RANDOM"
 tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mtm-${SUITE}-XXXXXX")"
+artifacts_root="${VALIDATION_ARTIFACTS_ROOT:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/mtm-artifacts}"
+artifacts_dir="${artifacts_root}/${SUITE}-${run_id}"
+mkdir -p "$artifacts_dir"
 pytest_flags=(-vv -rA)
 executor_principal_id=""
 
@@ -194,6 +197,23 @@ e2e_namespace="${E2E_NAMESPACE:-e2e-router}"
 e2e_image="${E2E_IMAGE:-}"
 federated_credential_created="0"
 e2e_image_pull_secret_name="${E2E_IMAGE_PULL_SECRET_NAME:-ghcr-pull}"
+cleanup_status="not_started"
+rendered_router_config=""
+
+write_run_metadata() {
+  cat >"${artifacts_dir}/run-metadata.json" <<EOF
+{
+  "suite": "${SUITE}",
+  "environment": "${ENVIRONMENT}",
+  "run_id": "${run_id}",
+  "scope_dir": "${scope_dir}",
+  "tests_path": "${tests_path}",
+  "suite_kind": "${suite_kind}"
+}
+EOF
+}
+
+write_run_metadata
 
 print_e2e_diagnostics() {
   if [[ "$suite_kind" != "aks" || -z "$aks_cluster_name" ]]; then
@@ -224,6 +244,35 @@ print_e2e_diagnostics() {
   done
 }
 
+collect_suite_artifacts() {
+  if [[ -f "${tmp_dir}/terraform-outputs.json" ]]; then
+    cp "${tmp_dir}/terraform-outputs.json" "${artifacts_dir}/terraform-outputs.json" || true
+  fi
+
+  if [[ -n "$rendered_router_config" && -f "$rendered_router_config" ]]; then
+    cp "$rendered_router_config" "${artifacts_dir}/router-config.yaml" || true
+  fi
+
+  for pf_log in "${tmp_dir}"/port-forward*.log; do
+    [[ -e "$pf_log" ]] || continue
+    cp "$pf_log" "${artifacts_dir}/$(basename "$pf_log")" || true
+  done
+
+  if [[ "$suite_kind" != "aks" || -z "$aks_cluster_name" ]]; then
+    return
+  fi
+
+  kubectl get all -n "$e2e_namespace" > "${artifacts_dir}/kubectl-get-all.txt" 2>&1 || true
+  kubectl describe deployment/router-app -n "$e2e_namespace" > "${artifacts_dir}/router-app-deployment.txt" 2>&1 || true
+  kubectl get events -n "$e2e_namespace" --sort-by=.metadata.creationTimestamp > "${artifacts_dir}/kubectl-events.txt" 2>&1 || true
+
+  while IFS= read -r pod_name; do
+    [[ -z "$pod_name" ]] && continue
+    kubectl describe -n "$e2e_namespace" "pod/${pod_name}" > "${artifacts_dir}/pod-${pod_name}-describe.txt" 2>&1 || true
+    kubectl logs -n "$e2e_namespace" "pod/${pod_name}" --all-containers=true --tail=200 > "${artifacts_dir}/pod-${pod_name}-logs.txt" 2>&1 || true
+  done < <(kubectl get pods -n "$e2e_namespace" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
+}
+
 on_error() {
   local line_no="$1"
   local failed_command="$2"
@@ -245,6 +294,8 @@ cleanup() {
     done
   fi
 
+  collect_suite_artifacts
+
   if [[ "$suite_kind" == "aks" && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
     echo "Cleaning up: deleting federated credential router-e2e-${run_id}"
     az identity federated-credential delete \
@@ -261,6 +312,25 @@ cleanup() {
       echo "Cleanup warning: terraform destroy failed for ${SUITE}" >&2
     fi
   fi
+
+  if [[ "$exit_code" -eq 0 && "$destroy_exit_code" -eq 0 ]]; then
+    cleanup_status="clean"
+  elif [[ "$destroy_exit_code" -ne 0 ]]; then
+    cleanup_status="cleanup_failed"
+  else
+    cleanup_status="suite_failed_but_cleanup_succeeded"
+  fi
+
+  python3 scripts/release/write_validation_artifact_manifest.py \
+    "$artifacts_dir" \
+    "$SUITE" \
+    "$ENVIRONMENT" \
+    "$run_id" \
+    "$scope_dir" \
+    "$tests_path" \
+    "$suite_kind" \
+    "$exit_code" \
+    "$cleanup_status"
 
   rm -rf "$tmp_dir"
 
@@ -331,6 +401,7 @@ retry_command_with_policy \
   10 \
   terraform -chdir="$scope_dir" apply -auto-approve -input=false "${tf_args[@]}"
 terraform -chdir="$scope_dir" output -json > "${tmp_dir}/terraform-outputs.json"
+cp "${tmp_dir}/terraform-outputs.json" "${artifacts_dir}/terraform-outputs.json"
 
 if [[ "$suite_kind" == "integration" ]]; then
   export RUN_INTEGRATION_AZURE="1"
@@ -388,6 +459,7 @@ if [[ -n "$suite_render_script" ]]; then
   else
     python3 "$suite_render_script" > "$rendered_router_config"
   fi
+  cp "$rendered_router_config" "${artifacts_dir}/router-config.yaml"
   kubectl create configmap router-config \
     --from-file=router.yaml="$rendered_router_config" \
     --namespace "$e2e_namespace" \
