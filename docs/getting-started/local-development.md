@@ -24,6 +24,8 @@ What each command does:
 - `make e2e-aks-live-load-balancing-local` runs a dedicated AKS suite for model-aware load-balancing behavior
 - `make e2e-aks-live-shared-services-local` runs a dedicated AKS suite for shared-service execution modes
 - `make e2e-aks-redis-local` runs a dedicated AKS suite for Redis-backed multi-replica runtime-state behavior
+- `make validate-all-local` runs the full validation matrix sequentially
+- `make validate-release-local` runs the release-enabled validation matrix sequentially
 - `make run` starts the bootstrap FastAPI app
 
 All `make` targets that execute `pytest` now use verbose reporting, so the console shows each test name as it runs and prints a full final status summary.
@@ -37,6 +39,8 @@ The shared Azure/AKS runner now uses bounded retries for transient GHCR, Azure c
 Validation artifacts are written to `${RUNNER_TEMP:-/tmp}/mtm-artifacts/<suite>-<run-id>/` and include a `manifest.json` plus suite-specific diagnostics.
 
 The same artifact bundle now also contains a `cleanup-report.json` that records namespace, federated credential, image-pull secret, and port-forward cleanup status.
+
+Aggregate matrix runs also write a top-level `matrix-summary.json` into the selected artifact root.
 
 Environment defaults are documented in [`.env.example`](../../.env.example).
 

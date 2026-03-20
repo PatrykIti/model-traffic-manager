@@ -86,3 +86,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 53 | 2026-03-20 | Structured validation artifact bundles | diagnostics/artifacts |
 | 54 | 2026-03-20 | Resource lifecycle and cleanup hardening | infra/reliability |
 | 55 | 2026-03-20 | CI trigger matrix and validation scheduling policy | ci/policy |
+| 56 | 2026-03-20 | Aggregate validation matrix runner | workflow/orchestration |

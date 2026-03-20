@@ -4,8 +4,10 @@ UV_CACHE_DIR ?= /tmp/uv-cache
 UV := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
 ENVIRONMENT ?= dev1
 PYTEST_FLAGS ?= -vv -rA
+SELECTION ?= all
+RUN_MODE ?= continue-on-error
 
-.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check list-validation-suites validation-suite-local integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-redis-local run docker-build smoke clean
+.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check list-validation-suites validation-suite-local validation-matrix-local validate-all-local validate-release-local integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-redis-local run docker-build smoke clean
 
 bootstrap:
 	$(UV) sync --frozen --python "$(PYTHON_VERSION)"
@@ -47,6 +49,15 @@ release-check: check validate-workflows validate-terraform
 
 validation-suite-local:
 	bash scripts/release/run_azure_test_suite.sh "$(SUITE)" "$(ENVIRONMENT)"
+
+validation-matrix-local:
+	python3 scripts/release/run_validation_matrix.py --environment "$(ENVIRONMENT)" --selection "$(SELECTION)" --mode "$(RUN_MODE)"
+
+validate-all-local:
+	$(MAKE) validation-matrix-local ENVIRONMENT="$(ENVIRONMENT)" SELECTION=all RUN_MODE=continue-on-error
+
+validate-release-local:
+	$(MAKE) validation-matrix-local ENVIRONMENT="$(ENVIRONMENT)" SELECTION=release RUN_MODE=continue-on-error
 
 integration-azure-local:
 	$(MAKE) validation-suite-local SUITE=integration-azure ENVIRONMENT="$(ENVIRONMENT)"

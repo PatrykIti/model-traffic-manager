@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 1 work item
+- **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 237 work items
+- **Done:** 240 work items
 
 ---
 
@@ -57,7 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-040-01 | Aggregate Validation Orchestration and Unified Result Summary | High | Medium | One aggregate runner and one normalized final report across the full validation matrix |
 | TASK-040-08 | Operator Runbooks and Failure Triage Guides | High | Medium | Runbooks for the real failure signatures seen in live validation |
 ---
 
@@ -263,6 +262,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-040-03-01 | Unified Ownership Tags and TTL Metadata | High | Medium | Azure-backed scopes now share a stronger ownership and TTL tag contract |
 | TASK-040-03-02 | Runner Cleanup Report and Resource Markers | High | Medium | The shared runner now emits cleanup state for namespaces, federated credentials, secrets, and port-forwards |
 | TASK-040-03-03 | Janitor Filter Tightening and Ops Docs Alignment | High | Small | The janitor now targets repository-owned temporary scopes and docs explain the cleanup contract |
+| TASK-040-01 | Aggregate Validation Orchestration and Unified Result Summary | High | Medium | Aggregate matrix execution and unified summary output are now implemented for local validation runs |
+| TASK-040-01-01 | Matrix Runner and Summary Generation | High | Medium | The matrix runner now emits both JSON and human-readable summaries for sequential suite execution |
+| TASK-040-01-02 | Make Targets and Operator Guidance for Matrix Runs | High | Small | Aggregate matrix runs are exposed through make and documented for operators |
 | TASK-040-06 | CI Trigger Matrix, Cost Gating, and Scheduling Policy | High | Medium | Trigger and scheduling policy is now encoded through suite-registry flags plus nightly/release workflows |
 | TASK-040-06-01 | Suite Trigger Policy in Registry and Workflows | High | Medium | Nightly and release eligibility is now encoded in the canonical suite registry |
 | TASK-040-06-02 | Nightly and Release Validation Workflows | High | Medium | Curated nightly and release-validation workflows now execute suite matrices from the registry |

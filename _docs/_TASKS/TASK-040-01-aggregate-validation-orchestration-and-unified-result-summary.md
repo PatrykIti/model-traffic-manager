@@ -7,7 +7,7 @@
 **Category:** Workflow Implementation
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040, TASK-040-07
-**Status:** **To Do**
+**Status:** **Done** (2026-03-20)
 
 ---
 
@@ -72,6 +72,20 @@ Suggested output shape:
 }
 ```
 
+## Sub-Tasks
+
+### TASK-040-01-01: Matrix runner and summary generation
+
+**Status:** Done (2026-03-20)
+
+Add the aggregate matrix runner and the unified summary JSON/text output for sequential validation runs.
+
+### TASK-040-01-02: Make targets and operator guidance for matrix runs
+
+**Status:** Done (2026-03-20)
+
+Expose the matrix runner through `make` and document how to use the aggregate local commands.
+
 ---
 
 ## Pseudocode
@@ -131,3 +145,5 @@ exit nonzero_if_any_failed(results)
 - `scripts/release/`
 - `docs/getting-started/local-development.md`
 - `_docs/_TASKS/TASK-040-01-aggregate-validation-orchestration-and-unified-result-summary.md`
+- `_docs/_TASKS/TASK-040-01-01-matrix-runner-and-summary-generation.md`
+- `_docs/_TASKS/TASK-040-01-02-make-targets-and-operator-guidance-for-matrix-runs.md`
