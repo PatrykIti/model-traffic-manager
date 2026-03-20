@@ -291,6 +291,23 @@ Default rule:
 
 - use this suite deliberately because it provisions a dedicated multi-replica AKS profile specifically to validate Redis-backed shared state behavior
 
+## Current quota-aware AKS suite placement
+
+The current `dev1` and `prd1` suite placement is intentionally split across regions and VM families:
+
+- `e2e-aks`: `westeurope` + `Standard_D2s_v4`
+- `e2e-aks-live-model`: `westeurope` + `Standard_D2ds_v4`
+- `e2e-aks-live-embeddings`: `northeurope` + `Standard_D2s_v4`
+- `e2e-aks-live-load-balancing`: `northeurope` + `Standard_D2ds_v4`
+- `e2e-aks-live-shared-services`: `westeurope` + `Standard_D2s_v4`
+- `e2e-aks-redis`: `northeurope` + `Standard_D2s_v4`
+
+Intent:
+
+- spread AKS validation pressure across both `westeurope` and `northeurope`
+- use only VM families with explicitly known quota in the target subscription
+- keep suite sizing explicit in `infra/<scope>/env/<environment>.tfvars`
+
 ## Phase mapping
 
 ### Phase 0

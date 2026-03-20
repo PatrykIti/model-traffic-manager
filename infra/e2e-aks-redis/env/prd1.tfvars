@@ -1,1 +1,2 @@
-# Default profile intentionally keeps the AKS Redis validation small and cheap.
+location         = "northeurope"
+aks_node_vm_size = "Standard_D2s_v4"

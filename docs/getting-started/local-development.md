@@ -82,3 +82,17 @@ Live-model notes:
 - the current live load-balancing profile validates same-tier chat and embeddings distribution plus active-standby behavior
 - this suite is intentionally separate because model quota and regional model availability can change independently of the smoke AKS path
 - the current live validation matrix now includes separate profiles for smoke, chat, embeddings, load balancing, shared services, and Redis-backed shared state
+
+Current quota-aware AKS placement for `dev1` and `prd1`:
+
+- `e2e-aks`: `westeurope` + `Standard_D2s_v4`
+- `e2e-aks-live-model`: `westeurope` + `Standard_D2ds_v4`
+- `e2e-aks-live-embeddings`: `northeurope` + `Standard_D2s_v4`
+- `e2e-aks-live-load-balancing`: `northeurope` + `Standard_D2ds_v4`
+- `e2e-aks-live-shared-services`: `westeurope` + `Standard_D2s_v4`
+- `e2e-aks-redis`: `northeurope` + `Standard_D2s_v4`
+
+Operator note:
+
+- this matrix is encoded explicitly in each suite's `infra/<scope>/env/<environment>.tfvars`
+- adjust the suite-specific tfvars, not the shared defaults, when quotas or regional allocations change

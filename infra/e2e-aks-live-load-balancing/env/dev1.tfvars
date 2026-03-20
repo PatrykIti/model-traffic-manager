@@ -1,1 +1,2 @@
-# No extra per-environment inputs are required for the initial load-balancing profile.
+location         = "northeurope"
+aks_node_vm_size = "Standard_D2ds_v4"

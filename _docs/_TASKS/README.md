@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 8 work items
+- **To Do:** 6 work items
 - **In Progress:** 0 work items
-- **Done:** 215 work items
+- **Done:** 218 work items
 
 ---
 
@@ -61,7 +61,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-040-02 | Structured Artifact Bundle and Diagnostics Manifest | High | Medium | Standard artifact manifest and richer diagnostics for Azure-backed and AKS-backed suites |
 | TASK-040-03 | Resource Lifecycle, TTL, and Cleanup Hardening | High | Medium | Stronger ownership tracking, cleanup reporting, and janitor safety |
 | TASK-040-04 | Retry and Resilience Policy for Runner-Side External Operations | High | Medium | Explicit retry/backoff policy for Azure, Kubernetes, GHCR, and Terraform integration points |
-| TASK-040-05 | Quota-Aware Infrastructure Profile Selection and VM-Family Strategy | High | Medium | Environment-aware suite sizing and documented quota fallback strategy |
 | TASK-040-06 | CI Trigger Matrix, Cost Gating, and Scheduling Policy | High | Medium | Formal trigger and scheduling policy for expensive live validation profiles |
 | TASK-040-07 | Workflow and Runner Contract Registry Normalization | High | Medium | One suite registry shared by make, runner, workflows, and docs |
 | TASK-040-08 | Operator Runbooks and Failure Triage Guides | High | Medium | Runbooks for the real failure signatures seen in live validation |
@@ -257,6 +256,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-029-07-03 | Task Board and Changelog Reconciliation for Expanded Matrix | High | Small | Validation-expansion package closed cleanly in the task board and changelog |
 | TASK-039 | Live Validation Stability Fixes for Auth, Context, and Quota Constraints | High | Medium | Auth roles, AKS context isolation, quota-aware VM sizing, and fixture compatibility were hardened after first live runs |
 | TASK-040 | Post-MVP Operational Hardening and CI Reliability Program | High | Large | Post-MVP ops and CI hardening backlog defined with concrete subtask plans and pseudocode |
+| TASK-040-05 | Quota-Aware Infrastructure Profile Selection and VM-Family Strategy | High | Medium | Per-suite AKS quota-aware placement is now encoded in env tfvars and documented for operators |
+| TASK-040-05-01 | Environment-Specific AKS Validation Profile Matrix | High | Medium | The current suite-to-region and suite-to-VM-family matrix is encoded in per-scope env tfvars |
+| TASK-040-05-02 | Operator Guidance for Quota-Aware Suite Placement | High | Small | Official docs now describe the active quota-aware placement matrix and override rules |
 | TASK-030 | Model-Aware Load Balancing Within Tier | High | Large | Model-aware same-tier balancing implemented with examples, docs, and live validation |
 | TASK-030-01 | Upstream Compatibility Metadata and Balancing Policy Contract | High | Medium | Compatibility metadata and balancing contract added to upstreams |
 | TASK-030-02 | Selector Behavior for Compatible Pools Within a Tier | High | Medium | Same-tier selector behavior updated for compatibility-aware pools |

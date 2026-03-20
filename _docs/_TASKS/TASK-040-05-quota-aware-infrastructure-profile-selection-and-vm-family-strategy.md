@@ -7,7 +7,7 @@
 **Category:** Infrastructure Planning
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040, TASK-040-07
-**Status:** **To Do**
+**Status:** **Done** (2026-03-19)
 
 ---
 
@@ -38,6 +38,20 @@ Define a repeatable strategy for:
 Recommended rule:
 - prefer per-environment explicit sizing over hidden automatic discovery
 - document supported fallbacks instead of guessing at runtime
+
+## Sub-Tasks
+
+### TASK-040-05-01: Environment-specific AKS validation profile matrix
+
+**Status:** Done (2026-03-19)
+
+Encode the active suite placement directly in per-scope env tfvars.
+
+### TASK-040-05-02: Operator guidance for quota-aware suite placement
+
+**Status:** Done (2026-03-19)
+
+Document the current matrix and the override strategy for future quota changes.
 
 ---
 
@@ -81,3 +95,5 @@ vm_size = explicit_tfvars_override or profile_matrix[env][suite]
 - `docs/operations/`
 - `docs/getting-started/local-development.md`
 - `_docs/_TASKS/TASK-040-05-quota-aware-infrastructure-profile-selection-and-vm-family-strategy.md`
+- `_docs/_TASKS/TASK-040-05-01-environment-specific-aks-validation-profile-matrix.md`
+- `_docs/_TASKS/TASK-040-05-02-operator-guidance-for-quota-aware-suite-placement.md`

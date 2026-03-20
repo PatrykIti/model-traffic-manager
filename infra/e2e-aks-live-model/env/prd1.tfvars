@@ -1,3 +1,6 @@
+location         = "westeurope"
+aks_node_vm_size = "Standard_D2ds_v4"
+
 openai_location = "swedencentral"
 
 openai_chat_deployments = [
