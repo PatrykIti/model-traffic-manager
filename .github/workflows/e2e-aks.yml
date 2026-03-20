@@ -8,7 +8,7 @@ on:
         required: true
         default: dev1
       suite:
-        description: Validation profile to execute
+        description: Validation profile id from the suite registry
         required: true
         default: e2e-aks
       kubernetes_version:
@@ -56,6 +56,9 @@ jobs:
 
       - name: Sync environment
         run: uv sync --frozen --python "$(cat .python-version)"
+
+      - name: Show available suite ids
+        run: python3 scripts/release/validation_suite_registry.py list
 
       - name: Log in to GHCR
         uses: docker/login-action@v3

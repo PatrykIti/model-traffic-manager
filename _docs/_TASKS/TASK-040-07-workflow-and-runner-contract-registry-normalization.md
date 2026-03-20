@@ -7,7 +7,7 @@
 **Category:** Workflow Architecture
 **Estimated Effort:** Medium
 **Dependencies:** TASK-040
-**Status:** **To Do**
+**Status:** **Done** (2026-03-20)
 
 ---
 
@@ -48,6 +48,20 @@ Possible forms:
 
 Recommended direction:
 - prefer a structured machine-readable file plus a thin loader in scripts
+
+## Sub-Tasks
+
+### TASK-040-07-01: Suite registry and runner consumption
+
+**Status:** Done (2026-03-20)
+
+Introduce the canonical suite registry and wire it into the shared Azure/AKS runner.
+
+### TASK-040-07-02: Make, workflow, and docs alignment to suite registry
+
+**Status:** Done (2026-03-20)
+
+Align `Makefile`, GitHub workflows, and docs to the canonical suite registry.
 
 ---
 
@@ -92,3 +106,5 @@ runner.configure_from_suite(suite)
 - `.github/workflows/`
 - `docs/`
 - `_docs/_TASKS/TASK-040-07-workflow-and-runner-contract-registry-normalization.md`
+- `_docs/_TASKS/TASK-040-07-01-suite-registry-and-runner-consumption.md`
+- `_docs/_TASKS/TASK-040-07-02-make-workflow-and-docs-alignment-to-suite-registry.md`

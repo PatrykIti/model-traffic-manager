@@ -81,3 +81,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 48 | 2026-03-18 | Live validation stability fixes for auth, context, and quota constraints | validation/stability |
 | 49 | 2026-03-18 | Post-MVP operational hardening and CI reliability program | docs/planning |
 | 50 | 2026-03-19 | Quota-aware AKS suite placement matrix | infra/planning |
+| 51 | 2026-03-20 | Suite registry normalization for runners and workflows | workflow/architecture |

@@ -30,6 +30,8 @@ All `make` targets that execute `pytest` now use verbose reporting, so the conso
 
 The live Azure OpenAI validation scopes generate randomized account and subdomain suffixes by default so repeated local runs do not collide with recently deleted Cognitive Services custom subdomains.
 
+The canonical suite registry for the Azure-backed and AKS-backed validation matrix lives in [`scripts/release/validation_suite_registry.py`](../../scripts/release/validation_suite_registry.py).
+
 Environment defaults are documented in [`.env.example`](../../.env.example).
 
 Config references:

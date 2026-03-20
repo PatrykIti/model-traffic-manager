@@ -5,7 +5,7 @@ UV := UV_CACHE_DIR=$(UV_CACHE_DIR) uv
 ENVIRONMENT ?= dev1
 PYTEST_FLAGS ?= -vv -rA
 
-.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-redis-local run docker-build smoke clean
+.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check list-validation-suites validation-suite-local integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-redis-local run docker-build smoke clean
 
 bootstrap:
 	$(UV) sync --frozen --python "$(PYTHON_VERSION)"
@@ -34,54 +34,46 @@ check: lint typecheck validate-shell test
 validate-workflows:
 	$(UV) run python scripts/release/validate_github_workflows.py
 
+list-validation-suites:
+	python3 scripts/release/validation_suite_registry.py list
+
 validate-terraform:
-	terraform -chdir=infra/integration-azure init -backend=false
-	terraform -chdir=infra/integration-azure validate
-	terraform -chdir=infra/integration-azure-chat init -backend=false
-	terraform -chdir=infra/integration-azure-chat validate
-	terraform -chdir=infra/integration-azure-embeddings init -backend=false
-	terraform -chdir=infra/integration-azure-embeddings validate
-	terraform -chdir=infra/e2e-aks init -backend=false
-	terraform -chdir=infra/e2e-aks validate
-	terraform -chdir=infra/e2e-aks-live-model init -backend=false
-	terraform -chdir=infra/e2e-aks-live-model validate
-	terraform -chdir=infra/e2e-aks-live-embeddings init -backend=false
-	terraform -chdir=infra/e2e-aks-live-embeddings validate
-	terraform -chdir=infra/e2e-aks-live-load-balancing init -backend=false
-	terraform -chdir=infra/e2e-aks-live-load-balancing validate
-	terraform -chdir=infra/e2e-aks-live-shared-services init -backend=false
-	terraform -chdir=infra/e2e-aks-live-shared-services validate
-	terraform -chdir=infra/e2e-aks-redis init -backend=false
-	terraform -chdir=infra/e2e-aks-redis validate
+	@while read -r scope_dir; do \
+		terraform -chdir="$$scope_dir" init -backend=false; \
+		terraform -chdir="$$scope_dir" validate; \
+	done < <(python3 scripts/release/validation_suite_registry.py list-scope-dirs)
 
 release-check: check validate-workflows validate-terraform
 
+validation-suite-local:
+	bash scripts/release/run_azure_test_suite.sh "$(SUITE)" "$(ENVIRONMENT)"
+
 integration-azure-local:
-	bash scripts/release/run_azure_test_suite.sh integration-azure "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=integration-azure ENVIRONMENT="$(ENVIRONMENT)"
 
 integration-azure-chat-local:
-	bash scripts/release/run_azure_test_suite.sh integration-azure-chat "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=integration-azure-chat ENVIRONMENT="$(ENVIRONMENT)"
 
 integration-azure-embeddings-local:
-	bash scripts/release/run_azure_test_suite.sh integration-azure-embeddings "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=integration-azure-embeddings ENVIRONMENT="$(ENVIRONMENT)"
 
 e2e-aks-local:
-	bash scripts/release/run_azure_test_suite.sh e2e-aks "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=e2e-aks ENVIRONMENT="$(ENVIRONMENT)"
 
 e2e-aks-live-model-local:
-	bash scripts/release/run_azure_test_suite.sh e2e-aks-live-model "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=e2e-aks-live-model ENVIRONMENT="$(ENVIRONMENT)"
 
 e2e-aks-live-embeddings-local:
-	bash scripts/release/run_azure_test_suite.sh e2e-aks-live-embeddings "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=e2e-aks-live-embeddings ENVIRONMENT="$(ENVIRONMENT)"
 
 e2e-aks-live-load-balancing-local:
-	bash scripts/release/run_azure_test_suite.sh e2e-aks-live-load-balancing "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=e2e-aks-live-load-balancing ENVIRONMENT="$(ENVIRONMENT)"
 
 e2e-aks-live-shared-services-local:
-	bash scripts/release/run_azure_test_suite.sh e2e-aks-live-shared-services "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=e2e-aks-live-shared-services ENVIRONMENT="$(ENVIRONMENT)"
 
 e2e-aks-redis-local:
-	bash scripts/release/run_azure_test_suite.sh e2e-aks-redis "$(ENVIRONMENT)"
+	$(MAKE) validation-suite-local SUITE=e2e-aks-redis ENVIRONMENT="$(ENVIRONMENT)"
 
 run:
 	$(UV) run uvicorn app.entrypoints.api.main:app --host 0.0.0.0 --port 8000

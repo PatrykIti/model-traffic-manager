@@ -4,6 +4,8 @@
 
 This repository uses a layered testing model. The layers are cumulative: introducing a higher-level test environment never removes the need for lower-level tests that cover the same behavior.
 
+The canonical suite registry for the Azure-backed and AKS-backed validation matrix lives in [`scripts/release/validation_suite_registry.py`](../../scripts/release/validation_suite_registry.py).
+
 ## Testing levels
 
 ### 1. `unit`

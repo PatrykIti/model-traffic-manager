@@ -109,137 +109,29 @@ tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mtm-${SUITE}-XXXXXX")"
 pytest_flags=(-vv -rA)
 executor_principal_id=""
 
-case "$SUITE" in
-  integration-azure)
-    scope_dir="infra/integration-azure"
-    tests_path="tests/integration_azure"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    ;;
-  integration-azure-chat)
-    scope_dir="infra/integration-azure-chat"
-    tests_path="tests/integration_azure_chat"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    ;;
-  integration-azure-embeddings)
-    scope_dir="infra/integration-azure-embeddings"
-    tests_path="tests/integration_azure_embeddings"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    ;;
-  e2e-aks)
-    for cmd in docker gh kubectl; do
-      require_cmd "$cmd"
-    done
-    scope_dir="infra/e2e-aks"
-    tests_path="tests/e2e_aks"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
-      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
-    fi
-    ;;
-  e2e-aks-live-model)
-    for cmd in docker gh kubectl; do
-      require_cmd "$cmd"
-    done
-    scope_dir="infra/e2e-aks-live-model"
-    tests_path="tests/e2e_aks_live_model"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
-      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
-    fi
-    ;;
-  e2e-aks-live-embeddings)
-    for cmd in docker gh kubectl; do
-      require_cmd "$cmd"
-    done
-    scope_dir="infra/e2e-aks-live-embeddings"
-    tests_path="tests/e2e_aks_live_embeddings"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
-      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
-    fi
-    ;;
-  e2e-aks-live-load-balancing)
-    for cmd in docker gh kubectl; do
-      require_cmd "$cmd"
-    done
-    scope_dir="infra/e2e-aks-live-load-balancing"
-    tests_path="tests/e2e_aks_live_load_balancing"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
-      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
-    fi
-    ;;
-  e2e-aks-live-shared-services)
-    for cmd in docker gh kubectl; do
-      require_cmd "$cmd"
-    done
-    scope_dir="infra/e2e-aks-live-shared-services"
-    tests_path="tests/e2e_aks_live_shared_services"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
-      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
-    fi
-    ;;
-  e2e-aks-redis)
-    for cmd in docker gh kubectl; do
-      require_cmd "$cmd"
-    done
-    scope_dir="infra/e2e-aks-redis"
-    tests_path="tests/e2e_aks_redis"
-    tf_args=(
-      "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
-      "-var-file=env/${ENVIRONMENT}.tfvars"
-      "-var=subscription_id=${subscription_id}"
-      "-var=run_id=${run_id}"
-    )
-    if [[ -n "${KUBERNETES_VERSION:-}" ]]; then
-      tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
-    fi
-    ;;
-  *)
-    echo "Unsupported suite: $SUITE" >&2
-    exit 1
-    ;;
-esac
+eval "$(python3 scripts/release/validation_suite_registry.py shell "$SUITE")"
+scope_dir="$suite_scope_dir"
+tests_path="$suite_tests_path"
+
+tf_args=(
+  "-var-file=../_shared/env/${ENVIRONMENT}.tfvars"
+  "-var=subscription_id=${subscription_id}"
+  "-var=run_id=${run_id}"
+)
+
+if [[ "$suite_has_scope_env_tfvars" == "1" ]]; then
+  tf_args+=("-var-file=env/${ENVIRONMENT}.tfvars")
+fi
+
+if [[ "$suite_supports_kubernetes_version" == "1" && -n "${KUBERNETES_VERSION:-}" ]]; then
+  tf_args+=("-var=kubernetes_version=${KUBERNETES_VERSION}")
+fi
+
+if [[ "$suite_kind" == "aks" ]]; then
+  for cmd in docker gh kubectl; do
+    require_cmd "$cmd"
+  done
+fi
 
 if [[ "$SUITE" == "integration-azure-chat" || "$SUITE" == "integration-azure-embeddings" ]]; then
   executor_principal_id="$(resolve_executor_principal_id)"
@@ -258,7 +150,7 @@ federated_credential_created="0"
 e2e_image_pull_secret_name="${E2E_IMAGE_PULL_SECRET_NAME:-ghcr-pull}"
 
 print_e2e_diagnostics() {
-  if [[ "$SUITE" != e2e-aks && "$SUITE" != e2e-aks-live-model && "$SUITE" != e2e-aks-live-embeddings && "$SUITE" != e2e-aks-live-load-balancing && "$SUITE" != e2e-aks-live-shared-services && "$SUITE" != e2e-aks-redis || -z "$aks_cluster_name" ]]; then
+  if [[ "$suite_kind" != "aks" || -z "$aks_cluster_name" ]]; then
     return
   fi
 
@@ -307,7 +199,7 @@ cleanup() {
     done
   fi
 
-  if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" || "$SUITE" == "e2e-aks-live-embeddings" || "$SUITE" == "e2e-aks-live-load-balancing" || "$SUITE" == "e2e-aks-live-shared-services" || "$SUITE" == "e2e-aks-redis" ) && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
+  if [[ "$suite_kind" == "aks" && "$federated_credential_created" == "1" && -n "$resource_group" && -n "${UAI_NAME:-}" ]]; then
     echo "Cleaning up: deleting federated credential router-e2e-${run_id}"
     az identity federated-credential delete \
       --resource-group "$resource_group" \
@@ -343,7 +235,7 @@ echo "Suite: ${SUITE}"
 echo "Environment: ${ENVIRONMENT}"
 echo "Run ID: ${run_id}"
 
-if [[ ( "$SUITE" == "e2e-aks" || "$SUITE" == "e2e-aks-live-model" || "$SUITE" == "e2e-aks-live-embeddings" || "$SUITE" == "e2e-aks-live-load-balancing" || "$SUITE" == "e2e-aks-live-shared-services" || "$SUITE" == "e2e-aks-redis" ) && -z "$e2e_image" ]]; then
+if [[ "$suite_requires_image" == "1" && -z "$e2e_image" ]]; then
   require_cmd docker
   require_cmd gh
 
@@ -377,15 +269,14 @@ apply_started="1"
 terraform -chdir="$scope_dir" apply -auto-approve -input=false "${tf_args[@]}"
 terraform -chdir="$scope_dir" output -json > "${tmp_dir}/terraform-outputs.json"
 
-if [[ "$SUITE" == "integration-azure" || "$SUITE" == "integration-azure-chat" || "$SUITE" == "integration-azure-embeddings" ]]; then
+if [[ "$suite_kind" == "integration" ]]; then
   export RUN_INTEGRATION_AZURE="1"
   export INTEGRATION_AZURE_SCOPE="${INTEGRATION_AZURE_SCOPE:-https://management.azure.com/.default}"
-  if [[ "$SUITE" == "integration-azure-chat" ]]; then
-    export RUN_INTEGRATION_AZURE_CHAT="1"
-    export INTEGRATION_AZURE_CHAT_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
-  elif [[ "$SUITE" == "integration-azure-embeddings" ]]; then
-    export RUN_INTEGRATION_AZURE_EMBEDDINGS="1"
-    export INTEGRATION_AZURE_EMBEDDINGS_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
+  if [[ -n "$suite_activation_env" ]]; then
+    export "${suite_activation_env}=1"
+  fi
+  if [[ -n "$suite_outputs_env" ]]; then
+    export "${suite_outputs_env}=${tmp_dir}/terraform-outputs.json"
   fi
 
   echo "Running pytest with flags: ${pytest_flags[*]}"
@@ -417,34 +308,15 @@ federated_credential_created="1"
 
 kubectl create namespace "$e2e_namespace" --dry-run=client -o yaml | kubectl apply -f -
 
-if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
-  python3 scripts/release/render_live_model_router_config.py "${tmp_dir}/terraform-outputs.json" > "${tmp_dir}/router-live-model.yaml"
+if [[ -n "$suite_render_script" ]]; then
+  rendered_router_config="${tmp_dir}/router-${SUITE}.yaml"
+  if [[ "$suite_render_requires_outputs" == "1" ]]; then
+    python3 "$suite_render_script" "${tmp_dir}/terraform-outputs.json" > "$rendered_router_config"
+  else
+    python3 "$suite_render_script" > "$rendered_router_config"
+  fi
   kubectl create configmap router-config \
-    --from-file=router.yaml="${tmp_dir}/router-live-model.yaml" \
-    --namespace "$e2e_namespace" \
-    --dry-run=client -o yaml | kubectl apply -f -
-elif [[ "$SUITE" == "e2e-aks-live-embeddings" ]]; then
-  python3 scripts/release/render_live_embeddings_router_config.py "${tmp_dir}/terraform-outputs.json" > "${tmp_dir}/router-live-embeddings.yaml"
-  kubectl create configmap router-config \
-    --from-file=router.yaml="${tmp_dir}/router-live-embeddings.yaml" \
-    --namespace "$e2e_namespace" \
-    --dry-run=client -o yaml | kubectl apply -f -
-elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
-  python3 scripts/release/render_live_load_balancing_router_config.py > "${tmp_dir}/router-live-load-balancing.yaml"
-  kubectl create configmap router-config \
-    --from-file=router.yaml="${tmp_dir}/router-live-load-balancing.yaml" \
-    --namespace "$e2e_namespace" \
-    --dry-run=client -o yaml | kubectl apply -f -
-elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
-  python3 scripts/release/render_live_shared_services_router_config.py "${tmp_dir}/terraform-outputs.json" > "${tmp_dir}/router-live-shared-services.yaml"
-  kubectl create configmap router-config \
-    --from-file=router.yaml="${tmp_dir}/router-live-shared-services.yaml" \
-    --namespace "$e2e_namespace" \
-    --dry-run=client -o yaml | kubectl apply -f -
-elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
-  python3 scripts/release/render_live_redis_router_config.py "${tmp_dir}/terraform-outputs.json" > "${tmp_dir}/router-live-redis.yaml"
-  kubectl create configmap router-config \
-    --from-file=router.yaml="${tmp_dir}/router-live-redis.yaml" \
+    --from-file=router.yaml="$rendered_router_config" \
     --namespace "$e2e_namespace" \
     --dry-run=client -o yaml | kubectl apply -f -
 else
@@ -486,18 +358,7 @@ if [[ "$e2e_image" == ghcr.io/* ]]; then
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
-manifest_root="infra/e2e-aks"
-if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
-  manifest_root="infra/e2e-aks-live-model"
-elif [[ "$SUITE" == "e2e-aks-live-embeddings" ]]; then
-  manifest_root="infra/e2e-aks-live-embeddings"
-elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
-  manifest_root="infra/e2e-aks-live-load-balancing"
-elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
-  manifest_root="infra/e2e-aks-live-shared-services"
-elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
-  manifest_root="infra/e2e-aks-redis"
-fi
+manifest_root="$suite_manifest_root"
 
 python3 scripts/release/render_template.py "${manifest_root}/k8s/router-serviceaccount.yaml.tmpl" | kubectl apply -f -
 if [[ "$e2e_image" == ghcr.io/* ]]; then
@@ -508,22 +369,22 @@ if [[ "$e2e_image" == ghcr.io/* ]]; then
 fi
 python3 scripts/release/render_template.py "${manifest_root}/k8s/router-deployment.yaml.tmpl" | kubectl apply -f -
 kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-service.yaml"
-if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
+if [[ "$suite_mock_profile" == "failover" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-failover-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-failover-mock-service.yaml"
   kubectl rollout status deployment/router-failover-mock -n "$e2e_namespace" --timeout=5m
   kubectl wait --for=condition=Ready pod -l app=router-failover-mock -n "$e2e_namespace" --timeout=5m
-elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
+elif [[ "$suite_mock_profile" == "load_balancing" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-lb-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-lb-mock-service.yaml"
   kubectl rollout status deployment/router-lb-mock -n "$e2e_namespace" --timeout=5m
   kubectl wait --for=condition=Ready pod -l app=router-lb-mock -n "$e2e_namespace" --timeout=5m
-elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
+elif [[ "$suite_mock_profile" == "shared_services" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-shared-service-mock-deployment.yaml.tmpl" | kubectl apply -f -
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-shared-service-mock-service.yaml"
   kubectl rollout status deployment/router-shared-service-mock -n "$e2e_namespace" --timeout=5m
   kubectl wait --for=condition=Ready pod -l app=router-shared-service-mock -n "$e2e_namespace" --timeout=5m
-elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
+elif [[ "$suite_mock_profile" == "redis" ]]; then
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-deployment.yaml"
   kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-redis-service.yaml"
   kubectl rollout status deployment/router-redis -n "$e2e_namespace" --timeout=5m
@@ -551,7 +412,7 @@ kubectl exec -n "$e2e_namespace" "pod/${router_pod_name}" -c router -- sh -lc \
 
 export RUN_E2E_AKS="1"
 
-if [[ "$SUITE" == "e2e-aks-redis" ]]; then
+if [[ "$suite_port_forward_mode" == "replicas" ]]; then
   mapfile -t router_pod_names < <(select_running_pods "$e2e_namespace" "app=router-app" 2)
   if (( ${#router_pod_names[@]} < 2 )); then
     echo "Expected two running router-app pods for e2e-aks-redis." >&2
@@ -585,19 +446,11 @@ else
   export E2E_BASE_URL="http://127.0.0.1:${local_port}"
 fi
 
-if [[ "$SUITE" == "e2e-aks-live-model" ]]; then
-  export RUN_E2E_AKS_LIVE_MODEL="1"
-  export E2E_LIVE_MODEL_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
-elif [[ "$SUITE" == "e2e-aks-live-embeddings" ]]; then
-  export RUN_E2E_AKS_LIVE_EMBEDDINGS="1"
-  export E2E_LIVE_EMBEDDINGS_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
-elif [[ "$SUITE" == "e2e-aks-live-load-balancing" ]]; then
-  export RUN_E2E_AKS_LIVE_LOAD_BALANCING="1"
-elif [[ "$SUITE" == "e2e-aks-live-shared-services" ]]; then
-  export RUN_E2E_AKS_LIVE_SHARED_SERVICES="1"
-  export E2E_LIVE_SHARED_SERVICES_OUTPUTS_JSON="${tmp_dir}/terraform-outputs.json"
-elif [[ "$SUITE" == "e2e-aks-redis" ]]; then
-  export RUN_E2E_AKS_REDIS="1"
+if [[ -n "$suite_activation_env" ]]; then
+  export "${suite_activation_env}=1"
+fi
+if [[ -n "$suite_outputs_env" ]]; then
+  export "${suite_outputs_env}=${tmp_dir}/terraform-outputs.json"
 fi
 
 echo "Running pytest with flags: ${pytest_flags[*]}"
