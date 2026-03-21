@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 244 work items
+- **Done:** 248 work items
 
 ---
 
@@ -300,3 +300,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-036 | Shell Runner Syntax Validation in Quality Gates | High | Small | Shell syntax is now checked in make and pre-commit quality gates before Azure/AKS runs |
 | TASK-037 | Randomized OpenAI Account and Subdomain Suffixes for Live Scopes | High | Small | Live Azure OpenAI scopes now use random suffixes to avoid soft-delete naming collisions |
 | TASK-038 | Live Load-Balancing Transport Flake Hardening | High | Small | Live load-balancing suite now retries transient transport failures and restarts dirty distribution windows |
+| TASK-041 | Semantic Release Workflow and Public Changelog Automation | High | Medium | GitHub App-backed semantic release now updates the root changelog, project version, tags, and GitHub Releases |
+| TASK-041-01 | Pull-Request Release-Notes Contract and Semantic Impact Parsing | High | Medium | Pull requests now declare release impact and categorized notes that feed semantic release |
+| TASK-041-02 | GitHub App-Backed Semantic Release Workflow and Tag Publication | High | Medium | A manual semantic release workflow now authenticates with a GitHub App and publishes versioned releases |
+| TASK-041-03 | Public Changelog and Contributor Documentation Alignment | High | Small | Root release notes and contributor guidance now explain the public/internal changelog split and release requirements |

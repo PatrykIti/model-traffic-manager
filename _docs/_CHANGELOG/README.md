@@ -88,3 +88,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 55 | 2026-03-20 | CI trigger matrix and validation scheduling policy | ci/policy |
 | 56 | 2026-03-20 | Aggregate validation matrix runner | workflow/orchestration |
 | 57 | 2026-03-20 | Operator runbooks for live validation failures | docs/operations |
+| 58 | 2026-03-21 | Semantic release workflow and public changelog | workflow/release |

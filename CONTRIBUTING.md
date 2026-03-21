@@ -55,6 +55,18 @@ make run
 - Link the relevant task and subtask IDs in the pull request.
 - Use the repository pull request template.
 - Keep local validation and CI aligned by using the same `make` targets.
+- Fill in the `Release Impact` and `Release Notes` sections in the pull request template when the change should appear in public release notes.
+
+## Release workflow
+
+- Public version history lives in [`CHANGELOG.md`](./CHANGELOG.md).
+- Internal implementation history remains in [`_docs/_CHANGELOG/`](./_docs/_CHANGELOG/README.md).
+- The `semantic-release` workflow reads merged pull-request release notes, updates [`pyproject.toml`](./pyproject.toml), prepends the new entry to [`CHANGELOG.md`](./CHANGELOG.md), creates a tag, and publishes a GitHub Release.
+- The release workflow uses a GitHub App token. The app must be installed on this repository and have at least:
+  - `Contents: Read and write`
+  - `Pull requests: Read`
+  - `Metadata: Read`
+- If branch protection or rulesets restrict direct pushes to `main`, grant the GitHub App bypass access for the release workflow.
 
 ## Documentation expectations
 

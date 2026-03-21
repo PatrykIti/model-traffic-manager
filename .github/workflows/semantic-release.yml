@@ -1,0 +1,102 @@
+name: semantic-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Prepare release files without pushing the release commit, tag, or GitHub Release
+        required: true
+        default: "false"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: semantic-release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Require default branch
+        if: ${{ github.ref_name != github.event.repository.default_branch }}
+        run: |
+          echo "semantic-release must run from ${{ github.event.repository.default_branch }}" >&2
+          exit 1
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SEMANTIC_RELEASE_APP_ID }}
+          private-key: ${{ secrets.SEMANTIC_RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Sync environment
+        run: uv sync --frozen --python "$(cat .python-version)"
+
+      - name: Prepare semantic release
+        id: prepare
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          args=(
+            --repo "${{ github.repository }}"
+            --default-branch "${{ github.event.repository.default_branch }}"
+            --github-api-url "${{ github.api_url }}"
+            --github-output "$GITHUB_OUTPUT"
+          )
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            args+=(--dry-run)
+          fi
+          uv run python scripts/release/semantic_release.py "${args[@]}"
+
+      - name: Show prepared release notes
+        if: ${{ steps.prepare.outputs.release_required == 'true' }}
+        run: cat "${{ steps.prepare.outputs.release_notes_path }}"
+
+      - name: Commit release files
+        if: ${{ steps.prepare.outputs.release_required == 'true' && inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions-model-traffic-manager[bot]"
+          git config user.email "github-actions-model-traffic-manager[bot]@users.noreply.github.com"
+          git add CHANGELOG.md pyproject.toml
+          git commit -m "chore(release): ${{ steps.prepare.outputs.release_tag }} [skip ci]"
+          git tag "${{ steps.prepare.outputs.release_tag }}"
+          git push origin "HEAD:${{ github.event.repository.default_branch }}"
+          git push origin "${{ steps.prepare.outputs.release_tag }}"
+
+      - name: Create GitHub Release
+        if: ${{ steps.prepare.outputs.release_required == 'true' && inputs.dry_run != 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release create \
+            "${{ steps.prepare.outputs.release_tag }}" \
+            --title "${{ steps.prepare.outputs.release_tag }}" \
+            --notes-file "${{ steps.prepare.outputs.release_notes_path }}"
+
+      - name: No release required
+        if: ${{ steps.prepare.outputs.release_required != 'true' }}
+        run: echo "No merged pull requests require a new release."

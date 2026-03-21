@@ -89,5 +89,6 @@ The higher-level suites are intentionally opt-in because they provision temporar
 
 - [Official docs](./docs/README.md)
 - [Internal docs](./_docs/README.md)
+- [Release changelog](./CHANGELOG.md)
 - [Contribution guide](./CONTRIBUTING.md)
 - [Repository rules](./AGENTS.md)
