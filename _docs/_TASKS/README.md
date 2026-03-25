@@ -47,7 +47,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 0 work items
+- **To Do:** 5 work items
 - **In Progress:** 0 work items
 - **Done:** 257 work items
 
@@ -57,6 +57,11 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
+| TASK-044 | E2E AKS Live Observability Profile for Azure Monitor and Consumer Role | High | Large | One combined live AKS profile should prove Azure Monitor request flow and consumer-role telemetry together |
+| TASK-044-01 | Azure Observability Scope for AKS, Log Analytics, and Application Insights | High | Medium | Dedicated AKS live scope using the user's LAW and Application Insights modules |
+| TASK-044-02 | Router Runtime Wiring and Manifest Delivery for Azure Monitor Mode | High | Medium | Rendered config and pod env wiring for Azure Monitor mode with secure connection-string delivery |
+| TASK-044-03 | Live Suite Assertions for Request Flow, Final Upstream Attribution, and Consumer Role | High | Medium | Real AKS requests plus Azure telemetry queries prove final-upstream and consumer-role visibility |
+| TASK-044-04 | Runner, Workflow, Runbook, and Documentation Rollout for the Observability Suite | High | Medium | The new suite is registered in runner/workflows and documented for operators |
 ---
 
 ## In Progress
