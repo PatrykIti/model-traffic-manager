@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 248 work items
+- **Done:** 253 work items
 
 ---
 
@@ -304,3 +304,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-041-01 | Pull-Request Release-Notes Contract and Semantic Impact Parsing | High | Medium | Pull requests now declare release impact and categorized notes that feed semantic release |
 | TASK-041-02 | GitHub App-Backed Semantic Release Workflow and Tag Publication | High | Medium | A manual semantic release workflow now authenticates with a GitHub App and publishes versioned releases |
 | TASK-041-03 | Public Changelog and Contributor Documentation Alignment | High | Small | Root release notes and contributor guidance now explain the public/internal changelog split and release requirements |
+| TASK-042 | Azure Monitor Application Insights Request-Flow Telemetry and Pod Diagnostics | High | Large | Azure Monitor request-flow traces, final-upstream attribution, and pod startup topology snapshots are implemented |
+| TASK-042-01 | Azure Monitor OpenTelemetry Export and Runtime Config Surface | High | Medium | Azure Monitor settings, exporter wiring, and exact dependency alignment are implemented |
+| TASK-042-02 | Request-Flow Telemetry Schema and Upstream Attribution | High | Medium | Request spans now expose final-upstream, provider, region, and optional capacity-mode metadata |
+| TASK-042-03 | Pod-Local Startup Topology Snapshot and Operator Inspection Surface | High | Medium | Router startup now emits one structured topology snapshot per pod plus a lightweight startup trace |
+| TASK-042-04 | Tests, Runbooks, and Documentation for Application Insights Triage | High | Medium | Tests, runbook guidance, and official docs now cover Application Insights request-flow triage |

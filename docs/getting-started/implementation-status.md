@@ -19,6 +19,9 @@ Current repository status:
 - Redis-backed limiter adapters are available in the active runtime when `runtime_state_backend=redis`
 - request correlation, structured runtime events, `/metrics`, and trace foundations are implemented
 - routing events record rejected candidates and explicit failover reasons
+- an opt-in Azure Monitor / Application Insights exporter can send the router request flow to OpenTelemetry traces
+- the request span records final upstream attribution including provider, account, region, and optional capacity-mode metadata
+- startup now emits a pod-local topology snapshot so operators can verify the active routing shape after boot
 - `GET /shared-services` exposes the configured shared-service registry
 - `POST /v1/shared-services/{service_id}` executes router-proxy shared services while direct-backend-access services remain metadata-only
 - opt-in `integration-azure` and `e2e-aks` workflows plus repo-local higher-level test artifacts are implemented

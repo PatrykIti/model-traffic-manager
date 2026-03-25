@@ -27,6 +27,14 @@ Key runtime event fields include:
 - `deployment_id`
 - `endpoint_kind`
 - `upstream_id`
+- `provider`
+- `account`
+- `region`
+- `model_name`
+- `model_version`
+- `deployment_name`
+- `capacity_mode`
+- `auth_mode`
 - `selected_tier`
 - `decision_reason`
 - `failover_reason`
@@ -35,6 +43,10 @@ Key runtime event fields include:
 - `limiter_reason`
 - `status_code`
 - `rejected_candidates`
+
+Request-flow note:
+
+- the current request span stores the final upstream metadata on successful and terminal responses so operators can query which upstream actually handled a request without reconstructing that answer from raw pod logs alone
 
 `rejected_candidates` records the upstreams filtered out before a route decision, including:
 

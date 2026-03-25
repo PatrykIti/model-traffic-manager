@@ -31,6 +31,7 @@ async def request_context_middleware(
         span.set_attribute("router.endpoint_kind", endpoint_kind)
 
         response = await call_next(request)
+        span.set_attribute("http.status_code", response.status_code)
 
     duration = time.perf_counter() - start
     observe_request_duration(endpoint_kind, duration)

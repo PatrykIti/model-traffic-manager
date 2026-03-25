@@ -78,6 +78,15 @@ def test_router_config_model_accepts_valid_config() -> None:
     )
 
 
+def test_router_config_model_accepts_capacity_mode_metadata() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["upstreams"][0]["capacity_mode"] = "ptu"
+
+    validated = RouterConfigModel.model_validate(config)
+
+    assert validated.deployments[0].upstreams[0].capacity_mode.value == "ptu"
+
+
 def test_router_config_model_rejects_duplicate_deployment_ids() -> None:
     config = build_valid_config()
     config["deployments"] = [config["deployments"][0], config["deployments"][0]]

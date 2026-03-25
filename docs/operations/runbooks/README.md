@@ -11,3 +11,4 @@ These runbooks cover the most common failure signatures seen in Azure-backed and
 - [aks-rollout-and-port-forward-failures.md](./aks-rollout-and-port-forward-failures.md)
 - [quota-and-suite-placement.md](./quota-and-suite-placement.md)
 - [storage-fixture-and-cleanup-failures.md](./storage-fixture-and-cleanup-failures.md)
+- [application-insights-request-flow-triage.md](./application-insights-request-flow-triage.md)

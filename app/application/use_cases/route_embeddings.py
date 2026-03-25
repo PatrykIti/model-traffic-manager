@@ -5,7 +5,7 @@ from math import ceil
 from app.application.deployment_limit_guard import DeploymentLimitGuard
 from app.application.dto.embeddings_request import EmbeddingsRequest
 from app.application.dto.outbound_response import OutboundResponse
-from app.application.dto.runtime_event import RuntimeEvent
+from app.application.dto.runtime_event import RuntimeEvent, upstream_runtime_metadata
 from app.application.ports.auth_header_builder import AuthHeaderBuilderPort
 from app.application.ports.deployment_repository import DeploymentRepository
 from app.application.ports.health_state_repository import HealthStateRepository
@@ -103,11 +103,8 @@ class RouteEmbeddings:
                         endpoint_kind="embeddings",
                         deployment_id=deployment.id,
                         request_id=request.request_id,
+                        **upstream_runtime_metadata(selection.upstream),
                         attempt=attempt,
-                        upstream_id=selection.upstream.id,
-                        provider=selection.upstream.provider,
-                        account=selection.upstream.account,
-                        region=selection.upstream.region,
                         selected_tier=selection.selected_tier,
                         decision_reason=selection.reason,
                         failover_reason=next_failover_reason or selection.failover_reason,
@@ -144,8 +141,8 @@ class RouteEmbeddings:
                             endpoint_kind="embeddings",
                             deployment_id=deployment.id,
                             request_id=request.request_id,
+                            **upstream_runtime_metadata(selection.upstream),
                             attempt=attempt,
-                            upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
                             failover_reason=next_failover_reason or selection.failover_reason,
@@ -184,8 +181,8 @@ class RouteEmbeddings:
                             endpoint_kind="embeddings",
                             deployment_id=deployment.id,
                             request_id=request.request_id,
+                            **upstream_runtime_metadata(selection.upstream),
                             attempt=attempt,
-                            upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
                             failover_reason=next_failover_reason or selection.failover_reason,
@@ -214,8 +211,8 @@ class RouteEmbeddings:
                             endpoint_kind="embeddings",
                             deployment_id=deployment.id,
                             request_id=request.request_id,
+                            **upstream_runtime_metadata(selection.upstream),
                             attempt=attempt,
-                            upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
                             failover_reason=next_failover_reason or selection.failover_reason,
@@ -246,8 +243,8 @@ class RouteEmbeddings:
                         endpoint_kind="embeddings",
                         deployment_id=deployment.id,
                         request_id=request.request_id,
+                        **upstream_runtime_metadata(selection.upstream),
                         attempt=attempt,
-                        upstream_id=selection.upstream.id,
                         selected_tier=selection.selected_tier,
                         decision_reason=selection.reason,
                         failover_reason=next_failover_reason or selection.failover_reason,
@@ -270,8 +267,8 @@ class RouteEmbeddings:
                             endpoint_kind="embeddings",
                             deployment_id=deployment.id,
                             request_id=request.request_id,
+                            **upstream_runtime_metadata(selection.upstream),
                             attempt=attempt,
-                            upstream_id=selection.upstream.id,
                             selected_tier=selection.selected_tier,
                             decision_reason=selection.reason,
                             failover_reason=next_failover_reason or selection.failover_reason,

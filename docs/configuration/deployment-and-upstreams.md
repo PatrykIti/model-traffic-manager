@@ -28,12 +28,15 @@ Optional load-balancing metadata for same-tier pools:
 - `model_name`
 - `model_version`
 - `deployment_name`
+- `capacity_mode`
 - `compatibility_group`
 - `balancing_policy`
 - `warm_standby`
 - `drain`
 - `target_share_percent`
 - `max_share_percent`
+
+`capacity_mode` is optional operator metadata intended for supportability and observability. Use it when operators need an explicit, queryable distinction such as `ptu` versus `payg` instead of inferring that meaning from account names.
 
 Current validation rules already enforced by the application:
 

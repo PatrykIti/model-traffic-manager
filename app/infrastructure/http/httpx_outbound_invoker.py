@@ -49,6 +49,7 @@ class HttpxOutboundInvoker:
                     headers=dict(headers),
                     timeout=timeout,
                 )
+                span.set_attribute("http.status_code", response.status_code)
         except httpx.TimeoutException as exc:
             raise OutboundTimeoutError(f"Upstream request timed out: {exc}") from exc
         except httpx.RequestError as exc:

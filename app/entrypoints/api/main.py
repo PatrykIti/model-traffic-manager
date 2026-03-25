@@ -15,15 +15,15 @@ from app.entrypoints.api.routes_metrics import router as metrics_router
 from app.entrypoints.api.routes_shared_services import router as shared_services_router
 from app.infrastructure.bootstrap.container import build_container
 from app.infrastructure.config.settings import AppSettings, load_settings
-from app.infrastructure.observability.logging import configure_logging, get_logger
+from app.infrastructure.observability.logging import get_logger
 from app.infrastructure.observability.request_context import request_context_middleware
-from app.infrastructure.observability.tracing import configure_tracing
+from app.infrastructure.observability.startup_snapshot import emit_startup_topology_snapshot
+from app.infrastructure.observability.telemetry import configure_observability
 
 
 def create_app(settings: AppSettings | None = None) -> FastAPI:
     settings = settings or load_settings()
-    configure_logging(settings.log_level)
-    configure_tracing(settings.app_name)
+    observability = configure_observability(settings)
     logger = get_logger(__name__)
     container = build_container(settings)
 
@@ -31,15 +31,21 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.settings = settings
         app.state.container = container
+        app.state.observability = observability
         logger.info(
             "application_startup",
             environment=settings.environment,
             config_path=str(settings.config_path),
         )
+        app.state.startup_topology_snapshot = emit_startup_topology_snapshot(
+            container=container,
+            observability=observability,
+        )
         yield
         container.outbound_invoker.close()
         if container.redis_client is not None:
             container.redis_client.close()
+        observability.shutdown()
         logger.info("application_shutdown", environment=settings.environment)
 
     app = FastAPI(

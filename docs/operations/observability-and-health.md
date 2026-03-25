@@ -18,6 +18,9 @@ The current runtime includes:
 - shared-service execution events on the same structured event stream when a shared service is router-callable
 - a Prometheus `/metrics` endpoint
 - trace spans for inbound requests plus outbound model attempt spans
+- an opt-in Azure Monitor / Application Insights export path for OpenTelemetry traces
+- final-upstream attribution on the request span, including provider, account, region, and optional `capacity_mode`
+- a startup-time topology snapshot in pod logs, plus a lightweight startup trace when Azure Monitor export is enabled
 - a persistent outbound HTTP client with explicit connection-pool and timeout policy
 - `make release-check` as the current release validation command
 
@@ -26,6 +29,12 @@ Operational notes:
 - `GET /shared-services` exposes the runtime view of configured shared services
 - `POST /v1/shared-services/{service_id}` reuses the same request correlation and runtime event model for router-proxy shared services
 - `MODEL_TRAFFIC_MANAGER_RUNTIME_STATE_BACKEND=redis` switches health and limiter coordination to shared Redis state
+- `MODEL_TRAFFIC_MANAGER_OBSERVABILITY_BACKEND=azure_monitor` enables Azure Monitor export for the router-owned trace flow
+- `MODEL_TRAFFIC_MANAGER_AZURE_MONITOR_LOG_EXPORT_ENABLED=true` also mirrors Python logs through the Azure Monitor log exporter
 - the default local bootstrap still uses `in_memory` state for a zero-dependency startup path
 
-Future iterations can still extend this into broader chaos-style validation and exporter-specific production tuning.
+Operational recommendation:
+
+- use the request trace as the primary investigation surface for route selection, failover, cooldown, circuit, and final-upstream attribution
+- keep pod logs for startup topology confirmation and last-resort local inspection
+- avoid using raw payload logging as a substitute for explicit routing metadata

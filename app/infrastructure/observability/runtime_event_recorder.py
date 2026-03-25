@@ -49,6 +49,11 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             "provider": event.provider,
             "account": event.account,
             "region": event.region,
+            "model_name": event.model_name,
+            "model_version": event.model_version,
+            "deployment_name": event.deployment_name,
+            "capacity_mode": event.capacity_mode,
+            "auth_mode": event.auth_mode,
             "selected_tier": event.selected_tier,
             "decision_reason": event.decision_reason,
             "failover_reason": event.failover_reason,
@@ -104,6 +109,25 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             attributes["router.request_id"] = event.request_id
         if event.upstream_id is not None:
             attributes["router.upstream_id"] = event.upstream_id
+            span.set_attribute("router.last_upstream_id", event.upstream_id)
+        if event.provider is not None:
+            attributes["router.provider"] = event.provider
+        if event.account is not None:
+            attributes["router.account"] = event.account
+        if event.region is not None:
+            attributes["router.region"] = event.region
+        if event.model_name is not None:
+            attributes["router.model_name"] = event.model_name
+        if event.model_version is not None:
+            attributes["router.model_version"] = event.model_version
+        if event.deployment_name is not None:
+            attributes["router.deployment_name"] = event.deployment_name
+        if event.capacity_mode is not None:
+            attributes["router.capacity_mode"] = event.capacity_mode
+        if event.auth_mode is not None:
+            attributes["router.auth_mode"] = event.auth_mode
+        if event.selected_tier is not None:
+            attributes["router.selected_tier"] = event.selected_tier
         if event.decision_reason is not None:
             attributes["router.decision_reason"] = event.decision_reason
         if event.failover_reason is not None:
@@ -116,6 +140,25 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             attributes["router.limiter_reason"] = event.limiter_reason
         if event.status_code is not None:
             attributes["http.status_code"] = event.status_code
+        if event.event_type == "route_selected" and event.upstream_id is not None:
+            span.set_attribute("router.selected_upstream_id", event.upstream_id)
+        if event.event_type == "request_completed":
+            if event.upstream_id is not None:
+                span.set_attribute("router.final_upstream_id", event.upstream_id)
+            if event.provider is not None:
+                span.set_attribute("router.final_provider", event.provider)
+            if event.account is not None:
+                span.set_attribute("router.final_account", event.account)
+            if event.region is not None:
+                span.set_attribute("router.final_region", event.region)
+            if event.capacity_mode is not None:
+                span.set_attribute("router.final_capacity_mode", event.capacity_mode)
+            if event.outcome is not None:
+                span.set_attribute("router.outcome", event.outcome)
+            if event.failure_reason is not None:
+                span.set_attribute("router.failure_reason", event.failure_reason)
+            if event.status_code is not None:
+                span.set_attribute("http.status_code", event.status_code)
         span.add_event(event.event_type, attributes=attributes)
 
 

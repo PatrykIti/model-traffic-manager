@@ -6,15 +6,35 @@ from typing import Any
 
 import structlog
 
+_APP_LOG_EXPORT_HANDLER_NAME = "azure-monitor-app-export"
 
-def configure_logging(log_level: str) -> None:
+
+def configure_logging(
+    log_level: str,
+    *,
+    app_log_export_handler: logging.Handler | None = None,
+) -> None:
     level = getattr(logging, log_level.upper(), logging.INFO)
 
-    logging.basicConfig(
-        format="%(message)s",
-        level=level,
-        stream=sys.stdout,
-    )
+    root_logger = logging.getLogger()
+    if not root_logger.handlers:
+        logging.basicConfig(
+            format="%(message)s",
+            level=level,
+            stream=sys.stdout,
+        )
+    else:
+        root_logger.setLevel(level)
+
+    if app_log_export_handler is not None:
+        app_logger = logging.getLogger("app")
+        app_logger.setLevel(level)
+        if not any(
+            getattr(handler, "name", None) == _APP_LOG_EXPORT_HANDLER_NAME
+            for handler in app_logger.handlers
+        ):
+            app_log_export_handler.name = _APP_LOG_EXPORT_HANDLER_NAME
+            app_logger.addHandler(app_log_export_handler)
 
     structlog.configure(
         processors=[

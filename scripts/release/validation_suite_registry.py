@@ -171,7 +171,8 @@ def _suite_or_die(suite_id: str) -> ValidationSuite:
 def main() -> None:
     if len(sys.argv) < 2:
         raise SystemExit(
-            "Usage: validation_suite_registry.py <list|list-scope-dirs|list-by-flag|matrix|shell> [arg]"
+            "Usage: validation_suite_registry.py "
+            "<list|list-scope-dirs|list-by-flag|matrix|shell> [arg]"
         )
 
     command = sys.argv[1]

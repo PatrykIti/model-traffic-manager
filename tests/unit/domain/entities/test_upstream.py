@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.domain.entities.upstream import Upstream
+from app.domain.entities.upstream import CapacityMode, Upstream
 from app.domain.errors import DomainInvariantError
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
 
@@ -17,10 +17,12 @@ def test_upstream_accepts_valid_data() -> None:
         weight=100,
         endpoint="https://example.com/upstream",
         auth=AuthPolicy(mode=AuthMode.NONE),
+        capacity_mode="ptu",
     )
 
     assert upstream.id == "primary"
     assert upstream.tier == 0
+    assert upstream.capacity_mode is CapacityMode.PTU
 
 
 def test_upstream_exposes_target_share_as_effective_weight() -> None:

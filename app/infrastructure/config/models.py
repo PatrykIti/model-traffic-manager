@@ -11,7 +11,7 @@ from app.domain.entities.shared_service import (
     SharedServiceRoutingStrategy,
     SharedServiceTransport,
 )
-from app.domain.entities.upstream import BalancingPolicy, Upstream
+from app.domain.entities.upstream import BalancingPolicy, CapacityMode, Upstream
 from app.domain.errors import ConfigValidationError
 from app.domain.value_objects.auth_policy import AuthMode, AuthPolicy
 
@@ -86,6 +86,7 @@ class UpstreamConfigModel(BaseModel):
     model_name: str | None = None
     model_version: str | None = None
     deployment_name: str | None = None
+    capacity_mode: CapacityMode | None = None
     compatibility_group: str | None = None
     balancing_policy: BalancingPolicy = BalancingPolicy.WEIGHTED_ROUND_ROBIN
     warm_standby: bool = False
@@ -106,6 +107,7 @@ class UpstreamConfigModel(BaseModel):
             model_name=self.model_name,
             model_version=self.model_version,
             deployment_name=self.deployment_name,
+            capacity_mode=self.capacity_mode,
             compatibility_group=self.compatibility_group,
             balancing_policy=self.balancing_policy,
             warm_standby=self.warm_standby,

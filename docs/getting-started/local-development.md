@@ -71,6 +71,15 @@ If you want to exercise shared runtime state locally, set:
 - `MODEL_TRAFFIC_MANAGER_REDIS_URL=redis://...`
 - optional `MODEL_TRAFFIC_MANAGER_REDIS_KEY_PREFIX=router`
 
+If you want to export request-flow traces to Azure Monitor / Application Insights, set:
+
+- `MODEL_TRAFFIC_MANAGER_OBSERVABILITY_BACKEND=azure_monitor`
+- either `MODEL_TRAFFIC_MANAGER_AZURE_MONITOR_CONNECTION_STRING=...` or `APPLICATIONINSIGHTS_CONNECTION_STRING=...`
+- optional `MODEL_TRAFFIC_MANAGER_AZURE_MONITOR_LOG_EXPORT_ENABLED=true` if you also want Python logs mirrored to Azure Monitor
+- optional `MODEL_TRAFFIC_MANAGER_AZURE_MONITOR_SAMPLING_RATIO=1.0` to keep full request-flow visibility during incident triage
+
+When Azure Monitor export is enabled, the router still keeps stdout logs and `/metrics`; the request-flow trace becomes the preferred source for upstream attribution and failover reconstruction.
+
 For higher-level local Azure-backed runs:
 
 - the active Azure subscription is resolved from `az account show`

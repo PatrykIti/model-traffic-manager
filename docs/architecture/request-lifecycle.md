@@ -23,6 +23,8 @@ Current status:
 - health-state loading and updates are implemented for cooldown, circuit-open, and half-open recovery behavior
 - route-selection events record failover reasons and rejected candidates
 - metrics and trace hooks are implemented on the active runtime path
+- the request span now records the final selected upstream plus operator-facing routing metadata such as provider, account, region, and optional capacity mode
+- an opt-in Azure Monitor / Application Insights export path can mirror the request flow into OpenTelemetry traces
 
 Current implemented path:
 
@@ -37,6 +39,13 @@ Current implemented path:
 9. the use case builds outbound auth headers and sends the upstream request
 10. retriable failures are classified, persisted into health state, and may move to the next eligible upstream
 11. route-selection, limiter, and completion events are recorded with request correlation metadata
+12. the final request span stores the upstream that actually served the request or the terminal failure path that ended it
+
+Startup diagnostics:
+
+1. application startup emits a structured topology snapshot to pod logs
+2. the snapshot summarizes active deployments, upstream IDs, tiers, balancing metadata, runtime-state backend, and observability mode
+3. when Azure Monitor export is enabled, a lightweight startup trace is also emitted for the boot path
 
 Shared-service execution path:
 
