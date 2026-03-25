@@ -130,7 +130,7 @@ Typical scope:
 
 Current repository activation:
 
-- workflow: `.github/workflows/e2e-aks.yml` with `suite` input selecting `e2e-aks`, `e2e-aks-live-model`, `e2e-aks-live-embeddings`, `e2e-aks-live-load-balancing`, `e2e-aks-live-shared-services`, or `e2e-aks-redis`
+- workflow: `.github/workflows/e2e-aks.yml` with `suite` input selecting `e2e-aks`, `e2e-aks-live-model`, `e2e-aks-live-embeddings`, `e2e-aks-live-load-balancing`, `e2e-aks-live-shared-services`, `e2e-aks-live-observability`, or `e2e-aks-redis`
 - janitor workflow: `.github/workflows/e2e-azure-janitor.yml`
 - test suite: `tests/e2e_aks/`
 - Kubernetes runtime assets: `infra/e2e-aks/k8s/`
@@ -301,6 +301,38 @@ Default rule:
 
 - use this suite deliberately because it provisions a dedicated multi-replica AKS profile specifically to validate Redis-backed shared state behavior
 
+### 10. `e2e-aks-live-observability`
+
+Purpose:
+
+- prove Azure Monitor / Application Insights request-flow export on real AKS traffic
+- prove `consumer_role` and final-upstream attribution on a real routed request
+
+Environment:
+
+- AKS
+- workspace-based Application Insights
+- Log Analytics workspace
+- one real Azure OpenAI path
+
+Current repository activation:
+
+- local command: `make e2e-aks-live-observability-local`
+- test suite: `tests/e2e_aks_live_observability/`
+- infra scope: `infra/e2e-aks-live-observability/`
+
+Current live observability coverage:
+
+- real `POST /v1/chat/completions/{deployment_id}` through AKS
+- router pod booted in `azure_monitor` observability mode
+- Application Insights query confirms the routed request by `x-request-id`
+- request telemetry exposes `router.final_upstream_id` and `router.consumer_role`
+- pod startup logs expose the structured topology snapshot
+
+Default rule:
+
+- use this suite deliberately because telemetry ingestion is eventually consistent and the suite provisions dedicated Azure monitoring resources
+
 ## Current quota-aware AKS suite placement
 
 The current `dev1` and `prd1` suite placement is intentionally split across regions and VM families:
@@ -310,6 +342,7 @@ The current `dev1` and `prd1` suite placement is intentionally split across regi
 - `e2e-aks-live-embeddings`: `northeurope` + `Standard_D2s_v4`
 - `e2e-aks-live-load-balancing`: `northeurope` + `Standard_D2ds_v4`
 - `e2e-aks-live-shared-services`: `westeurope` + `Standard_D2s_v4`
+- `e2e-aks-live-observability`: `westeurope` + `Standard_D2s_v4`
 - `e2e-aks-redis`: `northeurope` + `Standard_D2s_v4`
 
 Intent:

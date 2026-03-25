@@ -47,9 +47,9 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 5 work items
+- **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 257 work items
+- **Done:** 262 work items
 
 ---
 
@@ -57,11 +57,6 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-044 | E2E AKS Live Observability Profile for Azure Monitor and Consumer Role | High | Large | One combined live AKS profile should prove Azure Monitor request flow and consumer-role telemetry together |
-| TASK-044-01 | Azure Observability Scope for AKS, Log Analytics, and Application Insights | High | Medium | Dedicated AKS live scope using the user's LAW and Application Insights modules |
-| TASK-044-02 | Router Runtime Wiring and Manifest Delivery for Azure Monitor Mode | High | Medium | Rendered config and pod env wiring for Azure Monitor mode with secure connection-string delivery |
-| TASK-044-03 | Live Suite Assertions for Request Flow, Final Upstream Attribution, and Consumer Role | High | Medium | Real AKS requests plus Azure telemetry queries prove final-upstream and consumer-role visibility |
-| TASK-044-04 | Runner, Workflow, Runbook, and Documentation Rollout for the Observability Suite | High | Medium | The new suite is registered in runner/workflows and documented for operators |
 ---
 
 ## In Progress
@@ -318,3 +313,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-043-01 | Config and Domain Contract for Consumer Role Metadata | High | Medium | `consumer_role` is implemented in config models, domain entities, examples, and registry summaries |
 | TASK-043-02 | Telemetry Propagation and Startup Diagnostics for Consumer Role | High | Medium | Runtime events, request traces, limiter rejections, and startup snapshots now include `consumer_role` |
 | TASK-043-03 | Tests, Docs, and Operator Guidance for Consumer Role Usage | High | Small | Tests and docs now explain stable low-cardinality `consumer_role` usage and reconcile task tracking |
+| TASK-044 | E2E AKS Live Observability Profile for Azure Monitor and Consumer Role | High | Large | Dedicated AKS live observability scope now proves Azure Monitor request flow and consumer-role telemetry together |
+| TASK-044-01 | Azure Observability Scope for AKS, Log Analytics, and Application Insights | High | Medium | New AKS live scope provisions LAW and Application Insights using the user's Terraform modules |
+| TASK-044-02 | Router Runtime Wiring and Manifest Delivery for Azure Monitor Mode | High | Medium | The live observability suite now renders Azure Monitor mode config and delivers the connection string via Kubernetes secret |
+| TASK-044-03 | Live Suite Assertions for Request Flow, Final Upstream Attribution, and Consumer Role | High | Medium | New live tests poll Application Insights for request_id, final_upstream_id, and consumer_role after real AKS traffic |
+| TASK-044-04 | Runner, Workflow, Runbook, and Documentation Rollout for the Observability Suite | High | Medium | Suite registry, runner wiring, local command docs, and runbooks now include the live observability profile |

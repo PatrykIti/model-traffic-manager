@@ -23,6 +23,7 @@ What each command does:
 - `make e2e-aks-live-embeddings-local` runs a dedicated AKS suite for real embeddings responses through the router
 - `make e2e-aks-live-load-balancing-local` runs a dedicated AKS suite for model-aware load-balancing behavior
 - `make e2e-aks-live-shared-services-local` runs a dedicated AKS suite for shared-service execution modes
+- `make e2e-aks-live-observability-local` runs a dedicated AKS suite for Azure Monitor request-flow telemetry and `consumer_role` visibility
 - `make e2e-aks-redis-local` runs a dedicated AKS suite for Redis-backed multi-replica runtime-state behavior
 - `make validate-all-local` runs the full validation matrix sequentially
 - `make validate-release-local` runs the release-enabled validation matrix sequentially
@@ -97,13 +98,14 @@ Live-model notes:
 - `make e2e-aks-live-embeddings-local` provisions a dedicated Azure OpenAI embeddings deployment and validates live vectors through AKS
 - `make e2e-aks-live-load-balancing-local` provisions a dedicated AKS validation scope and verifies active-active / active-standby balancing against live in-cluster mocks
 - `make e2e-aks-live-shared-services-local` provisions a dedicated AKS validation scope and verifies direct-access plus router-proxy shared-service behavior
+- `make e2e-aks-live-observability-local` provisions a dedicated AKS validation scope and verifies Azure Monitor request-flow export plus `consumer_role` telemetry
 - `make e2e-aks-redis-local` provisions a dedicated AKS validation scope and verifies shared cooldown, circuit, request-rate, and concurrency behavior across router replicas
 - the current live-model profile targets `swedencentral` and validates `gpt-5` plus `gpt-5.1`
 - the current live-model suite also exercises router failover against an in-cluster mock primary for rate-limit and unhealthy scenarios
 - the current live embeddings profile targets `germanywestcentral` and validates `text-embedding-3-small`
 - the current live load-balancing profile validates same-tier chat and embeddings distribution plus active-standby behavior
 - this suite is intentionally separate because model quota and regional model availability can change independently of the smoke AKS path
-- the current live validation matrix now includes separate profiles for smoke, chat, embeddings, load balancing, shared services, and Redis-backed shared state
+- the current live validation matrix now includes separate profiles for smoke, chat, embeddings, load balancing, shared services, observability, and Redis-backed shared state
 
 Current quota-aware AKS placement for `dev1` and `prd1`:
 
@@ -112,6 +114,7 @@ Current quota-aware AKS placement for `dev1` and `prd1`:
 - `e2e-aks-live-embeddings`: `northeurope` + `Standard_D2s_v4`
 - `e2e-aks-live-load-balancing`: `northeurope` + `Standard_D2ds_v4`
 - `e2e-aks-live-shared-services`: `westeurope` + `Standard_D2s_v4`
+- `e2e-aks-live-observability`: `westeurope` + `Standard_D2s_v4`
 - `e2e-aks-redis`: `northeurope` + `Standard_D2s_v4`
 
 Operator note:

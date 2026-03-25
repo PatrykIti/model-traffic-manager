@@ -5,7 +5,7 @@ SUITE="${1:-}"
 ENVIRONMENT="${2:-dev1}"
 
 if [[ -z "$SUITE" ]]; then
-  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|integration-azure-chat|integration-azure-embeddings|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing|e2e-aks-live-shared-services|e2e-aks-redis> [environment]" >&2
+  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|integration-azure-chat|integration-azure-embeddings|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing|e2e-aks-live-shared-services|e2e-aks-live-observability|e2e-aks-redis> [environment]" >&2
   exit 1
 fi
 
@@ -66,6 +66,24 @@ payload += "=" * (-len(payload) % 4)
 claims = json.loads(base64.urlsafe_b64decode(payload))
 print(claims.get("oid", ""))
 ' <<<"$access_token"
+}
+
+json_output_value() {
+  local outputs_path="$1"
+  local output_name="$2"
+
+  python3 - "$outputs_path" "$output_name" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+outputs = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+entry = outputs.get(sys.argv[2], {})
+value = entry.get("value", "")
+if value is None:
+    value = ""
+print(value)
+PY
 }
 
 retry_command_with_policy() {
@@ -472,6 +490,7 @@ if [[ "$suite_kind" == "integration" ]]; then
   if [[ -n "$suite_outputs_env" ]]; then
     export "${suite_outputs_env}=${tmp_dir}/terraform-outputs.json"
   fi
+  export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
 
   echo "Running pytest with flags: ${pytest_flags[*]}"
   uv run pytest "$tests_path" "${pytest_flags[@]}"
@@ -540,6 +559,23 @@ fi
 export E2E_NAMESPACE="$e2e_namespace"
 export E2E_IMAGE="$e2e_image"
 export E2E_UAI_CLIENT_ID="$uai_client_id"
+export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
+
+application_insights_name="$(json_output_value "${tmp_dir}/terraform-outputs.json" "application_insights_name")"
+if [[ -n "$application_insights_name" ]]; then
+  az extension add --name application-insights --upgrade --only-show-errors >/dev/null
+  app_insights_connection_string="$(
+    az monitor app-insights component show \
+      --app "$application_insights_name" \
+      --resource-group "$resource_group" \
+      --query connectionString \
+      -o tsv
+  )"
+  kubectl create secret generic router-observability \
+    --from-literal=connection-string="$app_insights_connection_string" \
+    --namespace "$e2e_namespace" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
 
 if [[ "$e2e_image" == ghcr.io/* ]]; then
   ghcr_username="${GHCR_USERNAME:-}"
@@ -719,6 +755,7 @@ fi
 if [[ -n "$suite_outputs_env" ]]; then
   export "${suite_outputs_env}=${tmp_dir}/terraform-outputs.json"
 fi
+export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
 
 echo "Running pytest with flags: ${pytest_flags[*]}"
 uv run pytest "$tests_path" "${pytest_flags[@]}"

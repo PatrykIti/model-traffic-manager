@@ -7,7 +7,7 @@
 **Category:** Validation and Observability
 **Estimated Effort:** Large
 **Dependencies:** TASK-042, TASK-043, TASK-029-07
-**Status:** To Do
+**Status:** **Done** (2026-03-25)
 
 ---
 
@@ -64,25 +64,25 @@ Non-goals:
 
 ### TASK-044-01: Azure observability scope for AKS, Log Analytics, and Application Insights
 
-**Status:** To Do
+**Status:** Done (2026-03-25)
 
 Create a dedicated Terraform scope for the live observability suite using the repository's existing AKS and Azure module patterns plus the user's Log Analytics and Application Insights modules.
 
 ### TASK-044-02: Router runtime wiring and manifest delivery for Azure Monitor mode
 
-**Status:** To Do
+**Status:** Done (2026-03-25)
 
 Render and deliver router config plus pod environment settings so the AKS deployment runs with `observability_backend=azure_monitor` and a real Application Insights connection string.
 
 ### TASK-044-03: Live suite assertions for request flow, final upstream attribution, and consumer role
 
-**Status:** To Do
+**Status:** Done (2026-03-25)
 
 Add live AKS tests that send real requests through the router, poll Azure Monitor telemetry, and assert final-upstream plus `consumer_role` visibility.
 
 ### TASK-044-04: Runner, workflow, runbook, and documentation rollout for the observability suite
 
-**Status:** To Do
+**Status:** Done (2026-03-25)
 
 Register the new suite in the shared runner/workflow model and document how operators should run and interpret it.
 

@@ -39,3 +39,4 @@ Operational recommendation:
 - use the request trace as the primary investigation surface for route selection, failover, cooldown, circuit, and final-upstream attribution
 - keep pod logs for startup topology confirmation and last-resort local inspection
 - avoid using raw payload logging as a substitute for explicit routing metadata
+- the dedicated `e2e-aks-live-observability` suite is the repository's real Azure-backed proof for Application Insights request-flow export and `consumer_role` visibility

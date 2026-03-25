@@ -20,7 +20,8 @@ Use this runbook when operators need to understand which upstream handled a rout
 
 1. confirm that `MODEL_TRAFFIC_MANAGER_OBSERVABILITY_BACKEND=azure_monitor` is enabled on the running pod
 2. confirm that the pod emitted a `router_topology_snapshot` event at startup
-3. start from one of these identifiers:
+3. if this is a validation run, confirm the `e2e-aks-live-observability` suite completed and captured its query artifacts
+4. start from one of these identifiers:
    - `request_id`
    - `deployment_id`
    - `consumer_role`
@@ -42,3 +43,4 @@ Use this runbook when operators need to understand which upstream handled a rout
 - if the final upstream points to a PTU-backed path and failures cluster there, compare against neighboring PAYG traces for the same deployment
 - if the final upstream points to a PAYG-backed path after PTU degradation, inspect the earlier `route_selected` and `health_state_updated` events for cooldown, rate limiting, quota exhaustion, or circuit-open transitions
 - if the startup topology snapshot does not match the expected deployment graph, fix configuration rollout before debugging traffic behavior
+- if the live observability suite itself fails, inspect the saved Application Insights query payloads in the validation artifact bundle before changing query logic
