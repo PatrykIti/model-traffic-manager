@@ -24,6 +24,7 @@ Current status:
 - route-selection events record failover reasons and rejected candidates
 - metrics and trace hooks are implemented on the active runtime path
 - the request span now records the final selected upstream plus operator-facing routing metadata such as provider, account, region, and optional capacity mode
+- the request flow can also be filtered by `consumer_role` when a deployment or shared-service config declares one
 - an opt-in Azure Monitor / Application Insights export path can mirror the request flow into OpenTelemetry traces
 
 Current implemented path:

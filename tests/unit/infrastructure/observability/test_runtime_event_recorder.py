@@ -21,6 +21,7 @@ def test_runtime_event_recorder_enriches_current_span_with_final_upstream_metada
                 event_type="route_selected",
                 endpoint_kind="chat_completions",
                 deployment_id="gpt-4o-chat",
+                consumer_role="bot-system-be",
                 request_id="req-123",
                 attempt=1,
                 upstream_id="aoai-weu-ptu",
@@ -41,6 +42,7 @@ def test_runtime_event_recorder_enriches_current_span_with_final_upstream_metada
                 event_type="request_completed",
                 endpoint_kind="chat_completions",
                 deployment_id="gpt-4o-chat",
+                consumer_role="bot-system-be",
                 request_id="req-123",
                 attempt=1,
                 upstream_id="aoai-weu-ptu",
@@ -61,7 +63,9 @@ def test_runtime_event_recorder_enriches_current_span_with_final_upstream_metada
     finished_span = exporter.get_finished_spans()[0]
 
     assert finished_span.attributes["router.selected_upstream_id"] == "aoai-weu-ptu"
+    assert finished_span.attributes["router.consumer_role"] == "bot-system-be"
     assert finished_span.attributes["router.final_upstream_id"] == "aoai-weu-ptu"
+    assert finished_span.attributes["router.final_consumer_role"] == "bot-system-be"
     assert finished_span.attributes["router.final_provider"] == "azure_openai"
     assert finished_span.attributes["router.final_account"] == "aoai-prod-01"
     assert finished_span.attributes["router.final_region"] == "westeurope"

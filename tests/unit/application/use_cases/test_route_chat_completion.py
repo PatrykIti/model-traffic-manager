@@ -121,6 +121,7 @@ def build_deployment(auth_policy: AuthPolicy, *, upstream_count: int = 1) -> Dep
         id="local-health-check",
         kind="llm",
         protocol="openai_chat",
+        consumer_role="bot-system-be",
         routing_strategy="tiered_failover",
         max_concurrency=10,
         request_rate_per_second=5,
@@ -414,7 +415,9 @@ def test_route_chat_completion_emits_selection_and_completion_events() -> None:
         "request_completed",
     ]
     assert event_recorder.events[0].request_id == "req-123"
+    assert event_recorder.events[0].consumer_role == "bot-system-be"
     assert event_recorder.events[1].outcome == "success"
+    assert event_recorder.events[1].consumer_role == "bot-system-be"
 
 
 def test_route_chat_completion_rejects_incompatible_deployment_contract() -> None:

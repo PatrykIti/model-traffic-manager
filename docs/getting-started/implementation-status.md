@@ -21,6 +21,7 @@ Current repository status:
 - routing events record rejected candidates and explicit failover reasons
 - an opt-in Azure Monitor / Application Insights exporter can send the router request flow to OpenTelemetry traces
 - the request span records final upstream attribution including provider, account, region, and optional capacity-mode metadata
+- deployments and shared services can now declare `consumer_role` for telemetry filtering by consuming backend profile
 - startup now emits a pod-local topology snapshot so operators can verify the active routing shape after boot
 - `GET /shared-services` exposes the configured shared-service registry
 - `POST /v1/shared-services/{service_id}` executes router-proxy shared services while direct-backend-access services remain metadata-only

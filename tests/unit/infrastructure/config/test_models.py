@@ -78,6 +78,17 @@ def test_router_config_model_accepts_valid_config() -> None:
     )
 
 
+def test_router_config_model_accepts_consumer_role_metadata() -> None:
+    config = build_valid_config()
+    config["deployments"][0]["consumer_role"] = "chatbot-api"
+    config["shared_services"]["conversation_archive"]["consumer_role"] = "archive-worker"
+
+    validated = RouterConfigModel.model_validate(config)
+
+    assert validated.deployments[0].consumer_role == "chatbot-api"
+    assert validated.shared_services["conversation_archive"].consumer_role == "archive-worker"
+
+
 def test_router_config_model_accepts_capacity_mode_metadata() -> None:
     config = build_valid_config()
     config["deployments"][0]["upstreams"][0]["capacity_mode"] = "ptu"

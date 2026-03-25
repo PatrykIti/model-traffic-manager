@@ -90,3 +90,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 57 | 2026-03-20 | Operator runbooks for live validation failures | docs/operations |
 | 58 | 2026-03-21 | Semantic release workflow and public changelog | workflow/release |
 | 59 | 2026-03-25 | Azure Monitor request-flow observability | feature/observability |
+| 60 | 2026-03-25 | Consumer role traffic grouping | feature/observability |

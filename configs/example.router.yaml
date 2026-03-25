@@ -10,6 +10,7 @@ router:
 
 deployments:
   - id: local-health-check
+    consumer_role: bot-system-be
     kind: llm
     protocol: openai_chat
     routing:
@@ -28,6 +29,7 @@ deployments:
         auth:
           mode: none
   - id: local-embeddings-check
+    consumer_role: embeddings-worker
     kind: embeddings
     protocol: openai_embeddings
     routing:
@@ -48,6 +50,7 @@ deployments:
 
 shared_services:
   conversation_archive:
+    consumer_role: archive-worker
     transport: http_json
     access_mode: direct_backend_access
     provider_managed_availability: true
@@ -59,6 +62,7 @@ shared_services:
       mode: managed_identity
       scope: https://storage.azure.com/.default
   transcript_registry:
+    consumer_role: transcript-backend
     transport: http_json
     access_mode: router_proxy
     provider_managed_availability: true

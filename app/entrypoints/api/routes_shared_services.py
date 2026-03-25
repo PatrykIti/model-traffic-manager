@@ -30,6 +30,7 @@ class SharedServiceSummaryResponse(BaseModel):
     name: str
     transport: str
     access_mode: str
+    consumer_role: str | None
     routing_strategy: str | None
     provider_managed_availability: bool
     router_callable: bool
@@ -49,6 +50,7 @@ def list_shared_services(request: Request) -> list[SharedServiceSummaryResponse]
             name=summary.name,
             transport=summary.transport,
             access_mode=summary.access_mode,
+            consumer_role=summary.consumer_role,
             routing_strategy=summary.routing_strategy,
             provider_managed_availability=summary.provider_managed_availability,
             router_callable=summary.router_callable,

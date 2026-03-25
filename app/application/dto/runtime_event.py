@@ -12,6 +12,7 @@ class RuntimeEvent:
     event_type: str
     endpoint_kind: str
     deployment_id: str
+    consumer_role: str | None = None
     request_id: str | None = None
     attempt: int | None = None
     upstream_id: str | None = None
@@ -36,6 +37,7 @@ class RuntimeEvent:
 
 
 class UpstreamRuntimeMetadata(TypedDict):
+    consumer_role: str | None
     upstream_id: str
     provider: str
     account: str
@@ -47,8 +49,13 @@ class UpstreamRuntimeMetadata(TypedDict):
     auth_mode: str | None
 
 
-def upstream_runtime_metadata(upstream: Upstream) -> UpstreamRuntimeMetadata:
+def upstream_runtime_metadata(
+    upstream: Upstream,
+    *,
+    consumer_role: str | None,
+) -> UpstreamRuntimeMetadata:
     return {
+        "consumer_role": consumer_role,
         "upstream_id": upstream.id,
         "provider": upstream.provider,
         "account": upstream.account,

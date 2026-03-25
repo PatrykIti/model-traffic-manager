@@ -121,6 +121,7 @@ class DeploymentConfigModel(BaseModel):
     id: str = Field(min_length=1)
     kind: DeploymentKind
     protocol: DeploymentProtocol
+    consumer_role: str | None = Field(default=None, min_length=1)
     routing: RoutingConfigModel
     limits: LimitsConfigModel
     upstreams: list[UpstreamConfigModel] = Field(min_length=1)
@@ -245,6 +246,7 @@ class DeploymentConfigModel(BaseModel):
             routing_strategy=self.routing.strategy,
             max_concurrency=self.limits.max_concurrency,
             request_rate_per_second=self.limits.request_rate_per_second,
+            consumer_role=self.consumer_role,
             upstreams=tuple(upstream.to_domain() for upstream in self.upstreams),
         )
 
@@ -253,6 +255,7 @@ class SharedServiceConfigModel(BaseModel):
     transport: SharedServiceTransport = SharedServiceTransport.HTTP_JSON
     access_mode: SharedServiceAccessMode
     provider_managed_availability: bool = False
+    consumer_role: str | None = Field(default=None, min_length=1)
     routing_strategy: SharedServiceRoutingStrategy | None = None
     provider: str | None = None
     account: str | None = None
@@ -323,6 +326,7 @@ class SharedServiceConfigModel(BaseModel):
             transport=self.transport,
             access_mode=self.access_mode,
             provider_managed_availability=self.provider_managed_availability,
+            consumer_role=self.consumer_role,
             routing_strategy=self.routing_strategy,
             provider=self.provider,
             account=self.account,

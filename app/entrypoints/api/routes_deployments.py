@@ -14,6 +14,7 @@ class DeploymentSummaryResponse(BaseModel):
     id: str
     kind: str
     protocol: str
+    consumer_role: str | None
     routing_strategy: str
     upstream_count: int
     providers: list[str]
@@ -29,6 +30,7 @@ def list_deployments(request: Request) -> list[DeploymentSummaryResponse]:
             id=summary.id,
             kind=summary.kind,
             protocol=summary.protocol,
+            consumer_role=summary.consumer_role,
             routing_strategy=summary.routing_strategy,
             upstream_count=summary.upstream_count,
             providers=list(summary.providers),

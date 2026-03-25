@@ -8,6 +8,7 @@ class DeploymentSummary:
     id: str
     kind: str
     protocol: str
+    consumer_role: str | None
     routing_strategy: str
     upstream_count: int
     providers: tuple[str, ...]

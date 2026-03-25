@@ -43,6 +43,7 @@ def build_deployment() -> Deployment:
         id="deployment-a",
         kind="llm",
         protocol="openai_chat",
+        consumer_role="chatbot-api",
         routing_strategy="tiered_failover",
         max_concurrency=2,
         request_rate_per_second=1,
@@ -91,6 +92,7 @@ def test_limit_guard_raises_rate_limit_error() -> None:
         guard.acquire(build_deployment(), request_id="req-1", endpoint_kind="chat_completions")
 
     assert event_recorder.events[0].event_type == "limiter_rejected"
+    assert event_recorder.events[0].consumer_role == "chatbot-api"
     assert event_recorder.events[0].limiter_reason == "request_rate"
 
 
@@ -106,4 +108,5 @@ def test_limit_guard_raises_concurrency_error() -> None:
         guard.acquire(build_deployment(), request_id="req-2", endpoint_kind="embeddings")
 
     assert event_recorder.events[0].event_type == "limiter_rejected"
+    assert event_recorder.events[0].consumer_role == "chatbot-api"
     assert event_recorder.events[0].limiter_reason == "concurrency"

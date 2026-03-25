@@ -8,6 +8,7 @@ class SharedServiceSummary:
     name: str
     transport: str
     access_mode: str
+    consumer_role: str | None
     routing_strategy: str | None
     provider_managed_availability: bool
     router_callable: bool

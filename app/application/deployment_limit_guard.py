@@ -22,6 +22,10 @@ class LimitedRouteTarget(Protocol):
     def request_rate_per_second(self) -> int:
         """Maximum request rate allowed for the target."""
 
+    @property
+    def consumer_role(self) -> str | None:
+        """Operator-owned routing profile label for telemetry."""
+
 
 class DeploymentLimitGuard:
     def __init__(
@@ -52,6 +56,7 @@ class DeploymentLimitGuard:
                     endpoint_kind=endpoint_kind,
                     deployment_id=target.id,
                     request_id=request_id,
+                    consumer_role=target.consumer_role,
                     limiter_reason="request_rate",
                     retry_after_seconds=retry_after_seconds,
                     outcome="rejected",
@@ -73,6 +78,7 @@ class DeploymentLimitGuard:
                     endpoint_kind=endpoint_kind,
                     deployment_id=target.id,
                     request_id=request_id,
+                    consumer_role=target.consumer_role,
                     limiter_reason="concurrency",
                     outcome="rejected",
                 )

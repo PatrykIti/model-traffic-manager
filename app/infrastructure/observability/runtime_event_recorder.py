@@ -43,6 +43,7 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             "event_type": event.event_type,
             "endpoint_kind": event.endpoint_kind,
             "deployment_id": event.deployment_id,
+            "consumer_role": event.consumer_role,
             "request_id": event.request_id,
             "attempt": event.attempt,
             "upstream_id": event.upstream_id,
@@ -105,6 +106,9 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             "router.endpoint_kind": event.endpoint_kind,
             "router.deployment_id": event.deployment_id,
         }
+        if event.consumer_role is not None:
+            attributes["router.consumer_role"] = event.consumer_role
+            span.set_attribute("router.consumer_role", event.consumer_role)
         if event.request_id is not None:
             attributes["router.request_id"] = event.request_id
         if event.upstream_id is not None:
@@ -157,6 +161,8 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
                 span.set_attribute("router.outcome", event.outcome)
             if event.failure_reason is not None:
                 span.set_attribute("router.failure_reason", event.failure_reason)
+            if event.consumer_role is not None:
+                span.set_attribute("router.final_consumer_role", event.consumer_role)
             if event.status_code is not None:
                 span.set_attribute("http.status_code", event.status_code)
         span.add_event(event.event_type, attributes=attributes)

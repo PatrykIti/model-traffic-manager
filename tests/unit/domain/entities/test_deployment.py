@@ -26,6 +26,7 @@ def test_deployment_exposes_provider_and_region_summaries() -> None:
         id="gpt-4o-chat",
         kind="llm",
         protocol="openai_chat",
+        consumer_role="chatbot-api",
         routing_strategy="tiered_failover",
         max_concurrency=10,
         request_rate_per_second=5,
@@ -37,6 +38,7 @@ def test_deployment_exposes_provider_and_region_summaries() -> None:
     )
 
     assert deployment.upstream_count == 3
+    assert deployment.consumer_role == "chatbot-api"
     assert deployment.providers == ("azure_openai", "internal_mock")
     assert deployment.regions == ("local", "northeurope", "westeurope")
 

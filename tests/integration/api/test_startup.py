@@ -21,6 +21,10 @@ def test_startup_initializes_container() -> None:
     assert container.settings.outbound_max_keepalive_connections == 20
     assert container.redis_client is None
     assert client.app.state.startup_topology_snapshot["observability_backend"] == "local"
+    assert (
+        client.app.state.startup_topology_snapshot["deployments"][0]["consumer_role"]
+        == "bot-system-be"
+    )
     assert client.app.state.startup_topology_snapshot["deployments"]
     assert container.deployment_repository.get_deployment("local-health-check") is not None
     assert container.deployment_repository.get_deployment("local-embeddings-check") is not None

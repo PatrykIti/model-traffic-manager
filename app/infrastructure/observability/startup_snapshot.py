@@ -42,6 +42,7 @@ def build_startup_topology_snapshot(
                 "id": deployment.id,
                 "kind": deployment.kind.value,
                 "protocol": deployment.protocol.value,
+                "consumer_role": deployment.consumer_role,
                 "upstreams": [
                     {
                         "id": upstream.id,
@@ -70,6 +71,7 @@ def build_startup_topology_snapshot(
             {
                 "id": name,
                 "access_mode": shared_service.access_mode.value,
+                "consumer_role": shared_service.consumer_role,
                 "transport": shared_service.transport.value,
                 "routing_strategy": (
                     shared_service.routing_strategy.value

@@ -15,6 +15,7 @@ class ListSharedServices:
                 name=shared_service.name,
                 transport=shared_service.transport.value,
                 access_mode=shared_service.access_mode.value,
+                consumer_role=shared_service.consumer_role,
                 routing_strategy=(
                     shared_service.routing_strategy.value
                     if shared_service.routing_strategy is not None

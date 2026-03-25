@@ -26,6 +26,7 @@ def test_shared_services_endpoint_returns_runtime_registry() -> None:
             "name": "conversation_archive",
             "transport": "http_json",
             "access_mode": "direct_backend_access",
+            "consumer_role": "archive-worker",
             "routing_strategy": None,
             "provider_managed_availability": True,
             "router_callable": False,
@@ -39,6 +40,7 @@ def test_shared_services_endpoint_returns_runtime_registry() -> None:
             "name": "transcript_registry",
             "transport": "http_json",
             "access_mode": "router_proxy",
+            "consumer_role": "transcript-backend",
             "routing_strategy": "single_endpoint",
             "provider_managed_availability": True,
             "router_callable": True,
@@ -118,6 +120,7 @@ deployments:
 
 shared_services:
   transcript_search:
+    consumer_role: search-backend
     transport: http_json
     access_mode: router_proxy
     provider_managed_availability: false

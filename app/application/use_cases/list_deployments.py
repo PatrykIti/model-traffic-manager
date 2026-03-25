@@ -15,6 +15,7 @@ class ListDeployments:
                 id=deployment.id,
                 kind=deployment.kind.value,
                 protocol=deployment.protocol.value,
+                consumer_role=deployment.consumer_role,
                 routing_strategy=deployment.routing_strategy,
                 upstream_count=deployment.upstream_count,
                 providers=deployment.providers,

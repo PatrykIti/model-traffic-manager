@@ -23,6 +23,7 @@ Use this runbook when operators need to understand which upstream handled a rout
 3. start from one of these identifiers:
    - `request_id`
    - `deployment_id`
+   - `consumer_role`
    - `upstream_id`
    - `account`
    - `region`
@@ -30,6 +31,7 @@ Use this runbook when operators need to understand which upstream handled a rout
 ## Interpretation Guide
 
 - `router.final_upstream_id` identifies the upstream that actually served the terminal response
+- `router.consumer_role` identifies the consuming backend profile represented by the active router config
 - `router.final_provider`, `router.final_account`, and `router.final_region` identify the support boundary for the final response path
 - `router.final_capacity_mode` distinguishes explicit operator metadata such as `ptu` versus `payg` when the config defines it
 - `route_selected` events on the request span show each attempt and the decision reason that led to it

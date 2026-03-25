@@ -26,6 +26,7 @@ class Deployment:
     max_concurrency: int
     request_rate_per_second: int
     upstreams: tuple[Upstream, ...]
+    consumer_role: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "kind", DeploymentKind(self.kind))
@@ -42,6 +43,8 @@ class Deployment:
             raise DomainInvariantError("Deployment max concurrency must be greater than zero.")
         if self.request_rate_per_second <= 0:
             raise DomainInvariantError("Deployment request rate must be greater than zero.")
+        if self.consumer_role is not None and not self.consumer_role:
+            raise DomainInvariantError("Deployment consumer_role must not be empty.")
         if not self.upstreams:
             raise DomainInvariantError("Deployment must define at least one upstream.")
 

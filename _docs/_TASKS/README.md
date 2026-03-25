@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 253 work items
+- **Done:** 257 work items
 
 ---
 
@@ -309,3 +309,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-042-02 | Request-Flow Telemetry Schema and Upstream Attribution | High | Medium | Request spans now expose final-upstream, provider, region, and optional capacity-mode metadata |
 | TASK-042-03 | Pod-Local Startup Topology Snapshot and Operator Inspection Surface | High | Medium | Router startup now emits one structured topology snapshot per pod plus a lightweight startup trace |
 | TASK-042-04 | Tests, Runbooks, and Documentation for Application Insights Triage | High | Medium | Tests, runbook guidance, and official docs now cover Application Insights request-flow triage |
+| TASK-043 | Consumer Role Metadata for Routed Traffic | High | Medium | Deployment and shared-service configs now carry `consumer_role` for traffic grouping by consuming backend profile |
+| TASK-043-01 | Config and Domain Contract for Consumer Role Metadata | High | Medium | `consumer_role` is implemented in config models, domain entities, examples, and registry summaries |
+| TASK-043-02 | Telemetry Propagation and Startup Diagnostics for Consumer Role | High | Medium | Runtime events, request traces, limiter rejections, and startup snapshots now include `consumer_role` |
+| TASK-043-03 | Tests, Docs, and Operator Guidance for Consumer Role Usage | High | Small | Tests and docs now explain stable low-cardinality `consumer_role` usage and reconcile task tracking |

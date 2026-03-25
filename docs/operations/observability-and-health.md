@@ -20,6 +20,7 @@ The current runtime includes:
 - trace spans for inbound requests plus outbound model attempt spans
 - an opt-in Azure Monitor / Application Insights export path for OpenTelemetry traces
 - final-upstream attribution on the request span, including provider, account, region, and optional `capacity_mode`
+- optional `consumer_role` metadata on request-flow events and startup snapshots for grouping traffic by consuming backend profile
 - a startup-time topology snapshot in pod logs, plus a lightweight startup trace when Azure Monitor export is enabled
 - a persistent outbound HTTP client with explicit connection-pool and timeout policy
 - `make release-check` as the current release validation command

@@ -28,6 +28,7 @@ class SharedService:
     transport: SharedServiceTransport
     access_mode: SharedServiceAccessMode
     provider_managed_availability: bool
+    consumer_role: str | None = None
     routing_strategy: SharedServiceRoutingStrategy | None = None
     endpoint: str | None = None
     auth: AuthPolicy | None = None
@@ -49,6 +50,8 @@ class SharedService:
             )
         if not self.name:
             raise DomainInvariantError("Shared-service name must not be empty.")
+        if self.consumer_role is not None and not self.consumer_role:
+            raise DomainInvariantError("Shared-service consumer_role must not be empty.")
         if self.access_mode is SharedServiceAccessMode.DIRECT_BACKEND_ACCESS:
             if not self.endpoint:
                 raise DomainInvariantError(

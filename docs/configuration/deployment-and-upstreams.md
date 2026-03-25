@@ -7,6 +7,7 @@ The router treats deployments and upstreams as explicit domain concepts.
 Each deployment is expected to describe:
 
 - its logical identifier
+- optional `consumer_role`
 - protocol and kind
 - routing settings
 - limits
@@ -78,6 +79,12 @@ Shared-service notes:
 - `single_endpoint` shared services are executed through one configured upstream without router-managed failover
 - `tiered_failover` shared services reuse the upstream health and failover model
 - provider-managed availability and router-managed tiered failover are intentionally distinct concerns
+- shared services may also define `consumer_role` when operators need one stable label for filtering telemetry by consuming backend profile
+
+Operator guidance for `consumer_role`:
+
+- use stable, low-cardinality values such as `bot-system-be`, `chatbot-api`, or `search-backend`
+- avoid personal identifiers, email addresses, and values that would create one-off telemetry labels
 
 ## Full Example Files
 

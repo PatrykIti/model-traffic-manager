@@ -37,6 +37,8 @@ deployments:
   # Chat deployment with active-active balancing in tier 0.
   # ----------------------------------------------------------------------------
   - id: assistant-chat-balanced
+    # Optional low-cardinality consumer label used by traces and operator diagnostics.
+    consumer_role: bot-system-be
     kind: llm
     protocol: openai_chat
     routing:
@@ -99,6 +101,7 @@ deployments:
   # Chat deployment with active_standby in tier 0 and a model fallback tier.
   # ----------------------------------------------------------------------------
   - id: assistant-chat-controlled
+    consumer_role: bot-system-be-dr
     kind: llm
     protocol: openai_chat
     routing:
@@ -161,6 +164,7 @@ deployments:
   # Embeddings deployment with safe balancing inside one compatible pool.
   # ----------------------------------------------------------------------------
   - id: knowledge-embeddings-balanced
+    consumer_role: retrieval-worker
     kind: embeddings
     protocol: openai_embeddings
     routing:
@@ -208,6 +212,7 @@ shared_services:
   # Shared service consumed directly by the backend, not proxied through router.
   # ----------------------------------------------------------------------------
   conversation_archive:
+    consumer_role: archive-worker
     transport: http_json
     access_mode: direct_backend_access
     provider_managed_availability: true
@@ -223,6 +228,7 @@ shared_services:
   # Shared service proxied through router, but without router-side failover.
   # ----------------------------------------------------------------------------
   transcript_registry:
+    consumer_role: transcript-backend
     transport: http_json
     access_mode: router_proxy
     provider_managed_availability: true
@@ -245,6 +251,7 @@ shared_services:
   # Shared service proxied through router with explicit failover.
   # ----------------------------------------------------------------------------
   transcript_search:
+    consumer_role: search-backend
     transport: http_json
     access_mode: router_proxy
     provider_managed_availability: false

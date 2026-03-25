@@ -28,5 +28,6 @@ def test_startup_snapshot_includes_observability_and_upstream_metadata() -> None
 
     assert snapshot["router_instance_name"] == "model-traffic-manager-local"
     assert snapshot["observability_backend"] == "local"
+    assert snapshot["deployments"][0]["consumer_role"] == "bot-system-be"
     assert snapshot["deployments"][0]["upstreams"][0]["id"] == "local-upstream"
     assert snapshot["deployments"][0]["upstreams"][0]["capacity_mode"] is None

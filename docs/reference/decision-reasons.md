@@ -25,6 +25,7 @@ Key runtime event fields include:
 
 - `request_id`
 - `deployment_id`
+- `consumer_role`
 - `endpoint_kind`
 - `upstream_id`
 - `provider`
@@ -47,6 +48,7 @@ Key runtime event fields include:
 Request-flow note:
 
 - the current request span stores the final upstream metadata on successful and terminal responses so operators can query which upstream actually handled a request without reconstructing that answer from raw pod logs alone
+- `consumer_role` lets operators group traces by the consuming backend profile behind one router config, independent of the final upstream that served the request
 
 `rejected_candidates` records the upstreams filtered out before a route decision, including:
 
