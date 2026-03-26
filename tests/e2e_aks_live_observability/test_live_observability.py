@@ -67,7 +67,7 @@ def _run_log_analytics_query(
     query: str,
     artifacts_dir: Path,
     suffix: str,
-) -> dict[str, object]:
+) -> object:
     workspace_id = outputs["log_analytics_workspace_customer_id"]["value"]
     completed = subprocess.run(
         [
@@ -93,7 +93,16 @@ def _run_log_analytics_query(
     return json.loads(completed.stdout)
 
 
-def _extract_first_row(payload: dict[str, object]) -> dict[str, object] | None:
+def _extract_first_row(payload: object) -> dict[str, object] | None:
+    if isinstance(payload, list):
+        if not payload:
+            return None
+        first_row = payload[0]
+        return first_row if isinstance(first_row, dict) else None
+
+    if not isinstance(payload, dict):
+        return None
+
     tables = payload.get("tables")
     if not isinstance(tables, list) or not tables:
         return None
@@ -147,7 +156,7 @@ OTelSpans
 | top 5 by TimeGenerated desc
 """.strip()
 
-    last_payload: dict[str, object] | None = None
+    last_payload: object | None = None
     for attempt in range(1, attempts + 1):
         payload = _run_log_analytics_query(
             outputs=outputs,
