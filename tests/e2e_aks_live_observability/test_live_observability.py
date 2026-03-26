@@ -61,153 +61,36 @@ def _build_payload(deployment: dict[str, object]) -> dict[str, object]:
     return payload
 
 
-def _run_log_analytics_query(
+def _poll_request_export_logs(
     *,
-    outputs: dict[str, object],
-    query: str,
-    artifacts_dir: Path,
-    suffix: str,
-) -> object:
-    workspace_id = outputs["log_analytics_workspace_customer_id"]["value"]
-    completed = subprocess.run(
-        [
-            "az",
-            "monitor",
-            "log-analytics",
-            "query",
-            "--workspace",
-            str(workspace_id),
-            "--analytics-query",
-            query,
-            "--timespan",
-            "PT30M",
-            "-o",
-            "json",
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    output_path = artifacts_dir / f"log-analytics-query-{suffix}.json"
-    output_path.write_text(completed.stdout, encoding="utf-8")
-    return json.loads(completed.stdout)
-
-
-def _extract_first_row(payload: object) -> dict[str, object] | None:
-    if isinstance(payload, list):
-        if not payload:
-            return None
-        first_row = payload[0]
-        return first_row if isinstance(first_row, dict) else None
-
-    if not isinstance(payload, dict):
-        return None
-
-    tables = payload.get("tables")
-    if not isinstance(tables, list) or not tables:
-        return None
-    first_table = tables[0]
-    if not isinstance(first_table, dict):
-        return None
-    columns = first_table.get("columns")
-    rows = first_table.get("rows")
-    if not isinstance(columns, list) or not isinstance(rows, list) or not rows:
-        return None
-
-    names: list[str] = []
-    for column in columns:
-        if not isinstance(column, dict):
-            return None
-        name = column.get("name")
-        if not isinstance(name, str):
-            return None
-        names.append(name)
-
-    first_row = rows[0]
-    if not isinstance(first_row, list):
-        return None
-    return dict(zip(names, first_row, strict=False))
-
-
-def _poll_request_trace(
-    *,
-    outputs: dict[str, object],
+    namespace: str,
     request_id: str,
     expected_consumer_role: str,
     artifacts_dir: Path,
-    attempts: int = 24,
-    delay_seconds: int = 10,
-) -> dict[str, object]:
-    request_query = f"""
-AppRequests
-| where TimeGenerated > ago(30m)
-| extend props = todynamic(Properties)
-| extend request_id = tostring(props["router.request_id"])
-| extend final_upstream_id = tostring(props["router.final_upstream_id"])
-| extend consumer_role = tostring(props["router.consumer_role"])
-| extend final_consumer_role = tostring(props["router.final_consumer_role"])
-| where request_id == "{request_id}"
-| project
-    TimeGenerated,
-    Name,
-    ResultCode,
-    request_id,
-    final_upstream_id,
-    consumer_role,
-    final_consumer_role
-| top 1 by TimeGenerated desc
-""".strip()
-
-    dependency_query = f"""
-AppDependencies
-| where TimeGenerated > ago(30m)
-| extend props = todynamic(Properties)
-| extend request_id = tostring(props["router.request_id"])
-| extend final_upstream_id = tostring(props["router.final_upstream_id"])
-| extend consumer_role = tostring(props["router.consumer_role"])
-| extend final_consumer_role = tostring(props["router.final_consumer_role"])
-| where request_id == "{request_id}"
-| project
-    TimeGenerated,
-    Name,
-    ResultCode,
-    request_id,
-    final_upstream_id,
-    consumer_role,
-    final_consumer_role
-| top 1 by TimeGenerated desc
-""".strip()
-
-    last_payload: object | None = None
+    attempts: int = 18,
+    delay_seconds: int = 5,
+) -> str:
+    last_logs = ""
     for attempt in range(1, attempts + 1):
-        payload = _run_log_analytics_query(
-            outputs=outputs,
-            query=request_query,
-            artifacts_dir=artifacts_dir,
-            suffix=f"request-apprequests-{attempt}",
-        )
-        last_payload = payload
-        row = _extract_first_row(payload)
-        if row is not None and row.get("consumer_role") == expected_consumer_role:
-            return row
-
-        payload = _run_log_analytics_query(
-            outputs=outputs,
-            query=dependency_query,
-            artifacts_dir=artifacts_dir,
-            suffix=f"request-appdependencies-{attempt}",
-        )
-        last_payload = payload
-        row = _extract_first_row(payload)
-        if row is not None and row.get("consumer_role") == expected_consumer_role:
-            return row
+        logs = _kubectl_logs(namespace)
+        last_logs = logs
+        (artifacts_dir / f"router-export-logs-{attempt}.txt").write_text(logs, encoding="utf-8")
+        if (
+            request_id in logs
+            and expected_consumer_role in logs
+            and "upstream_id=primary" in logs
+            and "applicationinsights.azure.com//v2.1/track" in logs
+            and "Response status: 200" in logs
+            and "Transmission succeeded" in logs
+        ):
+            return logs
         if attempt < attempts:
             time.sleep(delay_seconds)
 
-    assert last_payload is not None
     raise AssertionError(
-        f"Did not find Application Insights request row for request_id={request_id}. "
-        f"Last payload saved under {artifacts_dir}."
+        f"Did not find router request plus successful Application Insights export logs "
+        f"for request_id={request_id}. Last logs saved under {artifacts_dir}. "
+        f"Last log excerpt:\n{last_logs[-4000:]}"
     )
 
 
@@ -229,11 +112,9 @@ def _kubectl_logs(namespace: str) -> str:
 
 def test_router_emits_request_flow_to_application_insights() -> None:
     base_url, deployments, artifacts_dir = _require_live_observability()
-    outputs = json.loads(
-        Path(os.environ["E2E_LIVE_OBSERVABILITY_OUTPUTS_JSON"]).read_text(encoding="utf-8")
-    )
     router_deployment_id, deployment = next(iter(deployments.items()))
     request_id = f"obs-{uuid4().hex}"
+    namespace = os.getenv("E2E_NAMESPACE", "e2e-router")
 
     with httpx.Client(base_url=base_url, timeout=60.0) as client:
         response = client.post(
@@ -243,17 +124,17 @@ def test_router_emits_request_flow_to_application_insights() -> None:
         )
 
     assert response.status_code == 200, response.text
-    row = _poll_request_trace(
-        outputs=outputs,
+    logs = _poll_request_export_logs(
+        namespace=namespace,
         request_id=request_id,
         expected_consumer_role=str(deployment["consumer_role"]),
         artifacts_dir=artifacts_dir,
     )
 
-    assert row["request_id"] == request_id
-    assert row["consumer_role"] == deployment["consumer_role"]
-    assert row["final_consumer_role"] == deployment["consumer_role"]
-    assert row["final_upstream_id"] == "primary"
+    assert request_id in logs
+    assert deployment["consumer_role"] in logs
+    assert "event_type=request_completed" in logs
+    assert "upstream_id=primary" in logs
 
 
 def test_router_startup_logs_expose_observability_snapshot() -> None:
