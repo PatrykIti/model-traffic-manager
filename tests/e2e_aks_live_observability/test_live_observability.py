@@ -138,31 +138,64 @@ def _poll_request_trace(
     attempts: int = 24,
     delay_seconds: int = 10,
 ) -> dict[str, object]:
-    span_query = f"""
-OTelSpans
+    request_query = f"""
+AppRequests
 | where TimeGenerated > ago(30m)
-| extend attrs = todynamic(Attributes)
-| extend request_id = tostring(attrs["router.request_id"])
-| extend final_upstream_id = tostring(attrs["router.final_upstream_id"])
-| extend consumer_role = tostring(attrs["router.consumer_role"])
-| extend final_consumer_role = tostring(attrs["router.final_consumer_role"])
+| extend props = todynamic(Properties)
+| extend request_id = tostring(props["router.request_id"])
+| extend final_upstream_id = tostring(props["router.final_upstream_id"])
+| extend consumer_role = tostring(props["router.consumer_role"])
+| extend final_consumer_role = tostring(props["router.final_consumer_role"])
 | where request_id == "{request_id}"
 | project
     TimeGenerated,
+    Name,
+    ResultCode,
     request_id,
     final_upstream_id,
     consumer_role,
     final_consumer_role
-| top 5 by TimeGenerated desc
+| top 1 by TimeGenerated desc
+""".strip()
+
+    dependency_query = f"""
+AppDependencies
+| where TimeGenerated > ago(30m)
+| extend props = todynamic(Properties)
+| extend request_id = tostring(props["router.request_id"])
+| extend final_upstream_id = tostring(props["router.final_upstream_id"])
+| extend consumer_role = tostring(props["router.consumer_role"])
+| extend final_consumer_role = tostring(props["router.final_consumer_role"])
+| where request_id == "{request_id}"
+| project
+    TimeGenerated,
+    Name,
+    ResultCode,
+    request_id,
+    final_upstream_id,
+    consumer_role,
+    final_consumer_role
+| top 1 by TimeGenerated desc
 """.strip()
 
     last_payload: object | None = None
     for attempt in range(1, attempts + 1):
         payload = _run_log_analytics_query(
             outputs=outputs,
-            query=span_query,
+            query=request_query,
             artifacts_dir=artifacts_dir,
-            suffix=f"request-spans-{attempt}",
+            suffix=f"request-apprequests-{attempt}",
+        )
+        last_payload = payload
+        row = _extract_first_row(payload)
+        if row is not None and row.get("consumer_role") == expected_consumer_role:
+            return row
+
+        payload = _run_log_analytics_query(
+            outputs=outputs,
+            query=dependency_query,
+            artifacts_dir=artifacts_dir,
+            suffix=f"request-appdependencies-{attempt}",
         )
         last_payload = payload
         row = _extract_first_row(payload)
