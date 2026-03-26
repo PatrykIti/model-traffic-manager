@@ -93,3 +93,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 60 | 2026-03-25 | Consumer role traffic grouping | feature/observability |
 | 61 | 2026-03-25 | Live observability AKS suite | validation/e2e |
 | 62 | 2026-03-26 | Observability live suite log capture and query hardening | validation/reliability |
+| 63 | 2026-03-26 | Live observability scope destroy hardening | validation/reliability |

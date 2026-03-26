@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 263 work items
+- **Done:** 264 work items
 
 ---
 
@@ -319,3 +319,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-044-03 | Live Suite Assertions for Request Flow, Final Upstream Attribution, and Consumer Role | High | Medium | New live tests poll Application Insights for request_id, final_upstream_id, and consumer_role after real AKS traffic |
 | TASK-044-04 | Runner, Workflow, Runbook, and Documentation Rollout for the Observability Suite | High | Medium | Suite registry, runner wiring, local command docs, and runbooks now include the live observability profile |
 | TASK-045 | Observability Live Suite Log Capture and Query Hardening | High | Small | Make-driven logs now persist to files and the live observability suite uses more robust span/query and startup-log capture |
+| TASK-046 | Live Observability Scope Destroy Hardening | High | Small | The temporary observability scope now disables nested-resource protection on RG destroy to tolerate Application Insights Smart Detection leftovers |
