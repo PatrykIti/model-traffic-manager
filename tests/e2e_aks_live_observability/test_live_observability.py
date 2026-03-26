@@ -129,7 +129,7 @@ def _poll_request_trace(
     attempts: int = 24,
     delay_seconds: int = 10,
 ) -> dict[str, object]:
-    query = f"""
+    requests_query = f"""
 requests
 | where timestamp > ago(30m)
 | extend request_id = tostring(customDimensions["router.request_id"])
@@ -148,14 +148,44 @@ requests
     final_consumer_role
 | top 1 by timestamp desc
 """.strip()
+    traces_query = f"""
+traces
+| where timestamp > ago(30m)
+| extend request_id = tostring(customDimensions["router.request_id"])
+| extend final_upstream_id = tostring(customDimensions["router.final_upstream_id"])
+| extend consumer_role = tostring(customDimensions["router.consumer_role"])
+| extend final_consumer_role = tostring(customDimensions["router.final_consumer_role"])
+| where request_id == "{request_id}"
+| project
+    timestamp,
+    name = operation_Name,
+    resultCode = tostring(""),
+    duration = todouble(0),
+    request_id,
+    final_upstream_id,
+    consumer_role,
+    final_consumer_role
+| top 1 by timestamp desc
+""".strip()
 
     last_payload: dict[str, object] | None = None
     for attempt in range(1, attempts + 1):
         payload = _run_app_insights_query(
             outputs=outputs,
-            query=query,
+            query=requests_query,
             artifacts_dir=artifacts_dir,
-            suffix=f"request-{attempt}",
+            suffix=f"request-requests-{attempt}",
+        )
+        last_payload = payload
+        row = _extract_first_row(payload)
+        if row is not None and row.get("consumer_role") == expected_consumer_role:
+            return row
+
+        payload = _run_app_insights_query(
+            outputs=outputs,
+            query=traces_query,
+            artifacts_dir=artifacts_dir,
+            suffix=f"request-traces-{attempt}",
         )
         last_payload = payload
         row = _extract_first_row(payload)
@@ -179,7 +209,6 @@ def _kubectl_logs(namespace: str) -> str:
             "-n",
             namespace,
             "deployment/router-app",
-            "--tail=200",
         ],
         check=True,
         capture_output=True,

@@ -173,8 +173,11 @@ tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/mtm-${SUITE}-XXXXXX")"
 artifacts_root="${VALIDATION_ARTIFACTS_ROOT:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/mtm-artifacts}"
 artifacts_dir="${artifacts_root}/${SUITE}-${run_id}"
 mkdir -p "$artifacts_dir"
+suite_log_path="${artifacts_dir}/suite-run.log"
 pytest_flags=(-vv -rA)
 executor_principal_id=""
+
+exec > >(tee -a "$suite_log_path") 2>&1
 
 eval "$(python3 scripts/release/validation_suite_registry.py shell "$SUITE")"
 scope_dir="$suite_scope_dir"
@@ -493,7 +496,7 @@ if [[ "$suite_kind" == "integration" ]]; then
   export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
 
   echo "Running pytest with flags: ${pytest_flags[*]}"
-  uv run pytest "$tests_path" "${pytest_flags[@]}"
+  uv run pytest "$tests_path" "${pytest_flags[@]}" 2>&1 | tee "${artifacts_dir}/pytest.log"
   exit 0
 fi
 
@@ -758,4 +761,4 @@ fi
 export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
 
 echo "Running pytest with flags: ${pytest_flags[*]}"
-uv run pytest "$tests_path" "${pytest_flags[@]}"
+uv run pytest "$tests_path" "${pytest_flags[@]}" 2>&1 | tee "${artifacts_dir}/pytest.log"

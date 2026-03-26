@@ -92,3 +92,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 59 | 2026-03-25 | Azure Monitor request-flow observability | feature/observability |
 | 60 | 2026-03-25 | Consumer role traffic grouping | feature/observability |
 | 61 | 2026-03-25 | Live observability AKS suite | validation/e2e |
+| 62 | 2026-03-26 | Observability live suite log capture and query hardening | validation/reliability |

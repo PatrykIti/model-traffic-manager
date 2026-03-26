@@ -24,8 +24,12 @@ async def request_context_middleware(
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(request_id=request_id, endpoint_kind=endpoint_kind)
 
-    with tracer.start_as_current_span(f"{request.method} {request.url.path}") as span:
+    with tracer.start_as_current_span(
+        f"{request.method} {request.url.path}",
+        kind=trace.SpanKind.SERVER,
+    ) as span:
         span.set_attribute("http.method", request.method)
+        span.set_attribute("http.url", str(request.url))
         span.set_attribute("http.target", request.url.path)
         span.set_attribute("router.request_id", request_id)
         span.set_attribute("router.endpoint_kind", endpoint_kind)

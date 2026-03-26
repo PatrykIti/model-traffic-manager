@@ -6,6 +6,7 @@ ENVIRONMENT ?= dev1
 PYTEST_FLAGS ?= -vv -rA
 SELECTION ?= all
 RUN_MODE ?= continue-on-error
+LOCAL_LOG_ROOT ?= /tmp/mtm-local-logs
 
 .PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check list-validation-suites validation-suite-local validation-matrix-local validate-all-local validate-release-local integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-live-observability-local e2e-aks-redis-local run docker-build smoke clean
 
@@ -29,7 +30,8 @@ validate-shell:
 	bash -n scripts/release/run_azure_test_suite.sh
 
 test:
-	$(UV) run pytest $(PYTEST_FLAGS) --cov=app --cov-report=term-missing --cov-fail-under=85
+	mkdir -p "$(LOCAL_LOG_ROOT)"
+	set -o pipefail; $(UV) run pytest $(PYTEST_FLAGS) --cov=app --cov-report=term-missing --cov-fail-under=85 2>&1 | tee "$(LOCAL_LOG_ROOT)/pytest.log"
 
 check: lint typecheck validate-shell test
 
@@ -48,10 +50,12 @@ validate-terraform:
 release-check: check validate-workflows validate-terraform
 
 validation-suite-local:
-	bash scripts/release/run_azure_test_suite.sh "$(SUITE)" "$(ENVIRONMENT)"
+	mkdir -p "$(LOCAL_LOG_ROOT)"
+	set -o pipefail; bash scripts/release/run_azure_test_suite.sh "$(SUITE)" "$(ENVIRONMENT)" 2>&1 | tee "$(LOCAL_LOG_ROOT)/validation-suite-$(SUITE)-$(ENVIRONMENT).log"
 
 validation-matrix-local:
-	python3 scripts/release/run_validation_matrix.py --environment "$(ENVIRONMENT)" --selection "$(SELECTION)" --mode "$(RUN_MODE)"
+	mkdir -p "$(LOCAL_LOG_ROOT)"
+	set -o pipefail; python3 scripts/release/run_validation_matrix.py --environment "$(ENVIRONMENT)" --selection "$(SELECTION)" --mode "$(RUN_MODE)" 2>&1 | tee "$(LOCAL_LOG_ROOT)/validation-matrix-$(SELECTION)-$(ENVIRONMENT).log"
 
 validate-all-local:
 	$(MAKE) validation-matrix-local ENVIRONMENT="$(ENVIRONMENT)" SELECTION=all RUN_MODE=continue-on-error
@@ -96,7 +100,8 @@ docker-build:
 	docker build -f docker/Dockerfile -t model-traffic-manager:dev .
 
 smoke:
-	$(UV) run pytest $(PYTEST_FLAGS) tests/unit/entrypoints/api/test_health.py tests/integration/api/test_startup.py
+	mkdir -p "$(LOCAL_LOG_ROOT)"
+	set -o pipefail; $(UV) run pytest $(PYTEST_FLAGS) tests/unit/entrypoints/api/test_health.py tests/integration/api/test_startup.py 2>&1 | tee "$(LOCAL_LOG_ROOT)/smoke.log"
 
 clean:
 	rm -rf .mypy_cache .pytest_cache .ruff_cache htmlcov coverage.xml

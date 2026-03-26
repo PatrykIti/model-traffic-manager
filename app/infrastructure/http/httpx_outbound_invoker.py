@@ -40,7 +40,11 @@ class HttpxOutboundInvoker:
         timeout = self._build_timeout(timeout_ms)
         tracer = trace.get_tracer(__name__)
         try:
-            with tracer.start_as_current_span("outbound_http_post_json") as span:
+            with tracer.start_as_current_span(
+                "outbound_http_post_json",
+                kind=trace.SpanKind.CLIENT,
+            ) as span:
+                span.set_attribute("http.method", "POST")
                 span.set_attribute("http.url", endpoint)
                 span.set_attribute("router.timeout_ms", timeout_ms)
                 response = self._client.post(

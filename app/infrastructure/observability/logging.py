@@ -36,6 +36,11 @@ def configure_logging(
             app_log_export_handler.name = _APP_LOG_EXPORT_HANDLER_NAME
             app_logger.addHandler(app_log_export_handler)
 
+    logging.getLogger("azure").setLevel(logging.WARNING)
+    logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
+        logging.WARNING
+    )
+
     structlog.configure(
         processors=[
             structlog.contextvars.merge_contextvars,
