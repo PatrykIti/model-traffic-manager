@@ -110,6 +110,37 @@ def _kubectl_logs(namespace: str) -> str:
     return completed.stdout
 
 
+def _poll_successful_export_logs(
+    *,
+    namespace: str,
+    artifacts_dir: Path,
+    attempts: int = 18,
+    delay_seconds: int = 5,
+) -> str:
+    last_logs = ""
+    for attempt in range(1, attempts + 1):
+        logs = _kubectl_logs(namespace)
+        last_logs = logs
+        (artifacts_dir / f"router-export-success-{attempt}.txt").write_text(
+            logs,
+            encoding="utf-8",
+        )
+        if (
+            "applicationinsights.azure.com//v2.1/track" in logs
+            and "Response status: 200" in logs
+            and "Transmission succeeded" in logs
+        ):
+            return logs
+        if attempt < attempts:
+            time.sleep(delay_seconds)
+
+    raise AssertionError(
+        "Did not find a successful Application Insights export in pod logs. "
+        f"Last logs saved under {artifacts_dir}. "
+        f"Last log excerpt:\n{last_logs[-4000:]}"
+    )
+
+
 def test_router_emits_request_flow_to_application_insights() -> None:
     base_url, deployments, artifacts_dir = _require_live_observability()
     router_deployment_id, deployment = next(iter(deployments.items()))
@@ -124,17 +155,21 @@ def test_router_emits_request_flow_to_application_insights() -> None:
         )
 
     assert response.status_code == 200, response.text
-    logs = _poll_request_export_logs(
+
+    request_logs = _kubectl_logs(namespace)
+    (artifacts_dir / "router-request-flow.log").write_text(request_logs, encoding="utf-8")
+    assert request_id in request_logs
+    assert deployment["consumer_role"] in request_logs
+    assert "event_type=request_completed" in request_logs
+    assert "upstream_id=primary" in request_logs
+
+    export_logs = _poll_successful_export_logs(
         namespace=namespace,
-        request_id=request_id,
-        expected_consumer_role=str(deployment["consumer_role"]),
         artifacts_dir=artifacts_dir,
     )
 
-    assert request_id in logs
-    assert deployment["consumer_role"] in logs
-    assert "event_type=request_completed" in logs
-    assert "upstream_id=primary" in logs
+    assert "applicationinsights.azure.com//v2.1/track" in export_logs
+    assert "Transmission succeeded" in export_logs
 
 
 def test_router_startup_logs_expose_observability_snapshot() -> None:
