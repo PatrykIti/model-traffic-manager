@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -9,6 +10,8 @@ from uuid import uuid4
 
 import httpx
 import pytest
+
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def _require_live_observability() -> tuple[str, dict[str, object], Path]:
@@ -110,6 +113,10 @@ def _kubectl_logs(namespace: str) -> str:
     return completed.stdout
 
 
+def _normalize_logs(raw_logs: str) -> str:
+    return _ANSI_ESCAPE_RE.sub("", raw_logs)
+
+
 def _poll_successful_export_logs(
     *,
     namespace: str,
@@ -157,25 +164,30 @@ def test_router_emits_request_flow_to_application_insights() -> None:
     assert response.status_code == 200, response.text
 
     request_logs = _kubectl_logs(namespace)
-    (artifacts_dir / "router-request-flow.log").write_text(request_logs, encoding="utf-8")
-    assert request_id in request_logs
-    assert deployment["consumer_role"] in request_logs
-    assert "event_type=request_completed" in request_logs
-    assert "upstream_id=primary" in request_logs
+    normalized_request_logs = _normalize_logs(request_logs)
+    (artifacts_dir / "router-request-flow.log").write_text(
+        normalized_request_logs,
+        encoding="utf-8",
+    )
+    assert request_id in normalized_request_logs
+    assert deployment["consumer_role"] in normalized_request_logs
+    assert "event_type=request_completed" in normalized_request_logs
+    assert "upstream_id=primary" in normalized_request_logs
 
     export_logs = _poll_successful_export_logs(
         namespace=namespace,
         artifacts_dir=artifacts_dir,
     )
 
-    assert "applicationinsights.azure.com//v2.1/track" in export_logs
-    assert "Transmission succeeded" in export_logs
+    normalized_export_logs = _normalize_logs(export_logs)
+    assert "applicationinsights.azure.com//v2.1/track" in normalized_export_logs
+    assert "Transmission succeeded" in normalized_export_logs
 
 
 def test_router_startup_logs_expose_observability_snapshot() -> None:
     _base_url, deployments, artifacts_dir = _require_live_observability()
     namespace = os.getenv("E2E_NAMESPACE", "e2e-router")
-    logs = _kubectl_logs(namespace)
+    logs = _normalize_logs(_kubectl_logs(namespace))
     (artifacts_dir / "router-startup-logs.txt").write_text(logs, encoding="utf-8")
 
     assert "router_topology_snapshot" in logs
