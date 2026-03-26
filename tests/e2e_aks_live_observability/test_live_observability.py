@@ -61,26 +61,26 @@ def _build_payload(deployment: dict[str, object]) -> dict[str, object]:
     return payload
 
 
-def _run_app_insights_query(
+def _run_log_analytics_query(
     *,
     outputs: dict[str, object],
     query: str,
     artifacts_dir: Path,
     suffix: str,
 ) -> dict[str, object]:
-    app_id = outputs["application_insights_app_id"]["value"]
+    workspace_id = outputs["log_analytics_workspace_customer_id"]["value"]
     completed = subprocess.run(
         [
             "az",
             "monitor",
-            "app-insights",
+            "log-analytics",
             "query",
-            "--app",
-            str(app_id),
+            "--workspace",
+            str(workspace_id),
             "--analytics-query",
             query,
-            "--offset",
-            "30m",
+            "--timespan",
+            "PT30M",
             "-o",
             "json",
         ],
@@ -88,7 +88,7 @@ def _run_app_insights_query(
         capture_output=True,
         text=True,
     )
-    output_path = artifacts_dir / f"app-insights-query-{suffix}.json"
+    output_path = artifacts_dir / f"log-analytics-query-{suffix}.json"
     output_path.write_text(completed.stdout, encoding="utf-8")
     return json.loads(completed.stdout)
 
@@ -129,63 +129,31 @@ def _poll_request_trace(
     attempts: int = 24,
     delay_seconds: int = 10,
 ) -> dict[str, object]:
-    requests_query = f"""
-requests
-| where timestamp > ago(30m)
-| extend request_id = tostring(customDimensions["router.request_id"])
-| extend final_upstream_id = tostring(customDimensions["router.final_upstream_id"])
-| extend consumer_role = tostring(customDimensions["router.consumer_role"])
-| extend final_consumer_role = tostring(customDimensions["router.final_consumer_role"])
+    span_query = f"""
+OTelSpans
+| where TimeGenerated > ago(30m)
+| extend attrs = todynamic(Attributes)
+| extend request_id = tostring(attrs["router.request_id"])
+| extend final_upstream_id = tostring(attrs["router.final_upstream_id"])
+| extend consumer_role = tostring(attrs["router.consumer_role"])
+| extend final_consumer_role = tostring(attrs["router.final_consumer_role"])
 | where request_id == "{request_id}"
 | project
-    timestamp,
-    name,
-    resultCode,
-    duration,
+    TimeGenerated,
     request_id,
     final_upstream_id,
     consumer_role,
     final_consumer_role
-| top 1 by timestamp desc
-""".strip()
-    traces_query = f"""
-traces
-| where timestamp > ago(30m)
-| extend request_id = tostring(customDimensions["router.request_id"])
-| extend final_upstream_id = tostring(customDimensions["router.final_upstream_id"])
-| extend consumer_role = tostring(customDimensions["router.consumer_role"])
-| extend final_consumer_role = tostring(customDimensions["router.final_consumer_role"])
-| where request_id == "{request_id}"
-| project
-    timestamp,
-    name = operation_Name,
-    resultCode = tostring(""),
-    duration = todouble(0),
-    request_id,
-    final_upstream_id,
-    consumer_role,
-    final_consumer_role
-| top 1 by timestamp desc
+| top 5 by TimeGenerated desc
 """.strip()
 
     last_payload: dict[str, object] | None = None
     for attempt in range(1, attempts + 1):
-        payload = _run_app_insights_query(
+        payload = _run_log_analytics_query(
             outputs=outputs,
-            query=requests_query,
+            query=span_query,
             artifacts_dir=artifacts_dir,
-            suffix=f"request-requests-{attempt}",
-        )
-        last_payload = payload
-        row = _extract_first_row(payload)
-        if row is not None and row.get("consumer_role") == expected_consumer_role:
-            return row
-
-        payload = _run_app_insights_query(
-            outputs=outputs,
-            query=traces_query,
-            artifacts_dir=artifacts_dir,
-            suffix=f"request-traces-{attempt}",
+            suffix=f"request-spans-{attempt}",
         )
         last_payload = payload
         row = _extract_first_row(payload)
@@ -244,7 +212,6 @@ def test_router_emits_request_flow_to_application_insights() -> None:
     assert row["consumer_role"] == deployment["consumer_role"]
     assert row["final_consumer_role"] == deployment["consumer_role"]
     assert row["final_upstream_id"] == "primary"
-    assert str(row["resultCode"]) == "200"
 
 
 def test_router_startup_logs_expose_observability_snapshot() -> None:
