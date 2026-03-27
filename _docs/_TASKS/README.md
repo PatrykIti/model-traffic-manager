@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 283 work items
+- **Done:** 284 work items
 
 ---
 
@@ -340,3 +340,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-050 | Root README Badges, Personas, and Architecture Diagram | Medium | Small | The root README now includes social-proof badges, audience-fit sections, and a lightweight architecture diagram |
 | TASK-051 | GitHub Actions `runner.temp` Context Fix | Medium | Small | The nightly and release validation workflows no longer use invalid job-level `runner.temp` expressions |
 | TASK-052 | Remove External Chatbot Reference Docs from the Repository | Medium | Small | The repository no longer carries the chatbot-platform and SaaS orchestration reference docs that were moved elsewhere |
+| TASK-053 | Release Image Publishing and Automatic Semantic Release | High | Medium | Semantic release now runs on `main`, and release tags publish a real GHCR container image while release validation stays manual |
