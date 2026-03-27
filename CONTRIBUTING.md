@@ -57,6 +57,15 @@ Before opening or updating a pull request:
 - ensure all changed Markdown files remain in English
 - avoid mixing unrelated refactors into the same PR
 
+## Release workflow
+
+- semantic release notes are still sourced from merged pull-request bodies
+- `semantic-release` now runs automatically on pushes to the default branch and can still be started manually in `dry_run` mode
+- release tags in the form `v*` now publish a versioned container image to GHCR through the dedicated `release-image` workflow
+- the `release-image` workflow can also be started manually to publish or republish an existing release tag
+- the mutable `latest` image tag is only published for stable release tags in the form `vX.Y.Z`
+- the expensive Azure-backed `release-validation` workflow remains manual by design so it can stay a deliberate release gate instead of a post-release cost surprise
+
 ## Public contributor workflow versus maintainer workflow
 
 This repository has an internal maintainer workflow in [`AGENTS.md`](./AGENTS.md) and [`_docs/_TASKS`](./_docs/_TASKS/README.md).

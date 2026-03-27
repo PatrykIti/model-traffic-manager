@@ -24,8 +24,7 @@ This is intentionally separate from `docs/`, which is reserved for the official 
 
 ## Informational References
 
-- [SaaS-Chatbot-System-Orchiestration.md](./SaaS-Chatbot-System-Orchiestration.md) describes the higher-level SaaS orchestration, tenant provisioning, and control-plane layer above the chatbot system
-- [CHATBOT_PLATFORM.md](./CHATBOT_PLATFORM.md) describes the expected chatbot platform structure above the router, including the split between the router, chatbot control plane, runtime API, UI, and persistence
+Higher-level chatbot platform and SaaS orchestration reference documents were intentionally moved out of this repository to keep the internal documentation scoped to the router itself.
 
 ## Navigation rules
 
