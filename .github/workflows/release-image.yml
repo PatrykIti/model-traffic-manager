@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing git tag to publish as a GHCR release image
+        description: Existing git tag to publish or republish as a GHCR release image
         required: true
 
 permissions:
@@ -47,6 +47,17 @@ jobs:
         shell: bash
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/model-traffic-manager" >> "$GITHUB_OUTPUT"
 
+      - name: Detect stable release tag
+        id: release-kind
+        shell: bash
+        run: |
+          release_tag="${{ steps.release-tag.outputs.tag }}"
+          if [[ "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is_stable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_stable=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -64,7 +75,7 @@ jobs:
           images: ${{ steps.image-name.outputs.name }}
           tags: |
             type=raw,value=${{ steps.release-tag.outputs.tag }}
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ steps.release-kind.outputs.is_stable == 'true' }}
           labels: |
             org.opencontainers.image.title=model-traffic-manager
             org.opencontainers.image.description=Azure-native AI traffic router for AKS and Azure OpenAI
@@ -81,3 +92,9 @@ jobs:
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Summarize published image tags
+        shell: bash
+        run: |
+          echo "Published tags:"
+          printf '%s\n' "${{ steps.meta.outputs.tags }}"
