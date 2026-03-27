@@ -99,3 +99,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 66 | 2026-03-27 | Root README sponsorship call-to-action | docs/productization |
 | 67 | 2026-03-27 | Root README badges, personas, and architecture diagram | docs/productization |
 | 68 | 2026-03-27 | GitHub Actions `runner.temp` context fix | workflow/reliability |
+| 69 | 2026-03-27 | Remove external chatbot reference docs | docs/cleanup |
