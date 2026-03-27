@@ -97,3 +97,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 64 | 2026-03-27 | Inbound client auth and live validation | feature/auth |
 | 65 | 2026-03-27 | Public repository productization and Apache license | docs/productization |
 | 66 | 2026-03-27 | Root README sponsorship call-to-action | docs/productization |
+| 67 | 2026-03-27 | Root README badges, personas, and architecture diagram | docs/productization |

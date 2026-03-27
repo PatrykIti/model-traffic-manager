@@ -1,5 +1,11 @@
 # model-traffic-manager
 
+[![GitHub stars](https://img.shields.io/github/stars/PatrykIti/model-traffic-manager?style=flat-square)](https://github.com/PatrykIti/model-traffic-manager/stargazers)
+[![License](https://img.shields.io/github/license/PatrykIti/model-traffic-manager?style=flat-square)](./LICENSE)
+[![Azure Native](https://img.shields.io/badge/Azure-native-0078D4?style=flat-square&logo=microsoftazure&logoColor=white)](./docs/README.md)
+[![AKS Live Validated](https://img.shields.io/badge/AKS-live--validated-0a7f5a?style=flat-square)](./docs/operations/testing-levels-and-environments.md)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/PatrykIti?style=flat-square&logo=githubsponsors)](https://github.com/sponsors/PatrykIti)
+
 Azure-native AI traffic routing for teams that need one stable endpoint across Azure OpenAI accounts, regions, and deployments.
 
 `model-traffic-manager` is a policy-driven router for `chat/completions`, `embeddings`, and selected backend-facing shared services. It focuses on secretless auth, explainable routing, health-aware failover, and live AKS validation without turning into a generic AI gateway or tenant control plane.
@@ -28,6 +34,32 @@ This repository is intentionally narrow:
 - it favors explicit configuration, predictable routing, and operator supportability over framework magic
 
 That focus is the product. The goal is to give platform teams a small, explainable router they can trust in production.
+
+## Who this is for
+
+- platform teams running Azure OpenAI or Azure AI workloads across more than one region, account, or deployment
+- backend teams that want one stable AI endpoint instead of embedding failover and auth logic into every service
+- organizations that care about Managed Identity, explainable routing, and AKS-backed validation before production rollout
+- teams building internal chatbot systems or AI backends that need a strong infrastructure layer before they build the larger product around it
+
+## Who this is not for
+
+- teams looking for a no-code prompt workspace, agent builder, or multi-tenant SaaS control plane
+- teams that want a generic API gateway with every protocol and every provider built in
+- workloads that do not need Azure-native identity, failover visibility, or operator-focused routing control
+
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+    A[Backend services] -->|Bearer token or Entra ID| B[model-traffic-manager on AKS]
+    B --> C[Routing policy and health state]
+    C --> D[Azure OpenAI account / region A]
+    C --> E[Azure OpenAI account / region B]
+    C --> F[Azure OpenAI account / region C]
+    B --> G[Metrics, traces, runtime events]
+    B --> H[Optional Redis shared runtime state]
+```
 
 ## Current capabilities
 
