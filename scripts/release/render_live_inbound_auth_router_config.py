@@ -23,6 +23,7 @@ def main() -> None:
     cooldown_seconds = int(os.getenv("E2E_ROUTER_COOLDOWN_SECONDS", "30"))
     half_open_after_seconds = int(os.getenv("E2E_ROUTER_HALF_OPEN_AFTER_SECONDS", "60"))
     audience = os.environ["E2E_ROUTER_API_AUDIENCE"]
+    audience_app_id = os.environ["E2E_ROUTER_API_APP_ID"]
     tenant_id = os.environ["E2E_ENTRA_TENANT_ID"]
     caller_client_id = os.environ["E2E_CALLER_ENTRA_CLIENT_ID"]
 
@@ -45,7 +46,7 @@ def main() -> None:
         "        secret_ref: env://ROUTER_INBOUND_API_TOKEN",
         "      - kind: entra_id",
         f"        tenant_id: {tenant_id}",
-        f"        audiences: [{audience}]",
+        f"        audiences: [{audience}, {audience_app_id}]",
         "        applications:",
         f"          - client_app_id: {caller_client_id}",
         "            display_name: Live Entra Caller",

@@ -265,6 +265,7 @@ entra_app_role_id=""
 router_api_app_delete_status="not_created"
 e2e_inbound_api_token=""
 e2e_router_api_audience=""
+e2e_router_api_app_id=""
 
 write_run_metadata() {
   cat >"${artifacts_dir}/run-metadata.json" <<EOF
@@ -654,6 +655,7 @@ EOF
   )"
   printf '%s' "$router_api_app_json" > "${artifacts_dir}/router-api-app.json"
   router_api_app_id="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read())["appId"])' <<<"$router_api_app_json")"
+  e2e_router_api_app_id="$router_api_app_id"
   router_api_sp_json="$(az ad sp create --id "$router_api_app_id" -o json)"
   printf '%s' "$router_api_sp_json" > "${artifacts_dir}/router-api-service-principal.json"
   router_api_service_principal_id="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read())["id"])' <<<"$router_api_sp_json")"
@@ -681,6 +683,7 @@ export E2E_CALLER_CLIENT_ID="$caller_identity_client_id"
 export E2E_CALLER_ENTRA_CLIENT_ID="$caller_identity_client_id"
 export E2E_ENTRA_TENANT_ID="$tenant_id"
 export E2E_ROUTER_API_AUDIENCE="$e2e_router_api_audience"
+export E2E_ROUTER_API_APP_ID="$e2e_router_api_app_id"
 export E2E_INBOUND_API_TOKEN="$e2e_inbound_api_token"
 export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
 

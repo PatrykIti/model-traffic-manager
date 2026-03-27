@@ -4,7 +4,7 @@ import hmac
 import json
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import jwt
@@ -173,6 +173,17 @@ class InboundAuthenticator:
 
         try:
             header = jwt.get_unverified_header(token)
+            unverified_claims = jwt.decode(
+                token,
+                options={
+                    "verify_signature": False,
+                    "verify_aud": False,
+                    "verify_iss": False,
+                    "verify_exp": False,
+                    "verify_iat": False,
+                    "verify_nbf": False,
+                },
+            )
         except jwt.PyJWTError as exc:
             raise InboundAuthenticationError("The bearer token is not a valid JWT.") from exc
 
@@ -186,11 +197,20 @@ class InboundAuthenticator:
                 key=key,
                 algorithms=["RS256"],
                 audience=list(provider.audiences),
-                issuer=metadata["issuer"],
-                options={"require": ["exp", "iat", "nbf", "iss", "aud"]},
+                options={
+                    "require": ["exp", "iat", "nbf", "iss", "aud"],
+                    "verify_iss": False,
+                },
             )
         except jwt.PyJWTError as exc:
             raise InboundAuthenticationError("The Entra access token failed validation.") from exc
+
+        self._validate_tenant_and_issuer(
+            provider=provider,
+            metadata=metadata,
+            claims=claims,
+            unverified_claims=cast(dict[str, Any], unverified_claims),
+        )
 
         client_app_id = self._resolve_client_app_id(claims)
         application = next(
@@ -241,6 +261,29 @@ class InboundAuthenticator:
             raise InboundAuthenticationError("Invalid Entra OpenID configuration response.")
         self._metadata_cache = (now + self._cache_ttl_seconds, metadata)
         return metadata
+
+    @staticmethod
+    def _validate_tenant_and_issuer(
+        *,
+        provider: EntraIdProvider,
+        metadata: dict[str, Any],
+        claims: dict[str, Any],
+        unverified_claims: dict[str, Any],
+    ) -> None:
+        tenant_id = claims.get("tid") or unverified_claims.get("tid")
+        if tenant_id != provider.tenant_id:
+            raise InboundAuthenticationError(
+                "The Entra token tenant does not match the configuration."
+            )
+
+        issuer = claims.get("iss") or unverified_claims.get("iss")
+        allowed_issuers = {
+            metadata.get("issuer"),
+            f"{provider.authority_host}/{provider.tenant_id}/v2.0",
+            f"https://sts.windows.net/{provider.tenant_id}/",
+        }
+        if issuer not in allowed_issuers:
+            raise InboundAuthenticationError("The Entra token issuer is not allowed.")
 
     def _jwks(self, jwks_uri: str) -> dict[str, Any]:
         cache = self._jwks_cache
