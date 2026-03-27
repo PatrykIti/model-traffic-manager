@@ -1,54 +1,54 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
-# Managed Identity i outbound auth
+# Managed Identity and outbound auth
 
-## Cel
+## Goal
 
-Auth ma byc prosty i secretless tam, gdzie to mozliwe.
+Auth should be simple and secretless whenever possible.
 
-Jesli downstream wspiera Microsoft Entra ID, router powinien:
+If a downstream supports Microsoft Entra ID, the router should:
 
-- sam wykryc tozsamosc workloadu
-- sam pobrac token
-- sam wyslac bearer token do downstreamu
+- detect the workload identity
+- acquire a token
+- send the bearer token downstream
 
-bez recznego sekretu.
+without a manually managed secret.
 
-## Jaki model Azure zakladamy
+## Azure model we assume
 
-Dla AKS zakladamy:
+For AKS we assume:
 
 - Azure Workload Identity
 
-Nie projektujemy tego jako "identity klastra", tylko jako tozsamosc workloadu routera.
+We design it as workload identity for the router itself, not as generic cluster identity.
 
-To jest bezpieczniejsze i bardziej precyzyjne.
+That is safer and more precise.
 
-## Tryby auth w MVP
+## Auth modes in MVP
 
 ### 1. `managed_identity`
 
-Preferowany tryb.
+Preferred mode.
 
-Uzywany dla:
+Used for:
 
 - Azure Blob
-- Azure OpenAI / AI Foundry, jesli endpoint wspiera AAD
+- Azure OpenAI / AI Foundry when the endpoint supports AAD
 - Key Vault
-- Redis z AAD
-- wewnetrznych uslug chronionych przez Entra ID
+- Redis with AAD
+- internal services protected by Entra ID
 
 ### 2. `api_key`
 
-Fallback dla downstreamow, ktore nie wspieraja Entra ID.
+Fallback for downstreams that do not support Entra ID.
 
 ### 3. `none`
 
-Dla zasobow wewnetrznych bez auth albo za innym trusted boundary.
+For internal resources without auth or behind another trusted boundary.
 
-## Jak dziala `managed_identity`
+## How `managed_identity` works
 
-Jesli upstream ma:
+If an upstream has:
 
 ```yaml
 auth:
@@ -56,97 +56,97 @@ auth:
   scope: https://storage.azure.com/.default
 ```
 
-to router:
+the router:
 
-1. tworzy `DefaultAzureCredential`
-2. opcjonalnie wybiera user-assigned identity przez `client_id`
-3. pobiera token dla podanego `scope`
-4. cache'uje token do czasu bezpiecznego odswiezenia
-5. wysyla `Authorization: Bearer ...`
+1. creates `DefaultAzureCredential`
+2. optionally selects a user-assigned identity via `client_id`
+3. acquires a token for the configured `scope`
+4. caches the token until safe refresh time
+5. sends `Authorization: Bearer ...`
 
 ## `client_id`
 
-Pole opcjonalne.
+Optional field.
 
-Znaczenie:
+Meaning:
 
-- brak `client_id` -> domyslna identity workloadu
-- ustawiony `client_id` -> konkretna user-assigned managed identity
+- no `client_id` -> default workload identity
+- configured `client_id` -> specific user-assigned managed identity
 
-To daje mozliwosc:
+This supports:
 
-- jednej identity dla calego routera
-- albo wielu dedykowanych identity do roznych klas upstreamow
+- one identity for the whole router
+- or multiple dedicated identities for different upstream classes
 
-## Kiedy warto miec wiele identity
+## When multiple identities make sense
 
-Jesli chcesz odseparowac:
+If you want to separate:
 
-- odczyt Blob
-- wywolania AOAI
-- dostep do Key Vault
-- dostep do wewnetrznych API
+- Blob read access
+- Azure OpenAI calls
+- Key Vault access
+- internal API access
 
-to mozna pozniej dodac polityke:
+then later you can add a policy such as:
 
-- jedna identity per service class
-- albo jedna identity per deployment class
+- one identity per service class
+- or one identity per deployment class
 
-Ale MVP nie musi tego komplikowac. Wystarczy wsparcie dla `client_id`.
+But MVP does not need that complexity. Support for `client_id` is enough.
 
 ## RBAC model
 
-To kluczowy element.
+This is a key point.
 
-Operator przy `managed_identity` powinien robic glownie:
+For `managed_identity`, operators should mainly:
 
-- przypiecie identity do routera
-- nadanie RBAC dla tej identity
-- ustawienie `scope` w configu
+- attach an identity to the router
+- grant RBAC to that identity
+- configure the `scope`
 
-Przyklady:
+Examples:
 
-- Blob: odpowiednia rola na storage account albo kontenerze
-- Key Vault: odpowiednie uprawnienia do key/secrets
-- AOAI/AIFoundry: odpowiednia rola na zasobie
-- wewnetrzne API: aplikacja rejestrujaca audience i odpowiednia autoryzacja
+- Blob: correct role on the storage account or container
+- Key Vault: correct permissions for keys/secrets
+- Azure OpenAI / AI Foundry: correct role on the resource
+- internal APIs: app registration with the right audience and authorization model
 
-## Czego nie robimy
+## What we do not do
 
-Nie forwardujemy klientowskich tokenow do downstreamow jako glowny mechanizm platformowy.
+We do not forward client tokens to downstreams as the default platform mechanism.
 
-Klient auth to jedna rzecz.
+Client auth is one concern.
 
-Outbound service auth routera to druga rzecz.
+Router outbound service auth is another concern.
 
-Te rzeczy maja byc oddzielone.
+They must stay separate.
 
 ## Token cache
 
-Potrzebujemy lokalnego cache tokenow:
+We need a local token cache:
 
-- klucz: `(auth_mode, client_id, scope)`
-- wartosc: token + expiry
+- key: `(auth_mode, client_id, scope)`
+- value: token + expiry
 
-Zasada:
+Rule:
 
-- refresh przed expiry
-- bez globalnego Redis cache na MVP
-- cache in-memory per instancja wystarczy
+- refresh before expiry
+- no global Redis token cache for MVP
+- in-memory cache per instance is enough
 
-## Port domenowy
+## Domain port
 
-Warstwa application nie moze znac Azure SDK.
+Application code must not know the Azure SDK.
 
-Potrzebny port:
+Required port:
 
 ```text
 TokenProvider.get_bearer_token(auth_policy) -> BearerToken
 ```
 
-Implementacja Azure siedzi w infrastrukturze.
+The Azure implementation belongs in infrastructure.
 
-## Pseudokod
+## Pseudocode
 
 ```text
 if auth.mode == MANAGED_IDENTITY:
@@ -157,17 +157,17 @@ if auth.mode == MANAGED_IDENTITY:
     return Authorization: Bearer token
 ```
 
-## Kiedy `api_key`
+## When to use `api_key`
 
-Tylko gdy:
+Only when:
 
-- downstream nie wspiera Entra ID
-- albo integracja jest zewnetrzna i narzuca API key
+- the downstream does not support Entra ID
+- or an external integration requires API key auth
 
-`api_key` nie moze byc domyslnym modelem dla Azure-native uslug.
+`api_key` must not become the default model for Azure-native services.
 
-## Docelowa zasada produktu
+## Product rule
 
-> Jesli downstream wspiera Managed Identity, operator nie podaje sekretu.
+> If the downstream supports Managed Identity, the operator should not provide a secret.
 
-To jest jedna z glownych przewag tego routera.
+This is one of the main advantages of the router.

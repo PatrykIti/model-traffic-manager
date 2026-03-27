@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: router-shared-service-mock
+  namespace: ${E2E_NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: router-shared-service-mock
+  template:
+    metadata:
+      labels:
+        app: router-shared-service-mock
+    spec:
+      serviceAccountName: router-app
+      containers:
+        - name: mock
+          image: ${E2E_IMAGE}
+          imagePullPolicy: Always
+          command: ["/app/.venv/bin/python", "-c"]
+          args:
+            - |
+              import json
+              from http.server import BaseHTTPRequestHandler, HTTPServer
+
+              class Handler(BaseHTTPRequestHandler):
+                  def _write(self, code, body):
+                      self.send_response(code)
+                      self.send_header("Content-Type", "application/json")
+                      self.end_headers()
+                      self.wfile.write(json.dumps(body).encode("utf-8"))
+
+                  def do_POST(self):
+                      if self.path == "/single":
+                          self._write(200, {"selected": "single-endpoint", "status": "stored"})
+                          return
+                      if self.path == "/tiered-primary":
+                          self._write(503, {"error": "retry"})
+                          return
+                      if self.path == "/tiered-secondary":
+                          self._write(200, {"selected": "tiered-secondary", "status": "stored"})
+                          return
+                      if self.path == "/noop":
+                          self._write(200, {"ok": True})
+                          return
+                      self._write(404, {"error": "not_found"})
+
+                  def log_message(self, format, *args):
+                      return
+
+              HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10

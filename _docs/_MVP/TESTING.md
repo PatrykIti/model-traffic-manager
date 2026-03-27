@@ -1,70 +1,70 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
 # Testing strategy
 
-## Zasada glowna
+## Main rule
 
-Wszystko ma byc testowane tak, zeby bylo wiadomo, ze dziala przed deploymentem.
+Everything must be tested in a way that proves it works before deployment.
 
-Na MVP testy nie sa dodatkiem. Sa czescia definicji done.
+For MVP, tests are not optional. They are part of the definition of done.
 
-## Co jest obowiazkowe
+## Mandatory coverage
 
-- unit testy dla domeny
-- unit testy dla use case'ow
-- unit testy dla logiki auth
-- unit testy dla klasyfikacji bledow i failoveru
-- integracyjne minimum dla adapterow i API
-- coverage sprawdzany przez `pytest-cov`
+- unit tests for domain logic
+- unit tests for use cases
+- unit tests for auth logic
+- unit tests for failure classification and failover
+- minimum integration coverage for adapters and API
+- coverage tracked through `pytest-cov`
 
-## Priorytet testow
+## Testing priority
 
 ### 1. Unit tests
 
-To ma byc glowny typ testow.
+This should be the main test type.
 
-Testujemy:
+Test:
 
 - routing policy
-- selection upstreamu
-- fallback miedzy tierami
+- upstream selection
+- tier fallback
 - circuit breaker
-- cooldown po `429`
-- klasyfikacje bledow
+- cooldown after `429`
+- failure classification
 - token cache
-- mapowanie auth headers
+- auth header mapping
 - use case orchestration
 
-Unit testy maja byc:
+Unit tests must be:
 
-- szybkie
-- deterministyczne
-- bez prawdziwego Redis
-- bez prawdziwego Azure
-- bez prawdziwych zewnetrznych endpointow
+- fast
+- deterministic
+- free of real Redis
+- free of real Azure
+- free of real external endpoints
 
 ### 2. Integration tests
 
-Tylko tyle, ile potrzebne do potwierdzenia, ze adaptery sa dobrze spiete:
+Only enough to confirm adapters are wired correctly:
 
-- FastAPI endpointy
+- FastAPI endpoints
 - Redis repository
 - HTTPX invoker
-- MSI token provider przez kontrolowany stub/mock
+- MSI token provider through a controlled stub/mock
 
-### 3. E2E
+### 3. End-to-end tests
 
-Nie sa wymagane na sam start MVP.
+Not required at the very start of MVP.
 
-Mozna je dodac pozniej, gdy bedzie pierwszy staging deployment.
+They can be added later once the first staging deployment exists.
 
-## Jak mockujemy
+## How we mock
 
-Mockowanie ma byc zgodne z clean architecture.
+Mocking must respect Clean Architecture.
 
-Najpierw mockujemy porty, nie framework i nie prywatne detale klas.
+Mock ports first, not framework internals or private implementation details.
 
-### Mockowane elementy
+### Mocked elements
 
 - `DeploymentRepository`
 - `HealthRepository`
@@ -76,78 +76,78 @@ Najpierw mockujemy porty, nie framework i nie prywatne detale klas.
 
 ### Preferred test doubles
 
-Kolejnosc preferencji:
+Order of preference:
 
 1. fake
 2. stub
 3. spy
 4. mock
 
-Jesli wystarczy fake albo stub, nie trzeba isc w agresywne mockowanie.
+If a fake or stub is enough, do not reach for aggressive mocking.
 
-## Co sprawdzamy testami
+## What tests must prove
 
-## Routing
+### Routing
 
-- wybiera najnizszy zdrowy tier
-- nie wybiera upstreamu w cooldownie
-- nie wybiera upstreamu z `circuit_open`
-- przechodzi do kolejnego tieru, gdy primary odpada
-- zachowuje weighted round robin w obrebie tieru
+- selects the lowest healthy tier
+- does not select upstreams in cooldown
+- does not select upstreams with `circuit_open`
+- falls back to the next tier when primary is unavailable
+- preserves weighted round robin inside the same tier
 
-## Failover
+### Failover
 
-- retriable bledy przechodza do kolejnej proby
-- non-retriable bledy nie odpalaja failoveru
-- `429` ustawia cooldown
-- seria `5xx` otwiera circuit
-- `half-open` pozwala na probe powrotu
+- retriable errors move to the next attempt
+- non-retriable errors do not trigger failover
+- `429` sets cooldown
+- repeated `5xx` opens the circuit
+- half-open allows recovery probing
 
-## Auth
+### Auth
 
-- `managed_identity` pobiera token dla poprawnego `scope`
-- `managed_identity` uzywa `client_id`, jesli jest ustawiony
-- token cache nie pobiera ponownie tokena bez potrzeby
-- `api_key` zwraca poprawny header
-- `none` nie doklada auth headers
+- `managed_identity` acquires a token for the correct `scope`
+- `managed_identity` uses `client_id` when configured
+- token cache does not reacquire tokens unnecessarily
+- `api_key` returns the correct header
+- `none` adds no auth headers
 
-## API
+### API
 
-- poprawne mapowanie bledow domenowych na HTTP
-- poprawne przekazanie payloadu do use case'a
-- zwrocenie odpowiedzi upstreamu bez psucia kontraktu
+- correct mapping from domain errors to HTTP
+- correct forwarding of payload to the use case
+- correct return of upstream response without breaking the contract
 
 ## Coverage
 
-Na start wymagamy:
+Initial requirement:
 
 - `pytest --cov=app --cov-report=term-missing --cov-fail-under=85`
 
-To jest minimalny prog dla MVP.
+This is the minimum bar for MVP.
 
-Docelowo po ustabilizowaniu projektu mozna podniesc np. do `90`.
+Later, once the project stabilizes, the gate can be raised to something like `90`.
 
 ## Coverage policy
 
-Coverage nie jest celem samym w sobie.
+Coverage is not the goal by itself.
 
-Ale:
+But:
 
-- brak coverage oznacza, ze nie wiemy, czego nie testujemy
-- prog coverage chroni przed erozja testow
+- missing coverage means we do not know what is untested
+- a coverage gate protects against test erosion
 
-Dlatego coverage ma byc gate'em w CI.
+So coverage must be a CI gate.
 
-## Definition of Done dla kazdej zmiany
+## Definition of Done for every change
 
-Zmiana jest gotowa, gdy:
+A change is done when:
 
-- ma testy jednostkowe dla nowej logiki
-- nie psuje istniejacych testow
-- przechodzi coverage gate
-- przechodzi lint i type-check
+- it has unit tests for new logic
+- it does not break existing tests
+- it passes the coverage gate
+- it passes lint and type-check
 
-Minimalny check:
+Minimum check:
 
 ```text
 uv run ruff check .
@@ -155,15 +155,15 @@ uv run mypy app
 uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=85
 ```
 
-## Czego nie robimy
+## What we do not do
 
-- nie polegamy tylko na manualnym testowaniu
-- nie testujemy przez sleep-driven flaky tests
-- nie robimy testow, ktore wymagaja prawdziwego Azure w CI unitowym
-- nie mockujemy wszystkiego na slepo na poziomie framework magic
+- do not rely only on manual testing
+- do not create sleep-driven flaky tests
+- do not require real Azure in unit CI
+- do not blindly mock framework magic
 
-## Najwazniejsza zasada
+## Most important rule
 
-> Logika routingu i auth ma byc udowadnialna testami jednostkowymi.
+> Routing and auth logic must be provable with unit tests.
 
-Bez tego taki router szybko stanie sie trudny do zaufania operacyjnie.
+Without that, the router quickly becomes hard to trust operationally.

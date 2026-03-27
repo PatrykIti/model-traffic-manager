@@ -1,0 +1,61 @@
+name: integration-azure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Scope tfvars profile to use
+        required: true
+        default: dev1
+      suite:
+        description: Validation profile id from the suite registry
+        required: true
+        default: integration-azure
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  integration-azure:
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Sync environment
+        run: uv sync --frozen --python "$(cat .python-version)"
+
+      - name: Show available suite ids
+        run: python3 scripts/release/validation_suite_registry.py list
+
+      - name: Run integration-azure validation profile
+        run: bash scripts/release/run_azure_test_suite.sh "${{ inputs.suite }}" "${{ inputs.environment }}"
+
+      - name: Upload integration-azure artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-azure-artifacts-${{ inputs.suite }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/mtm-artifacts

@@ -1,10 +1,10 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
-# Roadmap MVP
+# MVP roadmap
 
-## Faza 0 - bootstrap repo
+## Phase 0 - repository bootstrap
 
-- utworzenie repo Python
+- create the Python repository
 - `uv init`
 - `pyproject.toml`
 - `uv.lock`
@@ -13,89 +13,93 @@
 - Ruff / Mypy / Pytest
 - `pytest-cov`
 
-## Faza 1 - domain i config
+Output:
 
-- modele domenowe
-- modele Pydantic configu
-- ladowanie YAML
-- walidacja configu
-- listowanie deploymentow
-- unit testy dla walidacji i domeny
+- the service starts as a repository scaffold
 
-Wyjscie:
+## Phase 1 - domain and config
 
-- serwis startuje i czyta poprawny config
+- domain models
+- Pydantic config models
+- YAML loading
+- config validation
+- deployment listing
+- unit tests for validation and domain logic
 
-## Faza 2 - routing single upstream
+Output:
+
+- the service starts and reads valid config
+
+## Phase 2 - single-upstream routing
 
 - `RouteChatCompletion`
 - `RouteEmbeddings`
-- outbound invoker HTTPX
-- auth `none` i `api_key`
-- podstawowe mapowanie bledow
-- unit testy use case'ow z mockowanymi portami
+- HTTPX outbound invoker
+- auth `none` and `api_key`
+- basic error mapping
+- unit tests for use cases with mocked ports
 
-Wyjscie:
+Output:
 
-- router dziala dla jednego upstreamu
+- router works for one upstream
 
-## Faza 3 - Managed Identity
+## Phase 3 - Managed Identity
 
 - `managed_identity` auth mode
 - Azure token provider
 - token cache
-- testy integracyjne przez stub
-- unit testy dla auth service i token cache
+- integration tests with stub
+- unit tests for auth service and token cache
 
-Wyjscie:
+Output:
 
 - secretless outbound auth
 
-## Faza 4 - multi-upstream i tiers
+## Phase 4 - multi-upstream and tiers
 
 - selection policy
 - weighted round robin
-- failover miedzy tierami
+- failover across tiers
 - request attempts
-- testy domenowe dla selekcji i failoveru
+- domain tests for selection and failover
 
-Wyjscie:
+Output:
 
 - primary/secondary routing
 
-## Faza 5 - health, cooldown, circuit breaker
+## Phase 5 - health, cooldown, and circuit breaker
 
 - Redis health repository
 - failure classification
-- cooldown po `429`
-- circuit breaker po seriach porazek
-- testy logiki health state i klasyfikacji bledow
+- cooldown after `429`
+- circuit breaker after repeated failures
+- tests for health state logic and failure classification
 
-Wyjscie:
+Output:
 
-- sensowne zachowanie przy awariach
+- sensible behavior under outages
 
-## Faza 6 - observability
+## Phase 6 - observability
 
 - structlog
 - Prometheus
 - OpenTelemetry
 - explainable route decisions
-- testy mapowania decision logs i metrics events
+- tests for decision logs and metric events
 
-Wyjscie:
+Output:
 
-- widac, co sie dzieje i dlaczego
+- clear visibility into what happened and why
 
-## Faza 7 - hardening
+## Phase 7 - hardening
 
 - timeout policy
 - connection pool tuning
 - load testing
 - chaos scenarios
 - security review
-- podniesienie i ustabilizowanie coverage gate
+- stronger and stabilized coverage gate
 
-Wyjscie:
+Output:
 
-- kandydat do `1.0.0`
+- candidate for `1.0.0`

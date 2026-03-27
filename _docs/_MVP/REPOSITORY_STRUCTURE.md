@@ -1,12 +1,12 @@
-[README repo](../../README.md) | [_docs](../README.md) | [_MVP](./README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md) | [_MVP](./README.md)
 
 # Repository structure
 
-## Cel
+## Goal
 
-Repo ma byc male, czytelne i zgodne z Clean Architecture.
+The repository should stay small, readable, and aligned with Clean Architecture.
 
-## Proponowana struktura
+## Proposed structure
 
 ```text
 ai-router/
@@ -83,31 +83,31 @@ ai-router/
       infrastructure/
 ```
 
-## Odpowiedzialnosc katalogow
+## Directory ownership
 
-## `app/domain`
+### `app/domain`
 
-Tylko logika domenowa.
+Only domain logic.
 
-Bez importow:
+No imports from:
 
 - FastAPI
 - Redis
 - Azure SDK
 
-## `app/application`
+### `app/application`
 
-Use case'y i kontrakty.
+Use cases and contracts.
 
-To jest miejsce, gdzie:
+This is where we:
 
-- skladamy request
-- wywolujemy polityki
-- korzystamy z portow
+- assemble requests
+- call policies
+- use ports
 
-## `app/infrastructure`
+### `app/infrastructure`
 
-Wszystko, co gada ze swiatem zewnetrznym:
+Everything that talks to the outside world:
 
 - YAML
 - Redis
@@ -115,43 +115,43 @@ Wszystko, co gada ze swiatem zewnetrznym:
 - HTTPX
 - telemetry
 
-## `app/entrypoints`
+### `app/entrypoints`
 
-Framework webowy i mapowanie HTTP.
+Web framework and HTTP mapping.
 
-## `tests/unit`
+### `tests/unit`
 
-Testujemy:
+Test:
 
-- selekcje upstreamow
+- upstream selection
 - failure classification
 - auth policy mapping
 - use case orchestration
 
-bez prawdziwego Redis i bez prawdziwego Azure.
+without real Redis or real Azure.
 
-Tu uzywamy mockow i stubow:
+Use mocks, fakes, and stubs such as:
 
-- mockowane porty
+- mocked ports
 - fake clock
 - fake token provider
 - fake outbound invoker
 - fake health repository
 
-## `tests/integration`
+### `tests/integration`
 
-Testujemy:
+Test:
 
-- FastAPI endpointy
+- FastAPI endpoints
 - Redis adapter
 - outbound invoker
-- MSI provider przez stub/mock
+- MSI provider through controlled stub/mock
 
-Na MVP integracyjne testy maja byc dodatkiem do unit testow, nie ich zamiennikiem.
+For MVP, integration tests complement unit tests; they do not replace them.
 
-## Czego unikamy
+## What to avoid
 
 - utils dump
-- wspolnych helperow bez odpowiedzialnosci
-- mieszania configu z logika domeny
-- "services.py" robiacego wszystko
+- shared helpers without clear ownership
+- mixing configuration with domain logic
+- a `services.py` that does everything

@@ -1,60 +1,60 @@
-[README repo](../../README.md) | [_docs](../README.md)
+[Repository README](../../README.md) | [Internal docs](../README.md)
 
-# MVP AI Router - indeks
+# AI Router MVP Index
 
-Ten katalog jest zbiorem dokumentow startowych dla nowego repo z routerem AI w Pythonie.
+This directory contains the bootstrap documentation for the new Python repository that will host the AI router.
 
-To nie jest opis DIAL Core. To jest projekt naszego prostszego, bardziej cloud-native produktu, inspirowanego analiza z `_BUSINESS/`.
+It is not a description of DIAL Core. It describes our smaller, more cloud-native product inspired by the gaps identified in the business analysis.
 
-## Kolejnosc czytania
+## Recommended reading order
 
 1. [BUSINESS.md](./BUSINESS.md)
-   Co budujemy, dla kogo i jaki problem rozwiazujemy.
+   What we are building, for whom, and what problem we are solving.
 2. [ARCHITECTURE.md](./ARCHITECTURE.md)
-   Clean Architecture, granice warstw, glowne komponenty i flow requestu.
+   Clean Architecture, layer boundaries, main components, and request flow.
 3. [STACK.md](./STACK.md)
-   Python, narzedzia, pakiety, polityka pinowania wersji i release management.
+   Python stack, tooling, dependency pinning policy, and release management.
 4. [CONFIGURATION.md](./CONFIGURATION.md)
-   Docelowy model konfiguracyjny i przykladowy YAML.
+   Target configuration model and sample YAML.
 5. [AUTH_MSI.md](./AUTH_MSI.md)
-   Jak dziala Managed Identity / Workload Identity i kiedy uzywamy innych trybow auth.
+   Managed Identity / Workload Identity and fallback auth modes.
 6. [ROUTING.md](./ROUTING.md)
-   Routing, tiers, health, failover, cooldown, circuit breaker, decyzje routingu.
+   Routing tiers, health, failover, cooldown, circuit breaker, and routing decisions.
 7. [REPOSITORY_STRUCTURE.md](./REPOSITORY_STRUCTURE.md)
-   Docelowa struktura repo i odpowiedzialnosc pakietow.
+   Target repository layout and package ownership.
 8. [TESTING.md](./TESTING.md)
-   Strategia testow: unit testy, mockowanie, coverage i definicja done.
+   Testing strategy, mocking model, coverage, and definition of done.
 9. [PSEUDOCODE.md](./PSEUDOCODE.md)
-   Use case'y, flow i szkielety implementacyjne.
+   Use cases, flows, and implementation skeletons.
 10. [ROADMAP.md](./ROADMAP.md)
-   Proponowana kolejnosc implementacji MVP.
+    Proposed implementation sequence for the MVP.
 
-## Zasady projektu
+## Project rules
 
-- najpierw router, nie cala platforma AI
+- router first, not a full AI platform
 - secretless by default
-- Managed Identity jako first-class capability
-- prosty model domenowy: deployment, upstream, provider, account, region, auth, health
-- minimum zaleznosci i minimum magic
-- exact pinning wersji
-- jedna jawna strategia routingu na MVP
+- Managed Identity as a first-class capability
+- simple domain model: deployment, upstream, provider, account, region, auth, health
+- minimal dependencies and minimal magic
+- exact version pinning
+- one explicit routing strategy for MVP
 - testability by design
-- obowiazkowe unit testy i kontrola coverage
+- mandatory unit tests and coverage control
 
-## Co jest poza zakresem MVP
+## Outside MVP scope
 
-Na start nie budujemy:
+Do not build these features at the start:
 
-- workspace plikow i promptow
+- file and prompt workspace
 - publication/share/invitations
-- code interpretera
+- code interpreter
 - generic OAuth vault
 - schema-rich apps
-- pelnego MCP platform layer
+- full MCP platform layer
 
-To wszystko mozna dolozyc pozniej, ale nie ma prawa rozbic prostoty v1.
+They can be added later, but they must not break the simplicity of v1.
 
-## Relacja do `_BUSINESS`
+## Relation to `_BUSINESS`
 
-- `_BUSINESS/` opisuje istniejace repo i luki produktowe
-- `_MVP/` opisuje docelowy nowy router i jak go zbudowac
+- `_BUSINESS/` describes the current-state repo and product gaps
+- `_MVP/` describes the target router and how to build it

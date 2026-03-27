@@ -1,0 +1,29 @@
+default_install_hook_types:
+  - pre-commit
+
+repos:
+  - repo: local
+    hooks:
+      - id: text-guardrails
+        name: text guardrails
+        entry: python3 scripts/pre_commit/check_text_guardrails.py
+        language: system
+        types_or:
+          - text
+      - id: docs-guardrails
+        name: docs guardrails
+        entry: python3 scripts/pre_commit/check_docs_guardrails.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: python-quality-gate
+        name: python quality gate
+        entry: python3 scripts/pre_commit/run_repo_quality_gate.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: compile-pre-commit-scripts
+        name: compile pre-commit scripts
+        entry: python3 -m py_compile scripts/pre_commit/check_text_guardrails.py scripts/pre_commit/check_docs_guardrails.py scripts/pre_commit/run_repo_quality_gate.py
+        language: system
+        pass_filenames: false

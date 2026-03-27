@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: router-caller
+  namespace: ${E2E_NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: router-caller
+  template:
+    metadata:
+      labels:
+        app: router-caller
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: router-caller
+      containers:
+        - name: caller
+          image: ${E2E_IMAGE}
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -lc
+            - sleep 3600

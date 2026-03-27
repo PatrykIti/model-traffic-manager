@@ -1,0 +1,151 @@
+from __future__ import annotations
+
+from app.domain.services.health_state_policy import HealthStatePolicy
+from app.domain.value_objects.failure_classification import FailureClassification, FailureReason
+from app.domain.value_objects.health_state import HealthState, HealthStatus
+
+
+def test_record_success_resets_state_to_healthy() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=3,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 100,
+    )
+
+    state = policy.record_success(
+        HealthState(
+            status=HealthStatus.CIRCUIT_OPEN,
+            consecutive_failures=3,
+            circuit_open_until=160,
+        )
+    )
+
+    assert state == HealthState(status=HealthStatus.HEALTHY, consecutive_failures=0)
+
+
+def test_record_rate_limited_failure_sets_cooldown() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=3,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 100,
+    )
+
+    state = policy.record_failure(
+        HealthState(),
+        FailureClassification(
+            reason=FailureReason.RATE_LIMITED,
+            retriable=True,
+            retry_after_seconds=45,
+        ),
+    )
+
+    assert state.status is HealthStatus.COOLDOWN
+    assert state.cooldown_until == 145
+    assert state.last_failure_reason is FailureReason.RATE_LIMITED
+
+
+def test_record_unhealthy_failure_opens_circuit_at_threshold() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=2,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 100,
+    )
+
+    first = policy.record_failure(
+        HealthState(),
+        FailureClassification(reason=FailureReason.UNHEALTHY, retriable=True),
+    )
+    second = policy.record_failure(
+        first,
+        FailureClassification(reason=FailureReason.NETWORK_ERROR, retriable=True),
+    )
+
+    assert first.status is HealthStatus.COOLDOWN
+    assert first.consecutive_failures == 1
+    assert first.cooldown_until == 130
+    assert second.status is HealthStatus.CIRCUIT_OPEN
+    assert second.consecutive_failures == 2
+    assert second.circuit_open_until == 160
+
+
+def test_normalize_recovers_expired_states() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=2,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 200,
+    )
+
+    rate_limited = policy.normalize(
+        HealthState(
+            status=HealthStatus.RATE_LIMITED,
+            consecutive_failures=1,
+            cooldown_until=150,
+            last_failure_reason=FailureReason.RATE_LIMITED,
+        )
+    )
+    circuit_open = policy.normalize(
+        HealthState(
+            status=HealthStatus.CIRCUIT_OPEN,
+            consecutive_failures=2,
+            circuit_open_until=190,
+            last_failure_reason=FailureReason.UNHEALTHY,
+        )
+    )
+
+    assert rate_limited.status is HealthStatus.HEALTHY
+    assert rate_limited.consecutive_failures == 1
+    assert circuit_open.status is HealthStatus.HALF_OPEN
+    assert circuit_open.consecutive_failures == 2
+
+
+def test_normalize_migrates_legacy_rate_limited_state_into_cooldown() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=2,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 100,
+    )
+
+    normalized = policy.normalize(
+        HealthState(
+            status=HealthStatus.RATE_LIMITED,
+            consecutive_failures=0,
+            cooldown_until=130,
+            last_failure_reason=FailureReason.RATE_LIMITED,
+        )
+    )
+
+    assert normalized.status is HealthStatus.COOLDOWN
+    assert normalized.cooldown_until == 130
+    assert normalized.last_failure_reason is FailureReason.RATE_LIMITED
+
+
+def test_record_failure_reopens_circuit_from_half_open_probe() -> None:
+    policy = HealthStatePolicy(
+        failure_threshold=2,
+        cooldown_seconds=30,
+        half_open_after_seconds=60,
+        now_provider=lambda: 200,
+    )
+
+    state = policy.record_failure(
+        HealthState(
+            status=HealthStatus.HALF_OPEN,
+            consecutive_failures=2,
+            last_failure_reason=FailureReason.UNHEALTHY,
+        ),
+        FailureClassification(
+            reason=FailureReason.RATE_LIMITED,
+            retriable=True,
+            retry_after_seconds=15,
+        ),
+    )
+
+    assert state.status is HealthStatus.CIRCUIT_OPEN
+    assert state.consecutive_failures == 3
+    assert state.circuit_open_until == 260
+    assert state.last_failure_reason is FailureReason.RATE_LIMITED

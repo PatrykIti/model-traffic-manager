@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: router-redis-mock
+  namespace: ${E2E_NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: router-redis-mock
+  template:
+    metadata:
+      labels:
+        app: router-redis-mock
+    spec:
+      serviceAccountName: router-app
+      containers:
+        - name: mock
+          image: ${E2E_IMAGE}
+          imagePullPolicy: Always
+          command: ["/app/.venv/bin/python", "-c"]
+          args:
+            - |
+              import json
+              import time
+              from http.server import BaseHTTPRequestHandler, HTTPServer
+
+              class Handler(BaseHTTPRequestHandler):
+                  def _write(self, code, body, headers=None):
+                      self.send_response(code)
+                      self.send_header("Content-Type", "application/json")
+                      if headers is not None:
+                          for key, value in headers.items():
+                              self.send_header(key, value)
+                      self.end_headers()
+                      self.wfile.write(json.dumps(body).encode("utf-8"))
+
+                  def do_POST(self):
+                      if self.path == "/ok":
+                          self._write(200, {"selected": "primary", "choices": [{"message": {"content": "ok"}}]})
+                          return
+                      if self.path == "/slow":
+                          time.sleep(5)
+                          self._write(200, {"selected": "slow-primary", "choices": [{"message": {"content": "ok"}}]})
+                          return
+                      if self.path == "/rate-limit":
+                          self._write(429, {"error": "rate_limited"}, headers={"Retry-After": "30"})
+                          return
+                      if self.path == "/unhealthy":
+                          self._write(503, {"error": "unhealthy"})
+                          return
+                      if self.path == "/secondary":
+                          self._write(200, {"selected": "secondary", "choices": [{"message": {"content": "ok"}}]})
+                          return
+                      self._write(404, {"error": "not_found"})
+
+                  def log_message(self, format, *args):
+                      return
+
+              HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10

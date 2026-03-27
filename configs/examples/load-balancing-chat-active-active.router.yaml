@@ -1,0 +1,57 @@
+router:
+  instance_name: load-balancing-chat-active-active
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: assistant-chat-balanced
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 50
+      request_rate_per_second: 20
+    upstreams:
+      # These two upstreams intentionally form one active-active pool.
+      # They stay in the same tier because they are treated as equivalent
+      # primaries from the application's point of view.
+      - id: gpt41-weu-primary-a
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-primary-a
+        compatibility_group: gpt41-prod-primary
+        target_share_percent: 80
+        max_share_percent: 80
+        endpoint: https://aoai-prod-01.openai.azure.com/openai/deployments/gpt-4-1-primary-a/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      - id: gpt41-neu-primary-b
+        provider: azure_openai
+        account: aoai-prod-02
+        region: northeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-primary-b
+        compatibility_group: gpt41-prod-primary
+        target_share_percent: 20
+        max_share_percent: 20
+        endpoint: https://aoai-prod-02.openai.azure.com/openai/deployments/gpt-4-1-primary-b/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services: {}

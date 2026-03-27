@@ -1,0 +1,43 @@
+router:
+  instance_name: shared-services-direct-backend-access
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: assistant-chat
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 50
+      request_rate_per_second: 20
+    upstreams:
+      - id: assistant-chat-primary
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://aoai-prod-01.openai.azure.com/openai/v1/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services:
+  conversation_archive:
+    transport: http_json
+    access_mode: direct_backend_access
+    provider_managed_availability: true
+    provider: azure_storage
+    account: convo-archive
+    region: westeurope
+    endpoint: https://convoarchive.blob.core.windows.net
+    auth:
+      mode: managed_identity
+      scope: https://storage.azure.com/.default

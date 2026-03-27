@@ -1,0 +1,82 @@
+router:
+  instance_name: model-traffic-manager-local
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: local-health-check
+    consumer_role: bot-system-be
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: local-upstream
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/openai/deployments/local-health-check/chat/completions
+        auth:
+          mode: none
+  - id: local-embeddings-check
+    consumer_role: embeddings-worker
+    kind: embeddings
+    protocol: openai_embeddings
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: local-embeddings-upstream
+        provider: internal_mock
+        account: local
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/openai/deployments/local-embeddings-check/embeddings
+        auth:
+          mode: none
+
+shared_services:
+  conversation_archive:
+    consumer_role: archive-worker
+    transport: http_json
+    access_mode: direct_backend_access
+    provider_managed_availability: true
+    provider: azure_storage
+    account: conversation-archive
+    region: westeurope
+    endpoint: https://conversation-archive.blob.core.windows.net
+    auth:
+      mode: managed_identity
+      scope: https://storage.azure.com/.default
+  transcript_registry:
+    consumer_role: transcript-backend
+    transport: http_json
+    access_mode: router_proxy
+    provider_managed_availability: true
+    routing_strategy: single_endpoint
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: transcript-registry-primary
+        provider: internal_api
+        account: platform
+        region: local
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/shared/transcript-registry
+        auth:
+          mode: none

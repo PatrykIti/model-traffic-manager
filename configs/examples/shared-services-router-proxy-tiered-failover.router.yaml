@@ -1,0 +1,61 @@
+router:
+  instance_name: shared-services-tiered-failover
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: assistant-chat
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 50
+      request_rate_per_second: 20
+    upstreams:
+      - id: assistant-chat-primary
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://aoai-prod-01.openai.azure.com/openai/v1/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services:
+  transcript_search:
+    transport: http_json
+    access_mode: router_proxy
+    provider_managed_availability: false
+    routing_strategy: tiered_failover
+    limits:
+      max_concurrency: 20
+      request_rate_per_second: 10
+    upstreams:
+      - id: transcript-search-primary
+        provider: internal_api
+        account: search-prod
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://search-we.example.internal/transcript-search
+        auth:
+          mode: managed_identity
+          scope: api://transcript-search/.default
+      - id: transcript-search-secondary
+        provider: internal_api
+        account: search-dr
+        region: northeurope
+        tier: 1
+        weight: 100
+        endpoint: https://search-ne.example.internal/transcript-search
+        auth:
+          mode: managed_identity
+          scope: api://transcript-search/.default

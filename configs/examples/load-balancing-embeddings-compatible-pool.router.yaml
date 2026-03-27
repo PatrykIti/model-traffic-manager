@@ -1,0 +1,57 @@
+router:
+  instance_name: load-balancing-embeddings-compatible-pool
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: knowledge-embeddings-balanced
+    kind: embeddings
+    protocol: openai_embeddings
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 100
+      request_rate_per_second: 50
+    upstreams:
+      # For embeddings, compatibility is stricter than for chat.
+      # These upstreams are safe to balance only because they use the same
+      # embedding model, version, and compatibility group.
+      - id: embeddings-weu-primary-a
+        provider: azure_openai
+        account: aoai-emb-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        model_name: text-embedding-3-small
+        model_version: "1"
+        deployment_name: text-embedding-3-small-a
+        compatibility_group: text-embedding-3-small-prod
+        target_share_percent: 70
+        max_share_percent: 70
+        endpoint: https://aoai-emb-prod-01.openai.azure.com/openai/deployments/text-embedding-3-small-a/embeddings
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      - id: embeddings-neu-primary-b
+        provider: azure_openai
+        account: aoai-emb-prod-02
+        region: northeurope
+        tier: 0
+        weight: 100
+        model_name: text-embedding-3-small
+        model_version: "1"
+        deployment_name: text-embedding-3-small-b
+        compatibility_group: text-embedding-3-small-prod
+        target_share_percent: 30
+        max_share_percent: 30
+        endpoint: https://aoai-emb-prod-02.openai.azure.com/openai/deployments/text-embedding-3-small-b/embeddings
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services: {}

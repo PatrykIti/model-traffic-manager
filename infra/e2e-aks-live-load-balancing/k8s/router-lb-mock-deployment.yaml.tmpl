@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: router-lb-mock
+  namespace: ${E2E_NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: router-lb-mock
+  template:
+    metadata:
+      labels:
+        app: router-lb-mock
+    spec:
+      serviceAccountName: router-app
+      containers:
+        - name: mock
+          image: ${E2E_IMAGE}
+          imagePullPolicy: Always
+          command: ["/app/.venv/bin/python", "-c"]
+          args:
+            - |
+              import json
+              from http.server import BaseHTTPRequestHandler, HTTPServer
+
+              class Handler(BaseHTTPRequestHandler):
+                  def _write(self, code, body):
+                      self.send_response(code)
+                      self.send_header("Content-Type", "application/json")
+                      self.end_headers()
+                      self.wfile.write(json.dumps(body).encode("utf-8"))
+
+                  def do_POST(self):
+                      if self.path == "/chat/a":
+                          self._write(200, {"selected": "chat-a", "choices": [{"message": {"content": "a"}}]})
+                          return
+                      if self.path == "/chat/b":
+                          self._write(200, {"selected": "chat-b", "choices": [{"message": {"content": "b"}}]})
+                          return
+                      if self.path == "/chat/primary":
+                          self._write(200, {"selected": "chat-primary", "choices": [{"message": {"content": "primary"}}]})
+                          return
+                      if self.path == "/chat/standby":
+                          self._write(200, {"selected": "chat-standby", "choices": [{"message": {"content": "standby"}}]})
+                          return
+                      if self.path == "/chat/fail":
+                          self._write(503, {"error": "unhealthy"})
+                          return
+                      if self.path == "/embeddings/a":
+                          self._write(200, {"selected": "emb-a", "data": [{"index": 0, "embedding": [0.1, 0.1, 0.1]}]})
+                          return
+                      if self.path == "/embeddings/b":
+                          self._write(200, {"selected": "emb-b", "data": [{"index": 0, "embedding": [0.2, 0.2, 0.2]}]})
+                          return
+                      self._write(404, {"error": "not_found"})
+
+                  def log_message(self, format, *args):
+                      return
+
+              HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10

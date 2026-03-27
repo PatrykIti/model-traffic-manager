@@ -1,0 +1,72 @@
+router:
+  instance_name: load-balancing-chat-active-standby
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+
+deployments:
+  - id: assistant-chat-controlled
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 50
+      request_rate_per_second: 20
+    upstreams:
+      # This pool uses active_standby instead of active-active.
+      # The first upstream carries the normal traffic.
+      - id: gpt41-primary-active
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-primary
+        compatibility_group: gpt41-controlled-primary
+        balancing_policy: active_standby
+        endpoint: https://aoai-prod-01.openai.azure.com/openai/deployments/gpt-4-1-primary/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      # warm_standby keeps this upstream healthy and ready,
+      # but it should not receive normal traffic unless the active one fails.
+      - id: gpt41-primary-standby
+        provider: azure_openai
+        account: aoai-prod-02
+        region: northeurope
+        tier: 0
+        weight: 100
+        model_name: gpt-4.1
+        model_version: "2025-04-14"
+        deployment_name: gpt-4-1-standby
+        compatibility_group: gpt41-controlled-primary
+        balancing_policy: active_standby
+        warm_standby: true
+        endpoint: https://aoai-prod-02.openai.azure.com/openai/deployments/gpt-4-1-standby/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+      # This higher tier is a model fallback, not part of the active-standby pool.
+      - id: gpt4o-fallback
+        provider: azure_openai
+        account: aoai-dr-01
+        region: swedencentral
+        tier: 1
+        weight: 100
+        model_name: gpt-4o
+        model_version: "2024-08-06"
+        deployment_name: gpt-4o-fallback
+        compatibility_group: gpt4o-fallback
+        endpoint: https://aoai-dr-01.openai.azure.com/openai/deployments/gpt-4o-fallback/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services: {}
