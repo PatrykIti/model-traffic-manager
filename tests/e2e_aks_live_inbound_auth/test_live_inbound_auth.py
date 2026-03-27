@@ -68,15 +68,47 @@ def _caller_pod_name(namespace: str) -> str:
             "-l",
             "app=router-caller",
             "-o",
-            "jsonpath={.items[0].metadata.name}",
+            "json",
         ],
         check=True,
         capture_output=True,
         text=True,
     )
-    pod_name = completed.stdout.strip()
-    assert pod_name
-    return pod_name
+    payload = json.loads(completed.stdout)
+    items = payload.get("items", [])
+    assert isinstance(items, list)
+
+    running_ready: list[tuple[str, str]] = []
+    running: list[tuple[str, str]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        metadata = item.get("metadata")
+        status = item.get("status")
+        if not isinstance(metadata, dict) or not isinstance(status, dict):
+            continue
+        pod_name = metadata.get("name")
+        created_at = metadata.get("creationTimestamp", "")
+        phase = status.get("phase")
+        if not isinstance(pod_name, str) or not pod_name:
+            continue
+        if phase != "Running":
+            continue
+
+        running.append((pod_name, created_at))
+        conditions = status.get("conditions", [])
+        if isinstance(conditions, list) and any(
+            isinstance(condition, dict)
+            and condition.get("type") == "Ready"
+            and condition.get("status") == "True"
+            for condition in conditions
+        ):
+            running_ready.append((pod_name, created_at))
+
+    candidates = running_ready or running
+    assert candidates, f"No running router-caller pod found in namespace {namespace}"
+    candidates.sort(key=lambda item: item[1], reverse=True)
+    return candidates[0][0]
 
 
 def test_router_requires_and_accepts_api_bearer_token() -> None:
