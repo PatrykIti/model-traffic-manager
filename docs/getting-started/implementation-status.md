@@ -9,6 +9,7 @@ Current repository status:
 - a typed domain and config foundation is implemented
 - startup validates YAML config and builds deployment and shared-service registries
 - proxy paths for chat completions and embeddings are implemented
+- router entrypoints can now enforce inbound client auth with router-owned API bearer tokens or Microsoft Entra ID access tokens
 - only MVP deployment contracts are accepted at startup: `llm` with `openai_chat` and `embeddings` with `openai_embeddings`
 - chat and embeddings routes reject incompatible deployment contracts explicitly at request time
 - outbound auth supports `none`, `api_key`, and `managed_identity`
@@ -27,6 +28,7 @@ Current repository status:
 - `POST /v1/shared-services/{service_id}` executes router-proxy shared services while direct-backend-access services remain metadata-only
 - opt-in `integration-azure` and `e2e-aks` workflows plus repo-local higher-level test artifacts are implemented
 - dedicated opt-in suites now exist for both live chat and live embeddings validation on AKS
+- a dedicated live AKS suite now validates inbound API bearer-token and Entra ID auth against a protected router
 - the live chat suite now also covers router failover, cooldown, and circuit-open behavior against a controlled primary failure path
 - a dedicated live AKS suite now exists for model-aware load-balancing scenarios
 - a dedicated live AKS suite now exists for shared-service execution modes

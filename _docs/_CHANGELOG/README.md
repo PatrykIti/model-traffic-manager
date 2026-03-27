@@ -94,3 +94,5 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 61 | 2026-03-25 | Live observability AKS suite | validation/e2e |
 | 62 | 2026-03-26 | Observability live suite log capture and query hardening | validation/reliability |
 | 63 | 2026-03-26 | Live observability scope destroy hardening | validation/reliability |
+| 64 | 2026-03-27 | Inbound client auth and live validation | feature/auth |
+| 65 | 2026-03-27 | Public repository productization and Apache license | docs/productization |

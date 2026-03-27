@@ -7,7 +7,7 @@
 **Category:** Runtime Security
 **Estimated Effort:** Large
 **Dependencies:** TASK-047-01
-**Status:** **In Progress** (2026-03-27)
+**Status:** **Done** (2026-03-27)
 
 ---
 
@@ -29,19 +29,19 @@ Technical scope:
 
 ### TASK-047-02-01: API token extraction, validation, and constant-time verification
 
-**Status:** In Progress (2026-03-27)
+**Status:** Done (2026-03-27)
 
 Implement router-owned API token validation with secret resolution and token metadata lookup.
 
 ### TASK-047-02-02: Entra JWT validation, JWKS refresh, and authorization decision flow
 
-**Status:** In Progress (2026-03-27)
+**Status:** Done (2026-03-27)
 
 Implement JWT signature and claim validation for Entra access tokens plus role-based authorization for app-only callers.
 
 ### TASK-047-02-03: Request principal context and audit-safe observability fields
 
-**Status:** In Progress (2026-03-27)
+**Status:** Done (2026-03-27)
 
 Propagate normalized caller identity into request context, error mapping, and safe observability metadata.
 

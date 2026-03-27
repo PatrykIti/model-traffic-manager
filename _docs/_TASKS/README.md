@@ -48,8 +48,8 @@ This board tracks every repository work item, including main tasks, subtasks, an
 ## Statistics
 
 - **To Do:** 0 work items
-- **In Progress:** 12 work items
-- **Done:** 264 work items
+- **In Progress:** 0 work items
+- **Done:** 279 work items
 
 ---
 
@@ -63,18 +63,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
-| TASK-047 | Inbound Client Auth with API Bearer Tokens and Microsoft Entra ID | High | Large | Core config, middleware, local tests, and live suite scaffolding are implemented; live validation remains to be executed |
-| TASK-047-01 | Inbound Auth Contract, Config Model, and Principal Taxonomy | High | Medium | Config contract and caller principal model are implemented in code and examples |
-| TASK-047-01-01 | API Bearer Token Contract, Generation, and Storage Semantics | High | Small | Opaque bearer tokens now use operator-managed `secret_ref` storage and constant-time runtime verification |
-| TASK-047-01-02 | Entra ID Token Contract, Audience, Issuer, and Principal Claims | High | Small | Entra protected-API audience, tenant, and app-role claim contract are now encoded in the config model |
-| TASK-047-02 | Runtime Authentication Middleware and Request Principal Propagation | High | Large | Inbound auth middleware, request principal state, and `401/403` behavior are implemented locally |
-| TASK-047-02-01 | API Token Extraction, Validation, and Constant-Time Verification | High | Medium | Bearer token extraction and constant-time secret verification are implemented and tested |
-| TASK-047-02-02 | Entra JWT Validation, JWKS Refresh, and Authorization Decision Flow | High | Medium | JWKS-backed Entra JWT validation and role-based authorization are implemented and locally tested |
-| TASK-047-02-03 | Request Principal Context and Audit-Safe Observability Fields | High | Small | Safe caller metadata now binds into request context and observability fields |
-| TASK-047-03 | Microsoft Entra ID Protected-API Model, App Roles, and Federated Caller Guidance | High | Medium | Temporary app-registration and app-role setup is wired into the live runner design and docs |
-| TASK-047-03-01 | Router API App Registration, Application ID URI, and App-Role Design | High | Small | Runner scaffolding now creates a temporary router API app with `invoke.router` app role |
-| TASK-047-03-02 | Caller App Registration, Federated Credential Pattern, and Role-Assignment Flow | High | Small | Caller identity and role-assignment flow are wired into the live suite scaffolding |
-| TASK-047-04 | Tests, Examples, Observability Alignment, and Documentation Rollout | High | Medium | Local tests, examples, and docs are added; final closure waits on successful live suite validation |
+
 
 ---
 
@@ -332,3 +321,18 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-044-04 | Runner, Workflow, Runbook, and Documentation Rollout for the Observability Suite | High | Medium | Suite registry, runner wiring, local command docs, and runbooks now include the live observability profile |
 | TASK-045 | Observability Live Suite Log Capture and Query Hardening | High | Small | Make-driven logs now persist to files and the live observability suite uses more robust span/query and startup-log capture |
 | TASK-046 | Live Observability Scope Destroy Hardening | High | Small | The temporary observability scope now disables nested-resource protection on RG destroy to tolerate Application Insights Smart Detection leftovers |
+| TASK-047 | Inbound Client Auth with API Bearer Tokens and Microsoft Entra ID | High | Large | API bearer-token and Entra-based inbound auth are fully implemented, documented, and validated through the dedicated live AKS auth suite |
+| TASK-047-01 | Inbound Auth Contract, Config Model, and Principal Taxonomy | High | Medium | Inbound auth config, principal taxonomy, and bearer-token / Entra contract shape are implemented and documented |
+| TASK-047-01-01 | API Bearer Token Contract, Generation, and Storage Semantics | High | Small | Opaque bearer tokens use operator-managed secret refs and constant-time runtime verification |
+| TASK-047-01-02 | Entra ID Token Contract, Audience, Issuer, and Principal Claims | High | Small | The router now validates Entra audience, issuer, tenant, and app-role expectations for app-only callers |
+| TASK-047-02 | Runtime Authentication Middleware and Request Principal Propagation | High | Large | Request-time auth middleware, caller principal state, and `401/403` behavior are implemented across protected endpoints |
+| TASK-047-02-01 | API Token Extraction, Validation, and Constant-Time Verification | High | Medium | Bearer-token extraction and constant-time secret verification are implemented and covered by tests |
+| TASK-047-02-02 | Entra JWT Validation, JWKS Refresh, and Authorization Decision Flow | High | Medium | JWKS-backed Entra JWT validation, issuer checks, and role-based authorization are implemented and live-validated |
+| TASK-047-02-03 | Request Principal Context and Audit-Safe Observability Fields | High | Small | Safe caller metadata now flows through request context, runtime events, and observability fields |
+| TASK-047-03 | Microsoft Entra ID Protected-API Model, App Roles, and Federated Caller Guidance | High | Medium | The protected-API, app-role, and federated-caller model is documented and exercised through the live runner |
+| TASK-047-03-01 | Router API App Registration, Application ID URI, and App-Role Design | High | Small | The live runner now creates a temporary router API app with stable audience and `invoke.router` app role |
+| TASK-047-03-02 | Caller App Registration, Federated Credential Pattern, and Role-Assignment Flow | High | Small | Caller workload identity, federated credential setup, and app-role assignment are wired into the live suite |
+| TASK-047-04 | Tests, Examples, Observability Alignment, and Documentation Rollout | High | Medium | Examples, tests, docs, and the live AKS auth suite now close the inbound-auth feature set |
+| TASK-048 | Public Repository Productization, Licensing, and Trust Surface | High | Medium | The repository now has a product-facing root README, Apache-2.0 license, funding metadata, and public trust files |
+| TASK-048-01 | Root README and Public Contribution Surface | High | Small | The root README and contribution guide now present a clearer public product and contributor path |
+| TASK-048-02 | Apache-2.0 License, Funding, and Repository Trust Files | High | Small | Apache-2.0, GitHub Sponsors metadata, and root support, security, and conduct files are now in place |

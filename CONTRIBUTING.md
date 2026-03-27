@@ -1,44 +1,28 @@
-[Repository README](./README.md) | [Official docs](./docs/README.md) | [Internal docs](./_docs/README.md)
+[Repository README](./README.md) | [Official docs](./docs/README.md) | [Support](./SUPPORT.md) | [Code of Conduct](./CODE_OF_CONDUCT.md)
 
 # Contributing
 
-## Working model
+Thanks for your interest in `model-traffic-manager`.
 
-This repository is developed with a strict split between official documentation and internal delivery documentation:
+This repository is open to:
 
-- `docs/` is for official application documentation.
-- `_docs/` is for internal planning, task tracking, changelog history, and implementation notes.
+- bug fixes
+- tests and validation improvements
+- documentation improvements
+- example configurations
+- focused feature work that fits the product scope
 
-All Markdown content must be written in English.
+## Product scope first
 
-## Before you start
+Before contributing, make sure the change fits the repository boundary:
 
-1. Read [AGENTS.md](./AGENTS.md).
-2. Check the current task board in [_docs/_TASKS/README.md](./_docs/_TASKS/README.md).
-3. Create or update the task and subtask files for the work you are about to do.
+- this project is an Azure- and AKS-focused AI traffic router
+- it is not a generic AI gateway, SaaS control plane, or prompt-management platform
+- small, explicit, testable changes are preferred over large framework-heavy refactors
 
-## Required workflow for every change
+If you want to propose a bigger feature or product-direction change, open an issue first so the design can be discussed before implementation work starts.
 
-1. Create a main task in `_docs/_TASKS/`.
-2. Create at least one technical subtask when the change has implementation details, structure changes, or pseudocode worth tracking.
-3. Update the relevant documentation in `docs/` and/or `_docs/`.
-4. Add or update the changelog entry in `_docs/_CHANGELOG/`.
-5. Update the task board and changelog index.
-6. Run pre-commit before committing.
-
-## Install and use pre-commit
-
-Recommended installation options:
-
-- `uv tool install pre-commit`
-- or `python3 -m pip install pre-commit`
-
-Then enable and run it:
-
-```text
-pre-commit install
-pre-commit run --all-files
-```
+## Local setup
 
 Canonical local commands:
 
@@ -48,38 +32,56 @@ make check
 make run
 ```
 
-## Branching and pull requests
+Recommended pre-commit setup:
 
-- Use descriptive branches such as `feature/...`, `fix/...`, or `docs/...`.
-- Keep pull requests focused on one coherent task group.
-- Link the relevant task and subtask IDs in the pull request.
-- Use the repository pull request template.
-- Keep local validation and CI aligned by using the same `make` targets.
-- Fill in the `Release Impact` and `Release Notes` sections in the pull request template when the change should appear in public release notes.
+```text
+uv tool install pre-commit
+pre-commit install
+pre-commit run --all-files
+```
 
-## Release workflow
+## Pull request expectations
 
-- Public version history lives in [`CHANGELOG.md`](./CHANGELOG.md).
-- Internal implementation history remains in [`_docs/_CHANGELOG/`](./_docs/_CHANGELOG/README.md).
-- The `semantic-release` workflow reads merged pull-request release notes, updates [`pyproject.toml`](./pyproject.toml), prepends the new entry to [`CHANGELOG.md`](./CHANGELOG.md), creates a tag, and publishes a GitHub Release.
-- The release workflow uses a GitHub App token. The app must be installed on this repository and have at least:
-  - `Contents: Read and write`
-  - `Pull requests: Read`
-  - `Metadata: Read`
-- If branch protection or rulesets restrict direct pushes to `main`, grant the GitHub App bypass access for the release workflow.
-
-## Documentation expectations
-
-- Every documentation directory must contain a `README.md`.
-- Every documentation Markdown file except the root repository `README.md` must include navigation links near the top.
-- `docs/` should explain the application from the user/operator/contributor perspective.
-- `_docs/` should explain internal planning, task decomposition, and delivery workflow.
-
-## Validation expectations
+- use descriptive branches such as `feature/...`, `fix/...`, or `docs/...`
+- keep pull requests focused on one coherent change set
+- add or update tests when behavior changes
+- update documentation when user-visible behavior, config, or operations guidance changes
+- keep local validation and CI aligned by using the same `make` targets
+- use the repository pull request template
+- fill in the `Release Impact` and `Release Notes` sections when the change should appear in public release notes
 
 Before opening or updating a pull request:
 
 - run `pre-commit run --all-files`
 - resolve every failing hook
-- update task status and changelog references
-- ensure all changed Markdown files are in English
+- ensure all changed Markdown files remain in English
+- avoid mixing unrelated refactors into the same PR
+
+## Public contributor workflow versus maintainer workflow
+
+This repository has an internal maintainer workflow in [`AGENTS.md`](./AGENTS.md) and [`_docs/_TASKS`](./_docs/_TASKS/README.md).
+
+For external contributors:
+
+- you do not need to create or update internal task files unless a maintainer asks for it
+- you do not need to add `_docs/_CHANGELOG` entries yourself unless you are working as a maintainer
+- maintainers may reconcile internal task and changelog bookkeeping during review
+
+For maintainers and repeat contributors:
+
+- follow the full repository process in [`AGENTS.md`](./AGENTS.md)
+- keep `_docs/_TASKS` and `_docs/_CHANGELOG` synchronized
+- update official docs in `docs/` whenever behavior changes
+
+## Documentation expectations
+
+- `docs/` is for official product and operator documentation
+- `_docs/` is for internal planning and delivery workflow
+- every documentation directory must contain a `README.md`
+- every Markdown document other than the root `README.md` must include navigation links near the top
+- all Markdown content must be written in English
+
+## Security and conduct
+
+- for vulnerabilities or anything sensitive, follow [`SECURITY.md`](./SECURITY.md) instead of opening a public issue
+- participation in project spaces is governed by [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)

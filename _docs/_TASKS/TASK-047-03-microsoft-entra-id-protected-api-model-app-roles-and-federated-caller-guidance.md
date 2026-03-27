@@ -7,7 +7,7 @@
 **Category:** Identity Architecture
 **Estimated Effort:** Medium
 **Dependencies:** TASK-047-01
-**Status:** **In Progress** (2026-03-27)
+**Status:** **Done** (2026-03-27)
 
 ---
 
@@ -35,13 +35,13 @@ Important clarification:
 
 ### TASK-047-03-01: Router API app registration, Application ID URI, and app-role design
 
-**Status:** In Progress (2026-03-27)
+**Status:** Done (2026-03-27)
 
 Define how the router is represented as a protected API in Entra ID.
 
 ### TASK-047-03-02: Caller app registration, federated credential pattern, and role-assignment flow
 
-**Status:** In Progress (2026-03-27)
+**Status:** Done (2026-03-27)
 
 Define how each calling service gets an app-only token for the router without client secrets.
 

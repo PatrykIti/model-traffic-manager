@@ -1,54 +1,46 @@
 # model-traffic-manager
 
-`model-traffic-manager` is a policy-driven AI traffic router for Azure and AKS.
+Azure-native AI traffic routing for teams that need one stable endpoint across Azure OpenAI accounts, regions, and deployments.
 
-The repository hosts a small, observable, explainable service that routes AI traffic across deployments, accounts, and regions without turning into a generic AI platform.
+`model-traffic-manager` is a policy-driven router for `chat/completions`, `embeddings`, and selected backend-facing shared services. It focuses on secretless auth, explainable routing, health-aware failover, and live AKS validation without turning into a generic AI gateway or tenant control plane.
 
-This router is intended to run as an internal LLM traffic manager for the chatbot system backend. It is not the SaaS tenant orchestrator or the tenant control-plane router.
+- One stable endpoint for AI traffic on Azure and AKS
+- Managed Identity first, with explicit API-key fallback only when required
+- Explainable failover, cooldown, and circuit behavior you can actually debug
+- Inbound auth with router-owned API bearer tokens or Microsoft Entra ID
 
-## What this repository covers
+## Why teams use it
 
-- a single stable endpoint for AI workloads
-- routing across multiple Azure AI / Azure OpenAI accounts and regions
-- secretless outbound authentication via Managed Identity whenever possible
-- explainable routing, health state tracking, failover, cooldown, and circuit breaker behavior
-- official product/application documentation in `docs/`
-- internal delivery and AI-assistance documentation in `_docs/`
+- Route across multiple Azure AI / Azure OpenAI accounts and regions without teaching every backend how to fail over.
+- Keep outbound auth secretless by default when downstreams support Managed Identity.
+- Protect router entrypoints with either opaque API bearer tokens or Entra ID access tokens for app-to-app callers.
+- Expose routing decisions, rejected candidates, and caller-safe observability fields for support and audit trails.
+- Validate the real deployment path with opt-in Azure and AKS live suites instead of relying only on mocks.
 
-## Documentation model
+## Product focus
 
-- [docs/README.md](./docs/README.md) contains the official application documentation for operators, contributors, and future users of the router.
-- [_docs/README.md](./_docs/README.md) contains internal planning, task tracking, changelog, and implementation guidance used to evolve the repository with AI-assisted workflows.
-- [_docs/SaaS-Chatbot-System-Orchiestration.md](./_docs/SaaS-Chatbot-System-Orchiestration.md) is an informational internal reference describing the orchestration layer above the chatbot system. It exists to keep the router and future backend work aligned with the expected platform boundary and to remind us that this repository is not the SaaS control-plane router.
-- [_docs/CHATBOT_PLATFORM.md](./_docs/CHATBOT_PLATFORM.md) is an informational internal reference describing the expected chatbot platform structure above the router, including the control plane, runtime API, UI, and persistence split that should remain outside this repository.
-- [AGENTS.md](./AGENTS.md) is the working agreement for repository rules, documentation standards, task workflow, and definition of done.
+This repository is intentionally narrow:
 
-## Current status
+- it is an internal AI traffic router for Azure-native backends
+- it is not a generic AI platform, SaaS control plane, prompt workspace, or tenant orchestrator
+- it favors explicit configuration, predictable routing, and operator supportability over framework magic
 
-The repository currently implements the full application-side MVP contract described in `docs/` and `_docs/_MVP/`.
+That focus is the product. The goal is to give platform teams a small, explainable router they can trust in production.
 
-What is already implemented:
+## Current capabilities
 
-- the runnable FastAPI application shell and quality automation
-- startup-time YAML validation and config-backed registries for deployments and shared services
-- health endpoints plus `GET /deployments` and `GET /shared-services`
-- `POST /v1/shared-services/{service_id}` for router-callable shared services
 - `POST /v1/chat/completions/{deployment_id}` with tiered multi-upstream failover
 - `POST /v1/embeddings/{deployment_id}` with tiered multi-upstream failover
-- strict MVP deployment-contract validation for chat and embeddings surfaces
+- `POST /v1/shared-services/{service_id}` for selected backend-facing shared services
+- startup-time YAML validation with typed deployment and shared-service registries
 - outbound auth modes `none`, `api_key`, and `managed_identity`
-- weighted round robin inside the lowest available tier for request selection
-- cooldown after `429`, quota-aware failure classification, circuit opening, and half-open recovery probes
-- in-memory and Redis-backed runtime state for health and limiter coordination
+- inbound auth modes `api_bearer_token` and `entra_id`
+- weighted round robin within the lowest healthy tier
+- cooldown, quota-aware classification, circuit opening, and half-open recovery
+- in-memory and Redis-backed runtime state for shared health and limiter coordination
 - deployment-level request-rate limiting and concurrency limiting
-- rejected-candidate diagnostics and explicit failover reasons in runtime events
-- shared-service execution modes that distinguish direct backend access, single-endpoint router proxy, and tiered-failover router proxy
-- request correlation with `x-request-id`
-- structured runtime decision events and a Prometheus `/metrics` endpoint
-- trace foundation for inbound requests and outbound model attempts
-- opt-in `integration-azure`, `e2e-aks`, and `e2e-aks-live-model` validation flows
-- persistent outbound HTTP client tuning with explicit connection limits and timeout policy
-- `make release-check` as the current release gate for quality, shell syntax, workflow, and Terraform validation
+- request correlation, runtime decision events, Prometheus `/metrics`, and OpenTelemetry trace foundations
+- live validation suites for smoke, live chat, live embeddings, load balancing, shared services, inbound auth, observability, and Redis-backed multi-replica behavior
 
 ## Quick start
 
@@ -58,7 +50,7 @@ make check
 make run
 ```
 
-For local configuration and overrides:
+Local setup notes:
 
 - copy or reference values from [`.env.example`](./.env.example)
 - keep the router YAML in [`configs/example.router.yaml`](./configs/example.router.yaml) or point `MODEL_TRAFFIC_MANAGER_CONFIG_PATH` to another file
@@ -74,21 +66,35 @@ Useful local endpoints after startup:
 - `POST /v1/chat/completions/{deployment_id}`
 - `POST /v1/embeddings/{deployment_id}`
 
-## Validation levels
+## Validation
 
-The repository keeps three practical validation tiers:
+The repository keeps a layered validation model:
 
-- default local quality: `make check`
+- local quality gate: `make check`
 - Azure-backed integration without AKS: `make integration-azure-local`
-- AKS end-to-end validation:
-  `make e2e-aks-local` for smoke coverage and `make e2e-aks-live-model-local` for real model-response validation
+- AKS smoke and live suites: `make e2e-aks-local`
+- real model-response validation on AKS: `make e2e-aks-live-model-local`
+- live inbound auth validation on AKS: `make e2e-aks-live-inbound-auth-local`
+- live request-flow observability validation on AKS: `make e2e-aks-live-observability-local`
 
-The higher-level suites are intentionally opt-in because they provision temporary Azure resources and, in the live-model profile, consume real model quota.
+The higher-level suites are intentionally opt-in because they provision temporary Azure resources and can consume real model quota.
 
-## Quick navigation
+## Documentation
 
-- [Official docs](./docs/README.md)
-- [Internal docs](./_docs/README.md)
+- [Official docs](./docs/README.md) explain the product, runtime behavior, configuration model, routing, and operations guidance.
+- [Internal docs](./_docs/README.md) track delivery planning, task decomposition, and internal changelog history.
+- [AGENTS.md](./AGENTS.md) is the repository working agreement for maintainers and AI-assisted workflows.
+
+## Community and support
+
+- [Contributing guide](./CONTRIBUTING.md)
+- [Support guide](./SUPPORT.md)
+- [Security policy](./SECURITY.md)
+- [Code of conduct](./CODE_OF_CONDUCT.md)
 - [Release changelog](./CHANGELOG.md)
-- [Contribution guide](./CONTRIBUTING.md)
-- [Repository rules](./AGENTS.md)
+
+If this project is useful to your team, support it through the repository sponsor button or [GitHub Sponsors](https://github.com/sponsors/PatrykIti). Sponsorship helps fund documentation, reliability work, and production-grade validation coverage.
+
+## License
+
+This repository is licensed under [Apache-2.0](./LICENSE).
