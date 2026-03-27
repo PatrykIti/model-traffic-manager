@@ -41,7 +41,6 @@ jobs:
       GHCR_OWNER: ${{ github.repository_owner }}
       GHCR_USERNAME: ${{ github.actor }}
       GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      VALIDATION_ARTIFACTS_ROOT: ${{ runner.temp }}/mtm-artifacts
 
     steps:
       - name: Check out repository
