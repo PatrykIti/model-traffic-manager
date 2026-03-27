@@ -4,6 +4,11 @@ This changelog tracks released versions and public release notes for `model-traf
 
 Internal task-level delivery history remains in `_docs/_CHANGELOG/`.
 
+## v0.1.1 - 2026-03-27
+
+### Removed
+- router-external chatbot platform and SaaS orchestration reference documents from `_docs/` (#2)
+
 ## v0.1.0 - 2026-03-27
 
 ### Added
