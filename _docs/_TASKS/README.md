@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 279 work items
+- **Done:** 280 work items
 
 ---
 
@@ -336,3 +336,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-048 | Public Repository Productization, Licensing, and Trust Surface | High | Medium | The repository now has a product-facing root README, Apache-2.0 license, funding metadata, and public trust files |
 | TASK-048-01 | Root README and Public Contribution Surface | High | Small | The root README and contribution guide now present a clearer public product and contributor path |
 | TASK-048-02 | Apache-2.0 License, Funding, and Repository Trust Files | High | Small | Apache-2.0, GitHub Sponsors metadata, and root support, security, and conduct files are now in place |
+| TASK-049 | Root README Sponsorship Call-To-Action | Medium | Small | The root README now integrates a product-aligned sponsorship ask tied to docs, validation, and roadmap work |

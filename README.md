@@ -9,6 +9,8 @@ Azure-native AI traffic routing for teams that need one stable endpoint across A
 - Explainable failover, cooldown, and circuit behavior you can actually debug
 - Inbound auth with router-owned API bearer tokens or Microsoft Entra ID
 
+If this project helps your team ship reliable Azure AI traffic faster, sponsorship is welcome. Support directly funds documentation, live validation coverage, and roadmap time for the next production-grade capabilities.
+
 ## Why teams use it
 
 - Route across multiple Azure AI / Azure OpenAI accounts and regions without teaching every backend how to fail over.
@@ -93,7 +95,7 @@ The higher-level suites are intentionally opt-in because they provision temporar
 - [Code of conduct](./CODE_OF_CONDUCT.md)
 - [Release changelog](./CHANGELOG.md)
 
-If this project is useful to your team, support it through the repository sponsor button or [GitHub Sponsors](https://github.com/sponsors/PatrykIti). Sponsorship helps fund documentation, reliability work, and production-grade validation coverage.
+If `model-traffic-manager` saves your team time, reduces routing risk, or helps you standardize Azure AI traffic, support it through the repository sponsor button or [GitHub Sponsors](https://github.com/sponsors/PatrykIti). Sponsorship helps fund documentation, reliability work, live AKS validation, and the larger product roadmap around production chatbot infrastructure.
 
 ## License
 
