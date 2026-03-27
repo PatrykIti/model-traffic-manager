@@ -47,7 +47,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 ## Statistics
 
-- **To Do:** 0 work items
+- **To Do:** 12 work items
 - **In Progress:** 0 work items
 - **Done:** 264 work items
 
@@ -57,6 +57,18 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 | ID | Title | Priority | Effort | Notes |
 |----|-------|----------|--------|-------|
+| TASK-047 | Inbound Client Auth with API Bearer Tokens and Microsoft Entra ID | High | Large | Add optional inbound bearer-token and Entra ID auth for router callers |
+| TASK-047-01 | Inbound Auth Contract, Config Model, and Principal Taxonomy | High | Medium | Define config and principal model for bearer-token and Entra auth |
+| TASK-047-01-01 | API Bearer Token Contract, Generation, and Storage Semantics | High | Small | Opaque bearer tokens with operator-managed generation and hashed or secret-ref storage |
+| TASK-047-01-02 | Entra ID Token Contract, Audience, Issuer, and Principal Claims | High | Small | Protected API audience, issuer, tenant, and app-role claim contract for app-only callers |
+| TASK-047-02 | Runtime Authentication Middleware and Request Principal Propagation | High | Large | Implement inbound auth validation and normalized caller context |
+| TASK-047-02-01 | API Token Extraction, Validation, and Constant-Time Verification | High | Medium | Parse bearer headers and validate router-owned API tokens safely |
+| TASK-047-02-02 | Entra JWT Validation, JWKS Refresh, and Authorization Decision Flow | High | Medium | Validate Entra JWTs and authorize app-only callers through roles or explicit ACL semantics |
+| TASK-047-02-03 | Request Principal Context and Audit-Safe Observability Fields | High | Small | Propagate safe caller metadata into request context and observability |
+| TASK-047-03 | Microsoft Entra ID Protected-API Model, App Roles, and Federated Caller Guidance | High | Medium | Define the Entra protected-API and client app-registration architecture |
+| TASK-047-03-01 | Router API App Registration, Application ID URI, and App-Role Design | High | Small | Define the router API audience and app-role surface |
+| TASK-047-03-02 | Caller App Registration, Federated Credential Pattern, and Role-Assignment Flow | High | Small | Define per-service caller identities with federated credentials and app-role assignments |
+| TASK-047-04 | Tests, Examples, Observability Alignment, and Documentation Rollout | High | Medium | Add examples, tests, and docs for both inbound auth modes |
 ---
 
 ## In Progress
