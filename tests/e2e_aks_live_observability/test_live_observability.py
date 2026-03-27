@@ -148,6 +148,40 @@ def _poll_successful_export_logs(
     )
 
 
+def _poll_request_flow_logs(
+    *,
+    namespace: str,
+    request_id: str,
+    expected_consumer_role: str,
+    artifacts_dir: Path,
+    attempts: int = 12,
+    delay_seconds: int = 2,
+) -> str:
+    last_logs = ""
+    for attempt in range(1, attempts + 1):
+        logs = _normalize_logs(_kubectl_logs(namespace))
+        last_logs = logs
+        (artifacts_dir / f"router-request-flow-{attempt}.log").write_text(
+            logs,
+            encoding="utf-8",
+        )
+        if (
+            request_id in logs
+            and expected_consumer_role in logs
+            and "event_type=request_completed" in logs
+            and "upstream_id=primary" in logs
+        ):
+            return logs
+        if attempt < attempts:
+            time.sleep(delay_seconds)
+
+    raise AssertionError(
+        "Did not find the expected request-flow runtime events in pod logs. "
+        f"Last logs saved under {artifacts_dir}. "
+        f"Last log excerpt:\n{last_logs[-4000:]}"
+    )
+
+
 def test_router_emits_request_flow_to_application_insights() -> None:
     base_url, deployments, artifacts_dir = _require_live_observability()
     router_deployment_id, deployment = next(iter(deployments.items()))
@@ -163,16 +197,12 @@ def test_router_emits_request_flow_to_application_insights() -> None:
 
     assert response.status_code == 200, response.text
 
-    request_logs = _kubectl_logs(namespace)
-    normalized_request_logs = _normalize_logs(request_logs)
-    (artifacts_dir / "router-request-flow.log").write_text(
-        normalized_request_logs,
-        encoding="utf-8",
+    _poll_request_flow_logs(
+        namespace=namespace,
+        request_id=request_id,
+        expected_consumer_role=str(deployment["consumer_role"]),
+        artifacts_dir=artifacts_dir,
     )
-    assert request_id in normalized_request_logs
-    assert deployment["consumer_role"] in normalized_request_logs
-    assert "event_type=request_completed" in normalized_request_logs
-    assert "upstream_id=primary" in normalized_request_logs
 
     export_logs = _poll_successful_export_logs(
         namespace=namespace,
