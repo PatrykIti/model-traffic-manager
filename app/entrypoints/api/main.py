@@ -43,6 +43,7 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
         )
         yield
         container.outbound_invoker.close()
+        container.inbound_authenticator.close()
         if container.redis_client is not None:
             container.redis_client.close()
         observability.shutdown()

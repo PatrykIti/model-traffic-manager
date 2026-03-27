@@ -8,7 +8,7 @@ SELECTION ?= all
 RUN_MODE ?= continue-on-error
 LOCAL_LOG_ROOT ?= /tmp/mtm-local-logs
 
-.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check list-validation-suites validation-suite-local validation-matrix-local validate-all-local validate-release-local integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-live-observability-local e2e-aks-redis-local run docker-build smoke clean
+.PHONY: bootstrap lock lint format typecheck validate-shell test check validate-workflows validate-terraform release-check list-validation-suites validation-suite-local validation-matrix-local validate-all-local validate-release-local integration-azure-local integration-azure-chat-local integration-azure-embeddings-local e2e-aks-local e2e-aks-live-model-local e2e-aks-live-embeddings-local e2e-aks-live-load-balancing-local e2e-aks-live-shared-services-local e2e-aks-live-inbound-auth-local e2e-aks-live-observability-local e2e-aks-redis-local run docker-build smoke clean
 
 bootstrap:
 	$(UV) sync --frozen --python "$(PYTHON_VERSION)"
@@ -86,6 +86,9 @@ e2e-aks-live-load-balancing-local:
 
 e2e-aks-live-shared-services-local:
 	$(MAKE) validation-suite-local SUITE=e2e-aks-live-shared-services ENVIRONMENT="$(ENVIRONMENT)"
+
+e2e-aks-live-inbound-auth-local:
+	$(MAKE) validation-suite-local SUITE=e2e-aks-live-inbound-auth ENVIRONMENT="$(ENVIRONMENT)"
 
 e2e-aks-live-observability-local:
 	$(MAKE) validation-suite-local SUITE=e2e-aks-live-observability ENVIRONMENT="$(ENVIRONMENT)"

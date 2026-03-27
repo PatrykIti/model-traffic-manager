@@ -7,7 +7,7 @@
 **Category:** Observability and Security
 **Estimated Effort:** Small
 **Dependencies:** TASK-047-02
-**Status:** To Do
+**Status:** **In Progress** (2026-03-27)
 
 ---
 

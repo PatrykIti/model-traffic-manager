@@ -7,7 +7,7 @@
 **Category:** Security Contract
 **Estimated Effort:** Medium
 **Dependencies:** TASK-047
-**Status:** To Do
+**Status:** **In Progress** (2026-03-27)
 
 ---
 
@@ -39,13 +39,13 @@ Principal taxonomy should capture at least:
 
 ### TASK-047-01-01: API bearer token contract, generation, and storage semantics
 
-**Status:** To Do
+**Status:** In Progress (2026-03-27)
 
 Define how operators generate, store, rotate, and identify router-owned bearer tokens.
 
 ### TASK-047-01-02: Entra ID token contract, audience, issuer, and principal claims
 
-**Status:** To Do
+**Status:** In Progress (2026-03-27)
 
 Define how the router validates Entra access-token shape and which claims are required for app-only service tokens.
 

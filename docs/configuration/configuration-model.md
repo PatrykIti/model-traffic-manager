@@ -10,6 +10,8 @@ The main sections are:
 - `deployments`
 - `shared_services`
 
+The `router` section may also define `inbound_auth` when caller authentication is enabled.
+
 Available reference configs:
 
 - [`configs/example.router.yaml`](../../configs/example.router.yaml)
@@ -52,5 +54,10 @@ The current deployment-level `limits` fields are:
 
 - `max_concurrency`
 - `request_rate_per_second`
+
+Current inbound auth modes are:
+
+- `api_bearer_token`
+- `entra_id`
 
 For AKS deployment patterns and the trade-offs between Secret-, env-, and ConfigMap-based delivery, see [../operations/aks-configuration-delivery.md](../operations/aks-configuration-delivery.md).

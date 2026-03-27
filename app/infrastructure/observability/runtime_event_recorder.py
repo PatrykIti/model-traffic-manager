@@ -44,6 +44,10 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
             "endpoint_kind": event.endpoint_kind,
             "deployment_id": event.deployment_id,
             "consumer_role": event.consumer_role,
+            "caller_auth_mode": event.caller_auth_mode,
+            "caller_principal_id": event.caller_principal_id,
+            "caller_display_name": event.caller_display_name,
+            "caller_consumer_role": event.caller_consumer_role,
             "request_id": event.request_id,
             "attempt": event.attempt,
             "upstream_id": event.upstream_id,
@@ -109,6 +113,18 @@ class StructuredRuntimeEventRecorder(RuntimeEventRecorder):
         if event.consumer_role is not None:
             attributes["router.consumer_role"] = event.consumer_role
             span.set_attribute("router.consumer_role", event.consumer_role)
+        if event.caller_auth_mode is not None:
+            attributes["router.caller_auth_mode"] = event.caller_auth_mode
+            span.set_attribute("router.caller_auth_mode", event.caller_auth_mode)
+        if event.caller_principal_id is not None:
+            attributes["router.caller_principal_id"] = event.caller_principal_id
+            span.set_attribute("router.caller_principal_id", event.caller_principal_id)
+        if event.caller_display_name is not None:
+            attributes["router.caller_display_name"] = event.caller_display_name
+            span.set_attribute("router.caller_display_name", event.caller_display_name)
+        if event.caller_consumer_role is not None:
+            attributes["router.caller_consumer_role"] = event.caller_consumer_role
+            span.set_attribute("router.caller_consumer_role", event.caller_consumer_role)
         if event.request_id is not None:
             attributes["router.request_id"] = event.request_id
         if event.upstream_id is not None:

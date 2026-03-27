@@ -20,6 +20,7 @@ from app.domain.services.tiered_failover_selector import TieredFailoverSelector
 from app.domain.services.upstream_failure_classifier import UpstreamFailureClassifier
 from app.infrastructure.auth.auth_header_builder import AuthHeaderBuilder
 from app.infrastructure.auth.env_secret_provider import EnvSecretProvider
+from app.infrastructure.auth.inbound_auth import InboundAuthenticator
 from app.infrastructure.auth.managed_identity_token_provider import ManagedIdentityTokenProvider
 from app.infrastructure.config.deployment_repository import ConfigDeploymentRepository
 from app.infrastructure.config.models import RouterConfigModel
@@ -69,6 +70,7 @@ class BootstrapContainer:
     shared_service_repository: ConfigSharedServiceRepository
     list_shared_services_use_case: ListSharedServices
     secret_provider: EnvSecretProvider
+    inbound_authenticator: InboundAuthenticator
     token_provider: ManagedIdentityTokenProvider
     health_state_repository: HealthStateRepository
     request_rate_limiter: RequestRateLimiter
@@ -95,6 +97,10 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         shared_service_repository=shared_service_repository
     )
     secret_provider = EnvSecretProvider()
+    inbound_authenticator = InboundAuthenticator.from_config(
+        router_config.router.inbound_auth,
+        secret_provider=secret_provider,
+    )
     token_provider = ManagedIdentityTokenProvider()
     health_state_repository = _build_health_state_repository(settings, redis_client)
     request_rate_limiter = _build_request_rate_limiter(settings, redis_client)
@@ -174,6 +180,7 @@ def build_container(settings: AppSettings) -> BootstrapContainer:
         shared_service_repository=shared_service_repository,
         list_shared_services_use_case=list_shared_services_use_case,
         secret_provider=secret_provider,
+        inbound_authenticator=inbound_authenticator,
         token_provider=token_provider,
         health_state_repository=health_state_repository,
         request_rate_limiter=request_rate_limiter,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, model_validator
 
@@ -28,6 +28,7 @@ class RouterRuntimeConfigModel(BaseModel):
     max_attempts: int = Field(gt=0)
     retryable_status_codes: list[int]
     health: RouterHealthConfigModel
+    inbound_auth: InboundAuthConfigModel | None = None
 
 
 class RoutingConfigModel(BaseModel):
@@ -37,6 +38,59 @@ class RoutingConfigModel(BaseModel):
 class LimitsConfigModel(BaseModel):
     max_concurrency: int = Field(gt=0)
     request_rate_per_second: int = Field(gt=0)
+
+
+class ApiBearerTokenConfigModel(BaseModel):
+    kind: Literal["api_bearer_token"]
+    token_id: str = Field(min_length=1)
+    display_name: str | None = Field(default=None, min_length=1)
+    consumer_role: str | None = Field(default=None, min_length=1)
+    secret_ref: str = Field(min_length=1)
+
+
+class EntraApplicationConfigModel(BaseModel):
+    client_app_id: str = Field(min_length=1)
+    display_name: str | None = Field(default=None, min_length=1)
+    consumer_role: str | None = Field(default=None, min_length=1)
+    required_app_roles: list[str] = Field(min_length=1)
+
+
+class EntraIdInboundAuthConfigModel(BaseModel):
+    kind: Literal["entra_id"]
+    tenant_id: str = Field(min_length=1)
+    audiences: list[str] = Field(min_length=1)
+    authority_host: str = "https://login.microsoftonline.com"
+    applications: list[EntraApplicationConfigModel] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_unique_client_apps(self) -> EntraIdInboundAuthConfigModel:
+        client_app_ids = [application.client_app_id for application in self.applications]
+        if len(client_app_ids) != len(set(client_app_ids)):
+            raise ValueError(
+                "entra_id applications must not contain duplicate client_app_id values"
+            )
+        return self
+
+
+InboundAuthProviderConfigModel = Annotated[
+    ApiBearerTokenConfigModel | EntraIdInboundAuthConfigModel,
+    Field(discriminator="kind"),
+]
+
+
+class InboundAuthConfigModel(BaseModel):
+    providers: list[InboundAuthProviderConfigModel] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_provider_mix(self) -> InboundAuthConfigModel:
+        entra_provider_count = sum(
+            1
+            for provider in self.providers
+            if isinstance(provider, EntraIdInboundAuthConfigModel)
+        )
+        if entra_provider_count > 1:
+            raise ValueError("inbound_auth must not define more than one entra_id provider")
+        return self
 
 
 class AuthConfigModel(BaseModel):

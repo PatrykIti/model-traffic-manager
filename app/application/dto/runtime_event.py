@@ -13,6 +13,10 @@ class RuntimeEvent:
     endpoint_kind: str
     deployment_id: str
     consumer_role: str | None = None
+    caller_auth_mode: str | None = None
+    caller_principal_id: str | None = None
+    caller_display_name: str | None = None
+    caller_consumer_role: str | None = None
     request_id: str | None = None
     attempt: int | None = None
     upstream_id: str | None = None

@@ -59,6 +59,7 @@ def test_build_container_uses_redis_backed_runtime_state(
     container = build_container(settings)
 
     assert container.redis_client is fake_redis
+    assert container.inbound_authenticator is not None
     assert isinstance(container.health_state_repository, RedisHealthStateRepository)
     assert isinstance(container.request_rate_limiter, RedisRequestRateLimiter)
     assert isinstance(container.concurrency_limiter, RedisConcurrencyLimiter)

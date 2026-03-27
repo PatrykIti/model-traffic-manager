@@ -45,6 +45,14 @@ class TokenAcquisitionError(DomainError):
     """Raised when the router cannot acquire a token for outbound auth."""
 
 
+class InboundAuthenticationError(DomainError):
+    """Raised when the caller cannot be authenticated for inbound access."""
+
+
+class InboundAuthorizationError(DomainError):
+    """Raised when the caller is authenticated but not authorized."""
+
+
 class RequestRateLimitExceededError(DomainError):
     """Raised when a deployment exceeds its allowed request rate."""
 

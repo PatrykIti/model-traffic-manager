@@ -89,6 +89,39 @@ def test_router_config_model_accepts_consumer_role_metadata() -> None:
     assert validated.shared_services["conversation_archive"].consumer_role == "archive-worker"
 
 
+def test_router_config_model_accepts_inbound_auth_with_api_tokens_and_entra() -> None:
+    config = build_valid_config()
+    config["router"]["inbound_auth"] = {
+        "providers": [
+            {
+                "kind": "api_bearer_token",
+                "token_id": "bot-system-be-token",
+                "display_name": "Bot System Backend Token",
+                "consumer_role": "bot-system-be",
+                "secret_ref": "env://ROUTER_INBOUND_TOKEN",
+            },
+            {
+                "kind": "entra_id",
+                "tenant_id": "tenant-id",
+                "audiences": ["router-api-client-id"],
+                "applications": [
+                    {
+                        "client_app_id": "client-app-id",
+                        "display_name": "Bot System Backend",
+                        "consumer_role": "bot-system-be",
+                        "required_app_roles": ["invoke.router"],
+                    }
+                ],
+            },
+        ]
+    }
+
+    validated = RouterConfigModel.model_validate(config)
+
+    assert validated.router.inbound_auth is not None
+    assert len(validated.router.inbound_auth.providers) == 2
+
+
 def test_router_config_model_accepts_capacity_mode_metadata() -> None:
     config = build_valid_config()
     config["deployments"][0]["upstreams"][0]["capacity_mode"] = "ptu"

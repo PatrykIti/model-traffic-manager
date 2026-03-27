@@ -5,7 +5,7 @@ SUITE="${1:-}"
 ENVIRONMENT="${2:-dev1}"
 
 if [[ -z "$SUITE" ]]; then
-  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|integration-azure-chat|integration-azure-embeddings|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing|e2e-aks-live-shared-services|e2e-aks-live-observability|e2e-aks-redis> [environment]" >&2
+  echo "Usage: bash scripts/release/run_azure_test_suite.sh <integration-azure|integration-azure-chat|integration-azure-embeddings|e2e-aks|e2e-aks-live-model|e2e-aks-live-embeddings|e2e-aks-live-load-balancing|e2e-aks-live-shared-services|e2e-aks-live-inbound-auth|e2e-aks-live-observability|e2e-aks-redis> [environment]" >&2
   exit 1
 fi
 
@@ -83,6 +83,33 @@ value = entry.get("value", "")
 if value is None:
     value = ""
 print(value)
+PY
+}
+
+json_output_query() {
+  local json_path="$1"
+  local expression="$2"
+
+  python3 - "$json_path" "$expression" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+value = payload
+for part in sys.argv[2].split("."):
+    if isinstance(value, dict):
+        value = value.get(part)
+    else:
+        value = None
+    if value is None:
+        break
+if value is None:
+    print("")
+elif isinstance(value, (dict, list)):
+    print(json.dumps(value))
+else:
+    print(value)
 PY
 }
 
@@ -217,6 +244,7 @@ aks_cluster_name=""
 e2e_namespace="${E2E_NAMESPACE:-e2e-router}"
 e2e_image="${E2E_IMAGE:-}"
 federated_credential_created="0"
+caller_federated_credential_created="0"
 e2e_image_pull_secret_name="${E2E_IMAGE_PULL_SECRET_NAME:-ghcr-pull}"
 cleanup_status="not_started"
 rendered_router_config=""
@@ -224,8 +252,19 @@ namespace_create_status="not_created"
 namespace_delete_status="not_created"
 federated_credential_create_status="not_created"
 federated_credential_delete_status="not_created"
+caller_federated_credential_create_status="not_created"
+caller_federated_credential_delete_status="not_created"
 image_pull_secret_create_status="not_created"
 port_forward_teardown_status="not_created"
+caller_identity_name=""
+caller_identity_client_id=""
+caller_identity_principal_id=""
+router_api_app_id=""
+router_api_service_principal_id=""
+entra_app_role_id=""
+router_api_app_delete_status="not_created"
+e2e_inbound_api_token=""
+e2e_router_api_audience=""
 
 write_run_metadata() {
   cat >"${artifacts_dir}/run-metadata.json" <<EOF
@@ -251,6 +290,9 @@ write_cleanup_report() {
   "namespace_delete_status": "${namespace_delete_status}",
   "federated_credential_create_status": "${federated_credential_create_status}",
   "federated_credential_delete_status": "${federated_credential_delete_status}",
+  "caller_federated_credential_create_status": "${caller_federated_credential_create_status}",
+  "caller_federated_credential_delete_status": "${caller_federated_credential_delete_status}",
+  "router_api_app_delete_status": "${router_api_app_delete_status}",
   "image_pull_secret_create_status": "${image_pull_secret_create_status}",
   "port_forward_teardown_status": "${port_forward_teardown_status}"
 }
@@ -369,6 +411,39 @@ cleanup() {
     federated_credential_delete_status="not_created"
   else
     federated_credential_delete_status="not_created"
+  fi
+
+  if [[ "$suite_kind" == "aks" && "$caller_federated_credential_created" == "1" && -n "$resource_group" && -n "$caller_identity_name" ]]; then
+    echo "Cleaning up: deleting caller federated credential router-caller-${run_id}"
+    if az identity federated-credential show \
+      --resource-group "$resource_group" \
+      --identity-name "$caller_identity_name" \
+      --name "router-caller-${run_id}" >/dev/null 2>&1; then
+      if az identity federated-credential delete \
+        --resource-group "$resource_group" \
+        --identity-name "$caller_identity_name" \
+        --name "router-caller-${run_id}" \
+        --yes >/dev/null 2>&1; then
+        caller_federated_credential_delete_status="deleted"
+      else
+        caller_federated_credential_delete_status="cleanup_failed"
+      fi
+    else
+      caller_federated_credential_delete_status="already_gone"
+    fi
+  elif [[ "$suite_kind" == "aks" ]]; then
+    caller_federated_credential_delete_status="not_created"
+  else
+    caller_federated_credential_delete_status="not_created"
+  fi
+
+  if [[ -n "$router_api_app_id" ]]; then
+    echo "Cleaning up: deleting router API app registration ${router_api_app_id}"
+    if az ad app delete --id "$router_api_app_id" >/dev/null 2>&1; then
+      router_api_app_delete_status="deleted"
+    else
+      router_api_app_delete_status="cleanup_failed"
+    fi
   fi
 
   if [[ "$suite_kind" == "aks" ]]; then
@@ -505,6 +580,9 @@ aks_cluster_name="$(terraform -chdir="$scope_dir" output -raw aks_cluster_name)"
 aks_oidc_issuer_url="$(terraform -chdir="$scope_dir" output -raw aks_oidc_issuer_url)"
 UAI_NAME="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_name)"
 uai_client_id="$(terraform -chdir="$scope_dir" output -raw user_assigned_identity_client_id)"
+caller_identity_name="$(terraform -chdir="$scope_dir" output -raw caller_identity_name 2>/dev/null || true)"
+caller_identity_client_id="$(terraform -chdir="$scope_dir" output -raw caller_identity_client_id 2>/dev/null || true)"
+caller_identity_principal_id="$(terraform -chdir="$scope_dir" output -raw caller_identity_principal_id 2>/dev/null || true)"
 
 kubeconfig_path="${tmp_dir}/kubeconfig"
 retry_command_with_policy \
@@ -533,12 +611,78 @@ retry_command_with_policy \
 federated_credential_created="1"
 federated_credential_create_status="created"
 
+if [[ "$SUITE" == "e2e-aks-live-inbound-auth" && -n "$caller_identity_name" ]]; then
+  retry_command_with_policy \
+    "azure_control_plane" \
+    "az identity federated-credential create for caller" \
+    3 \
+    3 \
+    az identity federated-credential create \
+      --resource-group "$resource_group" \
+      --identity-name "$caller_identity_name" \
+      --name "router-caller-${run_id}" \
+      --issuer "$aks_oidc_issuer_url" \
+      --subject "system:serviceaccount:${e2e_namespace}:router-caller" \
+      --audiences "api://AzureADTokenExchange"
+  caller_federated_credential_created="1"
+  caller_federated_credential_create_status="created"
+
+  entra_app_role_id="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+  router_api_app_roles="${tmp_dir}/router-api-app-roles.json"
+  cat >"$router_api_app_roles" <<EOF
+[
+  {
+    "allowedMemberTypes": ["Application"],
+    "description": "Allow the caller to invoke model-traffic-manager.",
+    "displayName": "Invoke Router",
+    "id": "${entra_app_role_id}",
+    "isEnabled": true,
+    "value": "invoke.router"
+  }
+]
+EOF
+
+  e2e_router_api_audience="api://mtm-router-${run_id}"
+  router_api_app_json="$(
+    az ad app create \
+      --display-name "mtm-router-api-${run_id}" \
+      --sign-in-audience AzureADMyOrg \
+      --identifier-uris "$e2e_router_api_audience" \
+      --requested-access-token-version 2 \
+      --app-roles @"$router_api_app_roles" \
+      -o json
+  )"
+  printf '%s' "$router_api_app_json" > "${artifacts_dir}/router-api-app.json"
+  router_api_app_id="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read())["appId"])' <<<"$router_api_app_json")"
+  router_api_sp_json="$(az ad sp create --id "$router_api_app_id" -o json)"
+  printf '%s' "$router_api_sp_json" > "${artifacts_dir}/router-api-service-principal.json"
+  router_api_service_principal_id="$(python3 -c 'import json,sys; print(json.loads(sys.stdin.read())["id"])' <<<"$router_api_sp_json")"
+
+  az rest \
+    --method POST \
+    --url "https://graph.microsoft.com/v1.0/servicePrincipals/${caller_identity_principal_id}/appRoleAssignments" \
+    --body "{\"principalId\":\"${caller_identity_principal_id}\",\"resourceId\":\"${router_api_service_principal_id}\",\"appRoleId\":\"${entra_app_role_id}\"}" \
+    >/dev/null
+
+  e2e_inbound_api_token="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+fi
+
 if kubectl get namespace "$e2e_namespace" >/dev/null 2>&1; then
   namespace_create_status="already_exists"
 else
   namespace_create_status="created"
 fi
 kubectl create namespace "$e2e_namespace" --dry-run=client -o yaml | kubectl apply -f -
+
+export E2E_NAMESPACE="$e2e_namespace"
+export E2E_IMAGE="$e2e_image"
+export E2E_UAI_CLIENT_ID="$uai_client_id"
+export E2E_CALLER_CLIENT_ID="$caller_identity_client_id"
+export E2E_CALLER_ENTRA_CLIENT_ID="$caller_identity_client_id"
+export E2E_ENTRA_TENANT_ID="$tenant_id"
+export E2E_ROUTER_API_AUDIENCE="$e2e_router_api_audience"
+export E2E_INBOUND_API_TOKEN="$e2e_inbound_api_token"
+export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
 
 if [[ -n "$suite_render_script" ]]; then
   rendered_router_config="${tmp_dir}/router-${SUITE}.yaml"
@@ -559,10 +703,6 @@ else
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
-export E2E_NAMESPACE="$e2e_namespace"
-export E2E_IMAGE="$e2e_image"
-export E2E_UAI_CLIENT_ID="$uai_client_id"
-export VALIDATION_ARTIFACTS_DIR="$artifacts_dir"
 
 application_insights_name="$(json_output_value "${tmp_dir}/terraform-outputs.json" "application_insights_name")"
 if [[ -n "$application_insights_name" ]]; then
@@ -613,16 +753,35 @@ if [[ "$e2e_image" == ghcr.io/* ]]; then
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 
+if [[ "$SUITE" == "e2e-aks-live-inbound-auth" ]]; then
+  kubectl create secret generic router-inbound-auth \
+    --from-literal=api-token="$e2e_inbound_api_token" \
+    --namespace "$e2e_namespace" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
+
 manifest_root="$suite_manifest_root"
 
 python3 scripts/release/render_template.py "${manifest_root}/k8s/router-serviceaccount.yaml.tmpl" | kubectl apply -f -
+if [[ "$SUITE" == "e2e-aks-live-inbound-auth" ]]; then
+  python3 scripts/release/render_template.py "${manifest_root}/k8s/router-caller-serviceaccount.yaml.tmpl" | kubectl apply -f -
+fi
 if [[ "$e2e_image" == ghcr.io/* ]]; then
   kubectl patch serviceaccount/router-app \
     -n "$e2e_namespace" \
     --type merge \
     -p "{\"imagePullSecrets\":[{\"name\":\"${e2e_image_pull_secret_name}\"}]}"
+  if [[ "$SUITE" == "e2e-aks-live-inbound-auth" ]]; then
+    kubectl patch serviceaccount/router-caller \
+      -n "$e2e_namespace" \
+      --type merge \
+      -p "{\"imagePullSecrets\":[{\"name\":\"${e2e_image_pull_secret_name}\"}]}"
+  fi
 fi
 python3 scripts/release/render_template.py "${manifest_root}/k8s/router-deployment.yaml.tmpl" | kubectl apply -f -
+if [[ "$SUITE" == "e2e-aks-live-inbound-auth" ]]; then
+  python3 scripts/release/render_template.py "${manifest_root}/k8s/router-caller-deployment.yaml.tmpl" | kubectl apply -f -
+fi
 kubectl apply -n "$e2e_namespace" -f "${manifest_root}/k8s/router-service.yaml"
 if [[ "$suite_mock_profile" == "failover" ]]; then
   python3 scripts/release/render_template.py "${manifest_root}/k8s/router-failover-mock-deployment.yaml.tmpl" | kubectl apply -f -
@@ -664,6 +823,12 @@ retry_command_with_policy "kubernetes_watch" "router-app rollout" 3 2 \
   kubectl rollout status deployment/router-app -n "$e2e_namespace" --timeout=5m
 retry_command_with_policy "kubernetes_watch" "router-app pod wait" 3 2 \
   kubectl wait --for=condition=Ready pod -l app=router-app -n "$e2e_namespace" --timeout=5m
+if [[ "$SUITE" == "e2e-aks-live-inbound-auth" ]]; then
+  retry_command_with_policy "kubernetes_watch" "router-caller rollout" 3 2 \
+    kubectl rollout status deployment/router-caller -n "$e2e_namespace" --timeout=5m
+  retry_command_with_policy "kubernetes_watch" "router-caller pod wait" 3 2 \
+    kubectl wait --for=condition=Ready pod -l app=router-caller -n "$e2e_namespace" --timeout=5m
+fi
 
 router_pod_name="$(select_running_pod "$e2e_namespace" "app=router-app")"
 if [[ -z "$router_pod_name" ]]; then

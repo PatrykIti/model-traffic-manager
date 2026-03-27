@@ -1,0 +1,40 @@
+router:
+  instance_name: inbound-api-bearer-example
+  timeout_ms: 30000
+  max_attempts: 3
+  retryable_status_codes: [429, 500, 502, 503, 504]
+  health:
+    failure_threshold: 3
+    cooldown_seconds: 30
+    half_open_after_seconds: 60
+  inbound_auth:
+    providers:
+      - kind: api_bearer_token
+        token_id: bot-system-be-token
+        display_name: Bot System Backend Token
+        consumer_role: bot-system-be
+        secret_ref: env://ROUTER_INBOUND_API_TOKEN
+
+deployments:
+  - id: assistant-chat
+    consumer_role: bot-system-be
+    kind: llm
+    protocol: openai_chat
+    routing:
+      strategy: tiered_failover
+    limits:
+      max_concurrency: 10
+      request_rate_per_second: 5
+    upstreams:
+      - id: primary
+        provider: azure_openai
+        account: aoai-prod-01
+        region: westeurope
+        tier: 0
+        weight: 100
+        endpoint: https://example.invalid/chat/completions
+        auth:
+          mode: managed_identity
+          scope: https://cognitiveservices.azure.com/.default
+
+shared_services: {}

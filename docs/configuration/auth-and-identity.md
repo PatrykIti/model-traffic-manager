@@ -2,6 +2,73 @@
 
 # Auth and Identity
 
+The router has two distinct auth planes:
+
+- inbound client auth for callers of `model-traffic-manager`
+- outbound upstream auth for the downstream services the router calls
+
+## Inbound Client Auth
+
+Current inbound auth modes are:
+
+- `api_bearer_token`
+- `entra_id`
+
+### `api_bearer_token`
+
+Use this when a caller should authenticate with one router-owned opaque bearer token.
+
+Shape:
+
+```yaml
+router:
+  inbound_auth:
+    providers:
+      - kind: api_bearer_token
+        token_id: bot-system-be-token
+        display_name: Bot System Backend Token
+        consumer_role: bot-system-be
+        secret_ref: env://ROUTER_INBOUND_API_TOKEN
+```
+
+The caller sends:
+
+```text
+Authorization: Bearer <opaque-token>
+```
+
+The router resolves the expected token through `secret_ref` and validates it with constant-time comparison.
+
+### `entra_id`
+
+Use this for service-to-service callers that authenticate with Microsoft Entra ID access tokens.
+
+Shape:
+
+```yaml
+router:
+  inbound_auth:
+    providers:
+      - kind: entra_id
+        tenant_id: 11111111-1111-1111-1111-111111111111
+        audiences: [api://mtm-router-api]
+        applications:
+          - client_app_id: 22222222-2222-2222-2222-222222222222
+            display_name: Bot System Backend
+            consumer_role: bot-system-be
+            required_app_roles: [invoke.router]
+```
+
+Recommended Entra model:
+
+- the router is a protected web API
+- the `aud` identifies the router API app registration
+- each caller has its own app registration or managed identity
+- federated credentials are configured on the caller identity
+- app-only authorization uses app roles and the `roles` claim
+
+## Outbound Upstream Auth
+
 The router supports three outbound auth modes:
 
 - `managed_identity`
@@ -93,6 +160,8 @@ Ready-to-copy example router configs:
 - [auth-identity-default-managed-identity.router.yaml](../../configs/examples/auth-identity-default-managed-identity.router.yaml)
 - [auth-identity-explicit-client-ids.router.yaml](../../configs/examples/auth-identity-explicit-client-ids.router.yaml)
 - [auth-identity-mixed-modes.router.yaml](../../configs/examples/auth-identity-mixed-modes.router.yaml)
+- [auth-inbound-api-bearer.router.yaml](../../configs/examples/auth-inbound-api-bearer.router.yaml)
+- [auth-inbound-entra-id.router.yaml](../../configs/examples/auth-inbound-entra-id.router.yaml)
 
 What each example demonstrates:
 
@@ -102,3 +171,7 @@ What each example demonstrates:
   explicit user-assigned identity selection per downstream class
 - `auth-identity-mixed-modes.router.yaml`
   one router config that mixes `managed_identity`, `api_key`, and `none`
+- `auth-inbound-api-bearer.router.yaml`
+  router-owned inbound bearer token validation
+- `auth-inbound-entra-id.router.yaml`
+  protected-API Entra ID inbound validation for app-only callers

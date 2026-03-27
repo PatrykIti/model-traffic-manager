@@ -5,13 +5,14 @@
 Target request flow:
 
 1. client calls a deployment endpoint
-2. the API entrypoint maps the request into a use case
-3. the use case loads deployment and health state
-4. routing policy selects an upstream
-5. outbound auth is prepared
-6. request is sent
-7. health/metrics are updated
-8. response is returned
+2. the API entrypoint validates optional inbound auth and establishes a request principal
+3. the API entrypoint maps the request into a use case
+4. the use case loads deployment and health state
+5. routing policy selects an upstream
+6. outbound auth is prepared
+7. request is sent
+8. health/metrics are updated
+9. response is returned
 
 Current status:
 

@@ -7,7 +7,7 @@
 **Category:** Security and Access Control
 **Estimated Effort:** Large
 **Dependencies:** TASK-005, TASK-016, TASK-042, TASK-043
-**Status:** To Do
+**Status:** **In Progress** (2026-03-27)
 
 ---
 
@@ -61,19 +61,19 @@ Non-goals:
 
 ### TASK-047-01: Inbound auth contract, config model, and principal taxonomy
 
-**Status:** To Do
+**Status:** In Progress (2026-03-27)
 
 Define the repository-owned auth model for API bearer tokens and Entra ID, including config shape, caller identity metadata, and HTTP error semantics.
 
 ### TASK-047-02: Runtime authentication middleware and request principal propagation
 
-**Status:** To Do
+**Status:** In Progress (2026-03-27)
 
 Implement FastAPI-side authentication, principal resolution, and authorization checks without leaking auth material into logs or traces.
 
 ### TASK-047-03: Microsoft Entra ID protected-API model, app roles, and federated caller guidance
 
-**Status:** To Do
+**Status:** In Progress (2026-03-27)
 
 Define and document the Azure app-registration model for protecting the router as an Entra web API and onboarding calling services through federated credentials.
 

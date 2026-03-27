@@ -130,7 +130,7 @@ Typical scope:
 
 Current repository activation:
 
-- workflow: `.github/workflows/e2e-aks.yml` with `suite` input selecting `e2e-aks`, `e2e-aks-live-model`, `e2e-aks-live-embeddings`, `e2e-aks-live-load-balancing`, `e2e-aks-live-shared-services`, `e2e-aks-live-observability`, or `e2e-aks-redis`
+- workflow: `.github/workflows/e2e-aks.yml` with `suite` input selecting `e2e-aks`, `e2e-aks-live-model`, `e2e-aks-live-embeddings`, `e2e-aks-live-load-balancing`, `e2e-aks-live-shared-services`, `e2e-aks-live-inbound-auth`, `e2e-aks-live-observability`, or `e2e-aks-redis`
 - janitor workflow: `.github/workflows/e2e-azure-janitor.yml`
 - test suite: `tests/e2e_aks/`
 - Kubernetes runtime assets: `infra/e2e-aks/k8s/`
@@ -333,6 +333,38 @@ Default rule:
 
 - use this suite deliberately because telemetry ingestion is eventually consistent and the suite provisions dedicated Azure monitoring resources
 
+### 11. `e2e-aks-live-inbound-auth`
+
+Purpose:
+
+- prove inbound API bearer-token auth on a live AKS router
+- prove inbound Entra ID auth using a secretless federated caller identity
+
+Environment:
+
+- AKS
+- one live Azure OpenAI deployment behind the router
+- router workload identity for outbound auth
+- caller workload identity for inbound Entra token acquisition
+- temporary Entra protected-API app registration and app-role assignment created by the runner
+
+Current repository activation:
+
+- local command: `make e2e-aks-live-inbound-auth-local`
+- test suite: `tests/e2e_aks_live_inbound_auth/`
+- infra scope: `infra/e2e-aks-live-inbound-auth/`
+
+Current live inbound-auth coverage:
+
+- unauthenticated bearer request is rejected
+- valid router-owned API bearer token is accepted
+- in-cluster caller obtains an Entra access token through federated workload identity
+- the Entra-authenticated caller successfully invokes the protected router endpoint
+
+Default rule:
+
+- use this suite deliberately because it provisions temporary Entra app-registration state in addition to AKS and Azure OpenAI resources
+
 ## Current quota-aware AKS suite placement
 
 The current `dev1` and `prd1` suite placement is intentionally split across regions and VM families:
@@ -342,6 +374,7 @@ The current `dev1` and `prd1` suite placement is intentionally split across regi
 - `e2e-aks-live-embeddings`: `northeurope` + `Standard_D2s_v4`
 - `e2e-aks-live-load-balancing`: `northeurope` + `Standard_D2ds_v4`
 - `e2e-aks-live-shared-services`: `westeurope` + `Standard_D2s_v4`
+- `e2e-aks-live-inbound-auth`: `westeurope` + `Standard_D2s_v4`
 - `e2e-aks-live-observability`: `westeurope` + `Standard_D2s_v4`
 - `e2e-aks-redis`: `northeurope` + `Standard_D2s_v4`
 
