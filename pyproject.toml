@@ -1,6 +1,6 @@
 [project]
 name = "model-traffic-manager"
-version = "0.1.1"
+version = "0.1.2"
 description = "Policy-driven AI traffic router for Azure and AKS"
 requires-python = "==3.12.*"
 dependencies = [

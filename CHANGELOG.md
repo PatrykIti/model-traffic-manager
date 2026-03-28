@@ -4,6 +4,24 @@ This changelog tracks released versions and public release notes for `model-traf
 
 Internal task-level delivery history remains in `_docs/_CHANGELOG/`.
 
+## v0.1.2 - 2026-03-28
+
+### Added
+- GitHub issue forms for bug reports and feature requests (#3)
+- issue-template contact links for support and security paths (#3)
+
+### Changed
+- release-image publishing now runs from published GitHub Releases instead of tag-push events (#3)
+- release-image metadata now uses the actual tagged revision for OCI traceability (#3)
+- release-image policy keeps `latest` only for stable semver releases while preserving manual republish for existing tags (#3)
+
+### Fixed
+- Azure janitor filtering for temporary resource groups by replacing the invalid double-tag CLI call with JMESPath filtering (#3)
+- release-image automation so release publishing is no longer vulnerable to CI-skip behavior on tag-push triggers (#3)
+
+### Security
+- issue-template contact links now direct security-sensitive reports away from public issue forms (#3)
+
 ## v0.1.1 - 2026-03-27
 
 ### Removed
