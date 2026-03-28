@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 285 work items
+- **Done:** 286 work items
 
 ---
 
@@ -342,3 +342,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-052 | Remove External Chatbot Reference Docs from the Repository | Medium | Small | The repository no longer carries the chatbot-platform and SaaS orchestration reference docs that were moved elsewhere |
 | TASK-053 | Release Image Publishing and Automatic Semantic Release | High | Medium | Semantic release now runs on `main`, and release tags publish a real GHCR container image while release validation stays manual |
 | TASK-054 | Stable Release `latest` Tag Policy and Manual Image Republish | Medium | Small | The release-image workflow now reserves `latest` for stable semver tags and doubles as a manual republish path for existing tags |
+| TASK-055 | E2E Azure Janitor Tag Filter Fix | Medium | Small | The janitor workflow now filters repository-owned temporary resource groups through JMESPath instead of an invalid double `--tag` call |

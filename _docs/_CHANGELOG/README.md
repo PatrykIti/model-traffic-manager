@@ -102,3 +102,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 69 | 2026-03-27 | Remove external chatbot reference docs | docs/cleanup |
 | 70 | 2026-03-27 | Release image publishing and automatic semantic release | workflow/release |
 | 71 | 2026-03-27 | Stable release `latest` tag policy and manual image republish | workflow/release |
+| 72 | 2026-03-28 | E2E Azure janitor tag filter fix | workflow/reliability |
