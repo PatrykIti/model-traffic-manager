@@ -1,0 +1,96 @@
+name: Bug report
+description: Report a defect, regression, or unexpected runtime behavior in model-traffic-manager
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+        Please keep secrets, bearer tokens, JWTs, API keys, and private tenant details out of this form. If the issue is security-sensitive, use the security reporting path linked in the repository instead of opening a public issue.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the problem in one or two clear paragraphs.
+      placeholder: The router returns 503 instead of failing over to the secondary upstream when the primary times out.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead?
+      placeholder: The request should have retried against the next healthy upstream in the same or next tier.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened?
+      placeholder: The router returned 503 and no fallback attempt was visible in the runtime events.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - chat/completions
+        - embeddings
+        - shared-services
+        - inbound authentication
+        - outbound authentication
+        - routing and failover
+        - observability
+        - Azure / AKS validation workflow
+        - release workflow
+        - documentation
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest reproducible sequence you can.
+      placeholder: |
+        1. Start the router with this config shape
+        2. Send this request
+        3. Force the primary upstream to return 503
+        4. Observe the response and runtime events
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant config shape
+      description: Share a minimal, redacted config example or explain the relevant deployment/auth setup.
+      render: yaml
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or artifacts
+      description: Paste redacted logs, request IDs, workflow URLs, or artifact details if available.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Which release tag, image tag, or commit SHA are you running?
+      placeholder: v0.1.1 or 1a2b3c4
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - local
+        - Azure integration
+        - AKS
+        - GitHub Actions
+        - other
+    validations:
+      required: true

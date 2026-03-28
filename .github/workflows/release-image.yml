@@ -1,9 +1,9 @@
 name: release-image
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       tag:
@@ -15,7 +15,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: release-image-${{ github.ref_name || inputs.tag }}
+  group: release-image-${{ github.event.release.tag_name || github.ref_name || inputs.tag }}
   cancel-in-progress: false
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
         id: release-tag
         shell: bash
         run: |
-          tag="${{ github.ref_name }}"
+          tag="${{ github.event.release.tag_name }}"
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             tag="${{ inputs.tag }}"
           fi
@@ -46,6 +46,11 @@ jobs:
         id: image-name
         shell: bash
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/model-traffic-manager" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve checked-out revision
+        id: release-revision
+        shell: bash
+        run: echo "sha=$(git rev-list -n 1 '${{ steps.release-tag.outputs.tag }}')" >> "$GITHUB_OUTPUT"
 
       - name: Detect stable release tag
         id: release-kind
@@ -81,7 +86,7 @@ jobs:
             org.opencontainers.image.description=Azure-native AI traffic router for AKS and Azure OpenAI
             org.opencontainers.image.version=${{ steps.release-tag.outputs.tag }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.revision=${{ steps.release-revision.outputs.sha }}
 
       - name: Build and push release image
         uses: docker/build-push-action@v6
