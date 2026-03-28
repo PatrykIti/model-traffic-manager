@@ -104,3 +104,4 @@ The **Index** table below acts as the changelog board and shows what was complet
 | 71 | 2026-03-27 | Stable release `latest` tag policy and manual image republish | workflow/release |
 | 72 | 2026-03-28 | E2E Azure janitor tag filter fix | workflow/reliability |
 | 73 | 2026-03-28 | Release image trigger and revision reliability fix | workflow/release |
+| 74 | 2026-03-28 | GitHub issue templates and contact links | docs/productization |

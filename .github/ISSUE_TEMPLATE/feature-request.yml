@@ -1,0 +1,64 @@
+name: Feature request
+description: Propose a focused enhancement that fits the router product boundary
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please keep feature requests aligned with the repository scope.
+
+        `model-traffic-manager` is an Azure-native AI traffic router. It is not intended to become a generic AI platform, tenant control plane, prompt workspace, or chatbot product backend.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve?
+      placeholder: Platform teams need a safer way to express an additional routing control without pushing business logic into every caller.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the change you want to see.
+      placeholder: Add a router-level control that ...
+    validations:
+      required: true
+  - type: textarea
+    id: scope-fit
+    attributes:
+      label: Why this fits the router
+      description: Explain why this belongs in the router instead of a higher-level chatbot backend or control plane.
+      placeholder: This belongs in the router because it affects routing, auth, observability, or runtime reliability directly.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - routing and failover
+        - inbound authentication
+        - outbound authentication
+        - observability
+        - shared services
+        - validation workflows
+        - release automation
+        - documentation and examples
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What are the current workarounds or alternative approaches?
+      placeholder: We currently handle this in the caller, but that duplicates logic across services.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add links, diagrams, config snippets, or operational context if helpful.
+      render: text

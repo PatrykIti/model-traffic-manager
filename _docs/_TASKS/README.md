@@ -49,7 +49,7 @@ This board tracks every repository work item, including main tasks, subtasks, an
 
 - **To Do:** 0 work items
 - **In Progress:** 0 work items
-- **Done:** 287 work items
+- **Done:** 288 work items
 
 ---
 
@@ -344,3 +344,4 @@ This board tracks every repository work item, including main tasks, subtasks, an
 | TASK-054 | Stable Release `latest` Tag Policy and Manual Image Republish | Medium | Small | The release-image workflow now reserves `latest` for stable semver tags and doubles as a manual republish path for existing tags |
 | TASK-055 | E2E Azure Janitor Tag Filter Fix | Medium | Small | The janitor workflow now filters repository-owned temporary resource groups through JMESPath instead of an invalid double `--tag` call |
 | TASK-056 | Release Image Trigger and Revision Reliability Fix | High | Small | The release-image workflow now reacts to published GitHub Releases and stamps OCI revision metadata from the checked-out release tag |
+| TASK-057 | GitHub Issue Templates and Contact Links | Medium | Small | The repository now has public issue forms for bugs and features plus contact links for support and security paths |
